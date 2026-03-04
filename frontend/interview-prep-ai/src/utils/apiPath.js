@@ -28,4 +28,7 @@ export const API_PATHS = {
     PIN: (id) => `/api/questions/${id}/pin`, // Pin or Unpin a question
     UPDATE_NOTE: (id) => `/api/questions/${id}/note`, // Update/Add a note to a question
   },
+  BLUEPRINT: {
+    CREATE: "/api/blueprint"
+  }
 };

@@ -13,6 +13,8 @@ const { protect } = require('./middlewares/authMiddleware');
 
 const { generateInterviewQuestions, generateConceptExplanation} = require('./controllers/aiController');
 
+const blueprintRoutes = require("./routes/blueprintRoutes");
+
 const app = express();
 
 app.use(
@@ -35,7 +37,7 @@ app.use("/api/questions",questionRoute);
 
 app.use("/api/ai/generate-questions",protect,generateInterviewQuestions);
 app.use("/api/ai/generate-explanation",protect,generateConceptExplanation);
-
+app.use("/api/blueprint", blueprintRoutes);
 
 //Serve uploads folder
 app.use("/uploads",express.static(path.join(__dirname,"uploads"),{}));

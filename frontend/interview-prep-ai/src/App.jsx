@@ -1,40 +1,53 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+import Layout from "./components/Layout"; // ✅ ADD THIS
+
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
-import LandingPage from "./pages/LandingPage";
-import DashBoard from "./pages/Home/DashBoard";
+import Dashboard from "./pages/Home/DashBoard";
 import InterviewPrep from "./pages/InterviewPre/InterviewPrep";
-import UserProvider from "./context/userContext";
+import InterviewBlueprintPage from "./pages/Home/InterviewBlueprintPage";
 
 const App = () => {
   return (
-    <UserProvider>
-    <div>
-      <Router>
-        <Routes>
-          {/* Default Route */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login/>}/> 
-          <Route path="/signup" element={<SignUp/>}/> 
-          <Route path="/dashboard" element={<DashBoard/>}/>
-          <Route path="/interview-prep/:sessionId" element={<InterviewPrep/>}/>
-        </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
 
-      <Toaster
-      toastOptions={{
-        className: "",
-        style: {
-          fontSize: "13px",
-        },
-      }}
-      />
-    </div>
-    </UserProvider>
-  )
-}
+        {/* Layout wrapped routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard />
+            </Layout>
+          }
+        />
 
-export default App
+        <Route
+          path="/blueprint"
+          element={
+            <Layout>
+              <InterviewBlueprintPage />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/interview-prep/:sessionId"
+          element={
+            <Layout>
+              <InterviewPrep />
+            </Layout>
+          }
+        />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

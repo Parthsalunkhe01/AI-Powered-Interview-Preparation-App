@@ -14,7 +14,11 @@ import Drawer from "../../components/Drawer"
 import SkeletonLoader from "../../components/loader/SkeletonLoader";
 import AIResponsePreview from "./components/AIResponseReview";
 
+import { useRef } from "react";
+
 const InterviewPrep = () => {
+  const explanationInFlight = useRef(false);
+  const explanationCache = useRef({});
   const { sessionId } = useParams();
   const [sessionData, setSessionData] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -43,31 +47,45 @@ const InterviewPrep = () => {
   };
 
   const generatedConceptExplanation = async (question) => {
-    try{
-      setErrorMsg("");
-      setExplanation(null)
+  // 🔒 HARD LOCK
+  if (explanationInFlight.current) return;
 
-      setIsLoading(true);
-      setopenLearnMoreDrawer(true);
+  // 📦 CACHE CHECK
+  if (explanationCache.current[question]) {
+    setExplanation(explanationCache.current[question]);
+    setopenLearnMoreDrawer(true);
+    return;
+  }
 
-      const response = await axiosInstance.post(
-        API_PATHS.AI.GENERATE_EXPLANATION,
-        {
-          question,
-        }
+  explanationInFlight.current = true;
+
+  try {
+    setErrorMsg("");
+    setExplanation(null);
+    setIsLoading(true);
+    setopenLearnMoreDrawer(true);
+
+    const response = await axiosInstance.post(
+      API_PATHS.AI.GENERATE_EXPLANATION,
+      { question }
     );
 
-    if(response.data){
+    if (response.data) {
       setExplanation(response.data);
+
+      // 💾 SAVE TO CACHE
+      explanationCache.current[question] = response.data;
     }
-    }catch(error){
-      setExplanation(null);
-      setErrorMsg("Failed to generate explanation, Try again later");
-      console.error("Error: ",error);
-    }finally{
-      setIsLoading(false);
-    }
+  } catch (error) {
+    setExplanation(null);
+    setErrorMsg("Failed to generate explanation. Try again later.");
+    console.error("Error:", error);
+  } finally {
+    setIsLoading(false);
+    explanationInFlight.current = false;
   }
+};
+
 
   const toggleQuestionPinStatus = async (questionId) => {
     try {
@@ -180,9 +198,12 @@ const InterviewPrep = () => {
                     <QuestionCard
                     question={data?.question}
                     answer={data?.answer}
-                    onLearnMore={() => 
-                      generatedConceptExplanation(data.question)
-                    }
+                    onLearnMore={() => {
+  if (!isLoading) {
+    generatedConceptExplanation(data.question);
+  }
+}}
+
                     isPinned={data?.isPinned}
                     onTogglePin={() => toggleQuestionPinStatus(data._id)}
                     />
