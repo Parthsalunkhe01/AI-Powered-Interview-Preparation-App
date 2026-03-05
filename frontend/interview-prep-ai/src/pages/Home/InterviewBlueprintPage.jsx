@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Zap } from "lucide-react";
 import { toast } from "../../hooks/use-toast";
-
 import SkeletonCard from "../../components/ui/SkeletonCard";
 import EmptyState from "../../components/ui/EmptyState";
 import BlueprintSummaryCard from "../../components/ui/BlueprintSummaryCard";
@@ -18,9 +17,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../../components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
+
 
 
 const InterviewBlueprintPage = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState("loading");
   const [blueprint, setBlueprint] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +60,14 @@ const InterviewBlueprintPage = () => {
     setIsSaving(true);
     try {
       if (blueprint) {
-        await axios.put("/api/blueprint", data);
+        await axios.put("http://localhost:8000/api/blueprint",
+        data,
+        {
+          headers:{
+            Authorization:`Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
       } else {
         await axios.post(
   "http://localhost:8000/api/blueprint",
@@ -72,10 +81,14 @@ const InterviewBlueprintPage = () => {
       }
       setBlueprint(data);
       setMode("view");
+      
+      
       toast({
         title: "Blueprint saved! 🎯",
         description: "Your interview profile is ready. Personalized questions await.",
       });
+
+      navigate("/dashboard");
     } catch {
       toast({
         title: "Failed to save",

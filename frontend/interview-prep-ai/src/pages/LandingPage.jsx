@@ -19,7 +19,7 @@ const LandingPage = () => {
     if(!user) {
       setOpenAuthModal(true);
     }else{
-      navigate("/dashboard");
+      navigate("/blueprint");
     }
   };
 

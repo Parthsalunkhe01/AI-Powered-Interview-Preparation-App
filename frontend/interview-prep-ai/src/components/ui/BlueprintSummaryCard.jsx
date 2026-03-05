@@ -31,9 +31,9 @@ const BlueprintSummaryCard = ({
 
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                 <Clock className="h-3 w-3" />
-                {blueprint.yearsOfExperience === "0"
+                {blueprint.experienceLevel === "0"
                   ? "Entry Level"
-                  : `${blueprint.yearsOfExperience} yrs exp`}
+                  : `${blueprint.experienceLevel} yrs exp`}
               </span>
             </div>
           </div>
@@ -61,7 +61,7 @@ const BlueprintSummaryCard = ({
           </div>
 
           {/* Companies */}
-          {blueprint.targetCompanies?.length > 0 && (
+          {blueprint.companies?.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ const BlueprintSummaryCard = ({
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {blueprint.targetCompanies.map((company) => (
+                {blueprint.companies.map((company) => (
                   <span
                     key={company}
                     className="inline-flex items-center rounded-lg border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"

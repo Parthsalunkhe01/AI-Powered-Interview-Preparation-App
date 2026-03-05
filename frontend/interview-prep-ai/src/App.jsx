@@ -6,7 +6,7 @@ import Layout from "./components/Layout"; // ✅ ADD THIS
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
-import Dashboard from "./pages/Home/DashBoard";
+import Dashboard from "./pages/Home/DashBoard2";
 import InterviewPrep from "./pages/InterviewPre/InterviewPrep";
 import InterviewBlueprintPage from "./pages/Home/InterviewBlueprintPage";
 

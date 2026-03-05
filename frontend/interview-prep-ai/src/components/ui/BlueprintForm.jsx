@@ -40,7 +40,7 @@ const BlueprintForm = ({
   );
   const [skills, setSkills] = useState(initialValues?.skills ?? []);
   const [targetCompanies, setTargetCompanies] = useState(
-    initialValues?.targetCompanies ?? []
+    initialValues?.companies ?? []
   );
   const [errors, setErrors] = useState({});
 
@@ -70,7 +70,7 @@ const BlueprintForm = ({
       targetRole: targetRole.trim(),
       experienceLevel: yearsOfExperience,
       skills,
-      targetCompanies,
+      companies: targetCompanies,
     });
   };
 
