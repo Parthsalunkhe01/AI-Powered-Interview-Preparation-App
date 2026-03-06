@@ -30,5 +30,13 @@ export const API_PATHS = {
   },
   BLUEPRINT: {
     CREATE: "/api/blueprint"
+  },
+  INTERVIEW_SESSION: {
+    CREATE: "/api/interview-sessions",
+    GET_MY: "/api/interview-sessions/my-sessions",
+    GET_ONE: (id) => `/api/interview-sessions/${id}`,
+    SUBMIT_ANSWER: (id) => `/api/interview-sessions/${id}/answer`,
+    SAVE_FEEDBACK: (id) => `/api/interview-sessions/${id}/feedback`,
+    GENERATE_FEEDBACK: (id) => `/api/interview-sessions/${id}/generate-feedback`,
   }
 };

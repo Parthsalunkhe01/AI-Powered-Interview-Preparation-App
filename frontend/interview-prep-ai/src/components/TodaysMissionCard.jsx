@@ -1,4 +1,5 @@
 import { Target } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TodaysMissionCard = () => {
 
@@ -14,9 +15,11 @@ const TodaysMissionCard = () => {
         Complete 1 interview session based on your blueprint.
       </div>
 
-      <button className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm">
-        Start Interview
-      </button>
+      <Link to="/ai-interview/setup">
+        <button className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+          Start AI Interview
+        </button>
+      </Link>
 
     </div>
   );
