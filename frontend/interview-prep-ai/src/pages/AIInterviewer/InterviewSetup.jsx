@@ -1,28 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Building2, MessageSquare, Layout } from "lucide-react";
+import { Zap, AlertCircle, ChevronRight, ArrowRight } from "lucide-react";
 import { toast } from "react-hot-toast";
 import DashboardLayout from "../../components/Layouts/DashBoardLayout";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/Label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../../components/ui/select";
+import { BlueprintSummary } from "../../components/ui/BlueprintSummary";
+import { SessionSettings } from "../../components/ui/SessionSettings";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 
 const InterviewSetup = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
     const [blueprint, setBlueprint] = useState(null);
-    const [formData, setFormData] = useState({
-        company: "",
+    const [settings, setSettings] = useState({
         type: "technical",
+        difficulty: "medium",
+        questionLimit: 5,
     });
 
     useEffect(() => {
@@ -34,167 +29,154 @@ const InterviewSetup = () => {
                 }
             } catch (error) {
                 console.error("No blueprint found", error);
+            } finally {
+                setFetching(false);
             }
         };
         fetchBlueprint();
     }, []);
 
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleSettingChange = (key, value) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
     };
 
-    const handleTypeChange = (value) => {
-        setFormData({ ...formData, type: value });
-    };
-
-    const handleStartInterview = async (e) => {
-        e.preventDefault();
-        if (!formData.company) {
-            toast.error("Please enter a company name");
+    const handleStartInterview = async () => {
+        if (!blueprint) {
+            toast.error("Please create an Interview Blueprint first.");
+            navigate("/blueprint");
             return;
         }
 
         setLoading(true);
         try {
-            // 1. Create the session
+            // 1. Create the session (company/role/exp auto-filled by backend from blueprint)
             const sessionRes = await axiosInstance.post(API_PATHS.INTERVIEW_SESSION.CREATE, {
-                company: formData.company,
-                type: formData.type,
+                type: settings.type,
+                difficulty: settings.difficulty,
+                questionLimit: settings.questionLimit,
             });
 
             const session = sessionRes.data.session;
 
-            // 2. Trigger the first question (empty answer to start)
+            // 2. Trigger the first question
             const questionRes = await axiosInstance.post(
                 API_PATHS.INTERVIEW_SESSION.SUBMIT_ANSWER(session._id),
-                {
-                    answer: "", // Initial trigger
-                }
+                { answer: "" }
             );
 
             toast.success("Interview started! Good luck.");
 
-            // Navigate to session page with initial data
+            // Navigate to session page
             navigate(`/ai-interview/session/${session._id}`, {
                 state: {
                     firstQuestion: questionRes.data.nextQuestion,
                     firstQuestionId: questionRes.data.questionId,
-                    company: formData.company,
-                    type: formData.type,
+                    company: session.company,
+                    type: settings.type,
                 },
             });
         } catch (error) {
             console.error(error);
-            toast.error("Failed to start interview. Please check your API key.");
+            toast.error("Failed to start interview. Check your connection.");
         } finally {
             setLoading(false);
         }
     };
 
+    if (fetching) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="h-10 w-10 border-4 border-amber/30 border-t-amber rounded-full animate-spin" />
+                        <p className="text-gray-500 font-medium">Loading session data...</p>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout>
-            <div className="max-w-2xl mx-auto py-12 px-6">
-                <div className="text-center mb-10 space-y-4">
+            <div className="max-w-6xl mx-auto py-12 px-6">
+                <div className="text-center mb-12 space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-amber/30 bg-amber/10 px-4 py-1.5 text-xs font-semibold text-amber mb-2">
                         <Zap className="h-3.5 w-3.5" />
-                        AI Interviewer Mode
+                        Simulation Environment Ready
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight text-black sm:text-5xl">
-                        Prepare for the Real Deal
+                    <h1 className="text-4xl font-black tracking-tight text-black sm:text-5xl">
+                        Start Your High-Fidelity Interview
                     </h1>
-                    <p className="text-lg text-gray-500 max-w-md mx-auto">
-                        Configure your AI interview session. The AI will behave like a professional recruiter.
+                    <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                        Your blueprint has been loaded. Configure your session parameters below to begin the technical evaluation.
                     </p>
                 </div>
 
-                <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-                    <form onSubmit={handleStartInterview} className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="company" className="text-sm font-semibold text-gray-700">
-                                Target Company
-                            </Label>
-                            <div className="relative">
-                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    id="company"
-                                    name="company"
-                                    placeholder="e.g. Google, Meta, Startup X"
-                                    value={formData.company}
-                                    onChange={handleInputChange}
-                                    className="pl-10 h-12 rounded-xl border-gray-200 focus:border-amber focus:ring-amber shadow-none"
-                                />
-                            </div>
+                {!blueprint ? (
+                    <div className="bg-amber/5 border border-amber/10 rounded-3xl p-12 text-center space-y-6">
+                        <div className="h-20 w-20 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm border border-amber/20">
+                            <AlertCircle className="h-10 w-10 text-amber" />
                         </div>
-
                         <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-gray-700">Interview Type</Label>
-                            <Select value={formData.type} onValueChange={handleTypeChange}>
-                                <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-amber focus:ring-amber shadow-none bg-white">
-                                    <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-gray-100">
-                                    <SelectItem value="technical">Technical (Coding & Concepts)</SelectItem>
-                                    <SelectItem value="behavioural">Behavioural (STAR Method)</SelectItem>
-                                    <SelectItem value="mixed">Mixed (A bit of both)</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <h2 className="text-2xl font-bold text-gray-900">Blueprint Required</h2>
+                            <p className="text-gray-500 max-w-md mx-auto">
+                                We couldn't find an interview blueprint for your account. Blueprints are required to fuel the AI's technical reasoning.
+                            </p>
                         </div>
-
-                        {blueprint && (
-                            <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-start gap-4">
-                                <div className="h-10 w-10 shrink-0 rounded-full bg-white flex items-center justify-center border border-gray-100">
-                                    <Layout className="h-5 w-5 text-amber" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-black">Blueprint Detected</h4>
-                                    <p className="text-xs text-gray-500 mt-0.5 capitalize">
-                                        Role: {blueprint.targetRole} • {blueprint.experienceLevel}
-                                    </p>
-                                    <p className="text-[10px] text-gray-400 mt-1">
-                                        The AI will tailor questions to your {blueprint.skills.length} listed skills.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {!blueprint && (
-                            <div className="p-4 rounded-2xl bg-amber/5 border border-amber/10 flex items-start gap-4">
-                                <div className="h-10 w-10 shrink-0 rounded-full bg-white flex items-center justify-center border border-amber/10">
-                                    <MessageSquare className="h-5 w-5 text-amber" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-amber">First Interview?</h4>
-                                    <p className="text-xs text-amber/80 mt-0.5">
-                                        No blueprint found. The AI will ask general {formData.type} questions.
-                                        Set up a blueprint for better targeting!
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
                         <Button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full h-14 rounded-2xl bg-black hover:bg-black/90 text-white font-bold text-lg shadow-lg hover:shadow-black/20 transition-all flex items-center justify-center gap-2 group"
+                            onClick={() => navigate("/blueprint")}
+                            className="bg-amber hover:bg-amber-600 text-white rounded-xl h-12 px-8 font-bold"
                         >
-                            {loading ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Initialising AI...
-                                </div>
-                            ) : (
-                                <>
-                                    Start Session
-                                    <Zap className="h-5 w-5 fill-amber text-amber group-hover:scale-110 transition-transform" />
-                                </>
-                            )}
+                            Create Blueprint Now <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
-                    </form>
-                </div>
+                    </div>
+                ) : (
+                    <div className="grid lg:grid-cols-2 gap-8">
+                        {/* Left: Summary */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest pl-2">Summary</h3>
+                            <BlueprintSummary blueprint={blueprint} />
+                            <div className="p-6 rounded-3xl bg-black text-white space-y-4">
+                                <h4 className="font-bold flex items-center gap-2">
+                                    <Zap className="h-4 w-4 text-amber fill-amber" />
+                                    AI Logic Primed
+                                </h4>
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    The engine will use your {blueprint.skills.length} skills and targeting for {blueprint.company || "tech companies"} to generate unique, challenging questions.
+                                </p>
+                            </div>
+                        </div>
 
-                <p className="text-center text-xs text-gray-400 mt-8">
-                    By starting, you agree to follow professional conduct. This is an AI-driven simulation.
-                </p>
+                        {/* Right: Settings */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest pl-2">Session Parameters</h3>
+                            <SessionSettings settings={settings} onChange={handleSettingChange} />
+
+                            <div className="pt-4">
+                                <Button
+                                    onClick={handleStartInterview}
+                                    disabled={loading}
+                                    className="w-full h-16 rounded-3xl bg-amber hover:bg-amber-600 text-white font-black text-xl shadow-xl shadow-amber/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Authenticating with AI...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Begin Technical Session
+                                            <ArrowRight className="h-6 w-6" />
+                                        </>
+                                    )}
+                                </Button>
+                                <p className="text-center text-[10px] text-gray-400 mt-4">
+                                    Clicking "Begin" will initialize a dedicated virtual environment for your interview.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

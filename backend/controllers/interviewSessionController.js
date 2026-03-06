@@ -9,18 +9,20 @@ const { generateFeedback } = require("../services/aiFeedbackEngine");
 //@access Private
 exports.createInterviewSession = async (req, res) => {
     try {
-        const { company, type, questions } = req.body;
+        const { company, type, questions, difficulty, questionLimit } = req.body;
 
-        if (!company || !type) {
-            return res.status(400).json({ message: "Company and type are required." });
-        }
+        // Fetch user blueprint for context
+        const blueprint = await Blueprint.findOne({ user: req.user._id });
 
         const session = await InterviewSession.create({
             user: req.user._id,
-            company,
-            type,
-            role: req.body.role || "",
-            experience: req.body.experience || "",
+            company: company || blueprint?.targetCompanies?.[0] || blueprint?.company || "General",
+            type: type || "technical",
+            role: req.body.role || blueprint?.targetRole || "",
+            experience: req.body.experience || blueprint?.experienceLevel || "",
+            difficulty: difficulty || "medium",
+            questionLimit: questionLimit || 5,
+            blueprint: blueprint?._id,
         });
 
         // If questions are provided, create Question docs and link them
@@ -229,9 +231,10 @@ exports.submitAnswer = async (req, res) => {
             answer: answerMap[q._id.toString()] || "",
         }));
 
-        // 6. Check if we should conclude the interview (limit to 3 questions)
-        if (history.length >= 3) {
-            console.log("Interview complete (3 questions reached).");
+        // 6. Check if we should conclude the interview
+        const limit = session.questionLimit || 5;
+        if (history.length >= limit) {
+            console.log(`Interview complete (${limit} questions reached).`);
             return res.status(200).json({
                 success: true,
                 isComplete: true

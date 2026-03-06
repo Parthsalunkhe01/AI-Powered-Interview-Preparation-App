@@ -33,6 +33,19 @@ const interviewSessionSchema = new mongoose.Schema(
         },
         role: String,
         experience: String,
+        difficulty: {
+            type: String,
+            enum: ["easy", "medium", "hard", "adaptive"],
+            default: "medium",
+        },
+        questionLimit: {
+            type: Number,
+            default: 5,
+        },
+        blueprint: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "InterviewBlueprint",
+        },
         question: [
             {
                 type: mongoose.Schema.Types.ObjectId,

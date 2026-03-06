@@ -78,3 +78,16 @@ exports.getSkillSuggestions = async (req, res) => {
 
     res.json(results.map(r => r.item).slice(0, 10));
 };
+/**
+ * @route   GET /api/suggestions/skills-by-role?role=...
+ */
+exports.getSkillsByRole = async (req, res) => {
+    const { role } = req.query;
+    if (!role) return res.json([]);
+
+    const normalizedRole = Object.keys(SKILLS_BY_ROLE).find(
+        r => r.toLowerCase() === role.toLowerCase()
+    );
+    const standardSkills = normalizedRole ? SKILLS_BY_ROLE[normalizedRole] : [];
+    res.json(standardSkills);
+};
