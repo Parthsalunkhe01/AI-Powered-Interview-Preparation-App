@@ -1,4 +1,4 @@
-import React, { useState, useContext} from "react";
+import React, { useState, useContext } from "react";
 import HERO_IMG from "../assets/hero-img.png";
 import { APP_FEATURES } from "../utils/data";
 import { useNavigate } from "react-router-dom";
@@ -10,16 +10,16 @@ import { UserContext } from "../context/userContext";
 import ProfileInfoCard from "../components/Cards/ProfileInfoCard";
 
 const LandingPage = () => {
-  const {user} = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("login");
 
   const handleCTA = () => {
-    if(!user) {
+    if (!user) {
       setOpenAuthModal(true);
-    }else{
-      navigate("/blueprint");
+    } else {
+      navigate("/dashboard");
     }
   };
 
@@ -36,13 +36,13 @@ const LandingPage = () => {
             </div>
             {user ? (
               <ProfileInfoCard />
-            ): (
-            <button
-              className="bg-gradient-to-r from-[#FF9324] to-[#e99a4b] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white border border-white transition-colors cursor-pointer"
-              onClick={() => setOpenAuthModal(true)}
-            >
-              Login / Sign Up
-            </button>
+            ) : (
+              <button
+                className="bg-gradient-to-r from-[#FF9324] to-[#e99a4b] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white border border-white transition-colors cursor-pointer"
+                onClick={() => setOpenAuthModal(true)}
+              >
+                Login / Sign Up
+              </button>
             )}
           </header>
 
@@ -137,23 +137,23 @@ const LandingPage = () => {
         </div>
       </div>
 
-     <Modal 
-     isOpen={openAuthModal}
-     onClose={() => {
-      setOpenAuthModal(false);
-      setCurrentPage("login");
-     }}
-     hideHeader
-     >
-      <div>
-        {currentPage === "login" && (
-          <Login setCurrentPage={setCurrentPage} /> 
-        )}
-        {currentPage === "signUp" && (
-          <SignUp setCurrentPage={setCurrentPage} /> 
-        )}
-      </div>
-     </Modal>
+      <Modal
+        isOpen={openAuthModal}
+        onClose={() => {
+          setOpenAuthModal(false);
+          setCurrentPage("login");
+        }}
+        hideHeader
+      >
+        <div>
+          {currentPage === "login" && (
+            <Login setCurrentPage={setCurrentPage} />
+          )}
+          {currentPage === "signUp" && (
+            <SignUp setCurrentPage={setCurrentPage} />
+          )}
+        </div>
+      </Modal>
     </>
   );
 };

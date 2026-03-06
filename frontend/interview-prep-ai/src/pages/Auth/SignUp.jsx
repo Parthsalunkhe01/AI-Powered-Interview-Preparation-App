@@ -4,17 +4,17 @@ import Input from "../../components/Inputs/Input";
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector";
 import { validateEmail } from "../../utils/Helper";
 import { UserContext } from "../../context/userContext";
-import  axiosInstance  from "../../utils/axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
-import UploadImage  from "../../utils/UploadImage";
+import UploadImage from "../../utils/UploadImage";
 
-const SignUp = ({setCurrentPage}) => {
-  const [profilePic,setProfilePic] = useState(null);
-  const [fullName,setFullName] = useState("");
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
+const SignUp = ({ setCurrentPage }) => {
+  const [profilePic, setProfilePic] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [error,setError] = useState(null);
+  const [error, setError] = useState(null);
 
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -24,25 +24,25 @@ const SignUp = ({setCurrentPage}) => {
 
     let profileImageUrl = "";
 
-    if(!fullName) {
+    if (!fullName) {
       setError("Please enter full name.")
       return;
     }
 
-    if(!validateEmail(email)){
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address.")
       return;
     }
 
-    if(!password){
+    if (!password) {
       setError("Please enter a valid password.")
       return;
     }
 
     setError("");
 
-    try{
-      if(profilePic){
+    try {
+      if (profilePic) {
         const imgUploadRes = await UploadImage(profilePic);
         profileImageUrl = imgUploadRes.imageUrl || "";
       }
@@ -55,15 +55,15 @@ const SignUp = ({setCurrentPage}) => {
       });
 
       const { token } = response.data;
-      if (token){
-        localStorage.setItem("token",token);
+      if (token) {
+        localStorage.setItem("token", token);
         updateUser(response.data);
-        navigate("/dashboard");
+        navigate("/blueprint"); // New users must create a blueprint first
       }
-    }catch(error){
-      if(error.response && error.response.data.message){
+    } catch (error) {
+      if (error.response && error.response.data.message) {
         setError(error.response.data.message);
-      }else {
+      } else {
         setError("Something went wrong. Please try again.")
       }
     }
@@ -78,27 +78,27 @@ const SignUp = ({setCurrentPage}) => {
       <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
       <div className="grid grid-cols-1 md:grid-cols-1 gap-0.1">
         <Input
-        value={fullName}
-        onChange={({target}) => setFullName(target.value)}
-        label="Full Name"
-        placeholder="Tanish Mahagavkar"
-        type="text"
+          value={fullName}
+          onChange={({ target }) => setFullName(target.value)}
+          label="Full Name"
+          placeholder="Tanish Mahagavkar"
+          type="text"
         />
 
-        <Input 
-        value={email}
-        onChange={({target}) => setEmail(target.value)}
-        label="Email Address"
-        placeholder="TanishM@gmail.com"
-        type="text"
+        <Input
+          value={email}
+          onChange={({ target }) => setEmail(target.value)}
+          label="Email Address"
+          placeholder="TanishM@gmail.com"
+          type="text"
         />
 
-        <Input 
-        value={password}
-        onChange={({target}) => setPassword(target.value)}
-        label="Password"
-        placeholder="Min 8 Characters"
-        type="password"
+        <Input
+          value={password}
+          onChange={({ target }) => setPassword(target.value)}
+          label="Password"
+          placeholder="Min 8 Characters"
+          type="password"
         />
       </div>
 
@@ -111,10 +111,10 @@ const SignUp = ({setCurrentPage}) => {
       <p className="text-[13px] text-slate-800 mt-3">
         Already an account?{" "}
         <button
-        className="font-medium text-primary underline cursor-pointer "
-        onClick={() => {
-          setCurrentPage("login");
-        }}
+          className="font-medium text-primary underline cursor-pointer "
+          onClick={() => {
+            setCurrentPage("login");
+          }}
         >Login</button>
       </p>
     </form>

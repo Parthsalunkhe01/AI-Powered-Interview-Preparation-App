@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
-import { Loader2, Save, X } from "lucide-react";
+import { Loader2, Save, X, Sparkles, AlertTriangle } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
+import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/label";
 import {
   Select,
@@ -11,20 +11,15 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import TagInput from "../../components/ui/TagInput";
+import { AutocompleteInput } from "../../components/ui/AutocompleteInput";
 import { cn } from "../../lib/utils";
-
+import axiosInstance from "../../utils/axiosInstance";
 
 const EXPERIENCE_OPTIONS = [
-  { value: "0", label: "Entry Level (0 years)" },
-  { value: "1", label: "1 year" },
-  { value: "2", label: "2 years" },
-  { value: "3", label: "3 years" },
-  { value: "4", label: "4 years" },
-  { value: "5", label: "5 years" },
-  { value: "6–7", label: "6–7 years" },
-  { value: "8–10", label: "8–10 years" },
-  { value: "11–15", label: "11–15 years" },
-  { value: "15+", label: "15+ years" },
+  { value: "Entry", label: "Entry Level" },
+  { value: "Mid-Level", label: "Mid-Level" },
+  { value: "Senior", label: "Senior" },
+  { value: "Lead", label: "Lead / Architect" },
 ];
 
 const BlueprintForm = ({
@@ -36,13 +31,37 @@ const BlueprintForm = ({
 }) => {
   const [targetRole, setTargetRole] = useState(initialValues?.targetRole ?? "");
   const [yearsOfExperience, setYearsOfExperience] = useState(
-    initialValues?.experienceLevel  ?? "0"
+    initialValues?.experienceLevel ?? "Entry"
   );
   const [skills, setSkills] = useState(initialValues?.skills ?? []);
   const [targetCompanies, setTargetCompanies] = useState(
     initialValues?.companies ?? []
   );
   const [errors, setErrors] = useState({});
+  const [analysis, setAnalysis] = useState({ score: 1.0, warnings: [], recommendedSkills: [] });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Intelligent Compatibility Check
+  useEffect(() => {
+    const checkCompatibility = async () => {
+      if (!targetRole || targetRole.length < 3) return;
+      setIsAnalyzing(true);
+      try {
+        const compRes = await axiosInstance.post("/api/suggestions/analyze", {
+          role: targetRole,
+          skills: skills
+        });
+        setAnalysis(compRes.data);
+      } catch (err) {
+        console.error("Compatibility check failed", err);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkCompatibility, 500);
+    return () => clearTimeout(timeoutId);
+  }, [targetRole, skills]);
 
   const roleRef = useRef(null);
 
@@ -53,12 +72,24 @@ const BlueprintForm = ({
 
   const validate = () => {
     const newErrors = {};
+    const garbageRegex = /^[a-zA-Z0-9\s.\-&/]+$/;
+
     if (!targetRole.trim()) {
       newErrors.targetRole = "Target role is required.";
+    } else if (targetRole.trim().length < 2) {
+      newErrors.targetRole = "Role must be at least 2 characters.";
+    } else if (!garbageRegex.test(targetRole)) {
+      newErrors.targetRole = "Special characters not allowed in role.";
     }
+
     if (skills.length === 0) {
-      newErrors.skills = "Add at least one skill.";
+      newErrors.skills = "Add at least one technical skill.";
     }
+
+    if (targetCompanies.length === 0) {
+      newErrors.companies = "Add at least one target company.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,16 +97,33 @@ const BlueprintForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    await onSave({
-      targetRole: targetRole.trim(),
-      experienceLevel: yearsOfExperience,
-      skills,
-      companies: targetCompanies,
-    });
+
+    try {
+      await onSave({
+        targetRole: targetRole.trim(),
+        experienceLevel: yearsOfExperience,
+        skills,
+        companies: targetCompanies,
+      });
+    } catch (error) {
+      if (error.response?.status === 400 && error.response.data.errors) {
+        const backendErrors = {};
+        error.response.data.errors.forEach(err => {
+          backendErrors[err.field] = err.message;
+        });
+        setErrors(backendErrors);
+
+        toast({
+          title: "Validation Error",
+          description: "Please check the highlighted fields.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
-    
+
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-2xl mx-auto">
       <form
         onSubmit={handleSubmit}
@@ -83,25 +131,22 @@ const BlueprintForm = ({
       >
         <div className="h-1.5 w-full bg-gradient-to-r from-amber to-amber-light" />
         <div className="p-8 space-y-6">
-          {/* Target Role */}
+          {/* Target Role with Autocomplete */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-foreground">
               Target Role <span className="text-destructive">*</span>
             </Label>
-            <Input
-              ref={roleRef}
+            <AutocompleteInput
+              suggestionType="roles"
               value={targetRole}
-              onChange={(e) => {
-                setTargetRole(e.target.value);
+              onChange={(val) => {
+                setTargetRole(val);
                 if (errors.targetRole)
                   setErrors((prev) => ({ ...prev, targetRole: undefined }));
               }}
-              placeholder="e.g. Senior Software Engineer"
-              disabled={isSaving}
+              placeholder="e.g. Android Developer"
               className={cn(
-                "h-11 rounded-xl border-input bg-background text-sm transition-all",
-                errors.targetRole &&
-                  "border-destructive focus-visible:ring-destructive"
+                errors.targetRole && "border-destructive focus-visible:ring-destructive"
               )}
             />
             {errors.targetRole && (
@@ -136,16 +181,39 @@ const BlueprintForm = ({
             </Select>
           </div>
 
-          {/* Skills */}
+          {/* Skills with Smart Recommendations */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-foreground">
               Skills <span className="text-destructive">*</span>
             </Label>
-            <p className="text-xs text-muted-foreground">
-              Press <kbd className="rounded bg-muted px-1 py-0.5 text-xs">Enter</kbd>{" "}
-              or <kbd className="rounded bg-muted px-1 py-0.5 text-xs">,</kbd>{" "}
-              to add a skill
+
+            {/* Recommended Skills Area */}
+            {analysis.recommendedSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3 p-3.5 bg-primary/5 rounded-2xl border border-primary/10 animate-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center gap-1.5 w-full mb-1">
+                  <Sparkles size={14} className="text-primary animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">
+                    Recommended for {targetRole || "this role"}
+                  </span>
+                </div>
+                {analysis.recommendedSkills.map(skill => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => setSkills(prev => Array.from(new Set([...prev, skill])))}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-primary/20 text-[11px] font-semibold text-primary hover:bg-primary hover:text-white transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-sm"
+                  >
+                    + {skill}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground flex items-center justify-between">
+              <span>Press <kbd className="rounded bg-muted px-1 py-0.5 text-xs text-foreground uppercase font-bold">Enter</kbd> to add</span>
+              {isAnalyzing && <span className="flex items-center gap-1.5 animate-pulse text-primary font-medium italic"><Loader2 size={12} className="animate-spin" /> Analyzing compatibility...</span>}
             </p>
+
             <TagInput
               tags={skills}
               onChange={(tags) => {
@@ -158,27 +226,46 @@ const BlueprintForm = ({
               variant="amber"
               error={errors.skills}
             />
+
+            {/* Compatibility Warnings */}
+            {analysis.warnings.length > 0 && (
+              <div className="mt-3 p-4 bg-red-50 border border-red-100 rounded-2xl flex gap-3.5 animate-in zoom-in-95 duration-400">
+                <div className="p-2 bg-red-100 rounded-lg shrink-0 h-fit">
+                  <AlertTriangle className="text-red-600" size={18} />
+                </div>
+                <div className="space-y-1.5">
+                  <h4 className="text-[11px] font-bold text-red-700 uppercase tracking-wider">Intelligence Warning</h4>
+                  {analysis.warnings.map((w, i) => (
+                    <p key={i} className="text-sm text-red-900 leading-relaxed font-medium">
+                      {w}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Companies */}
+          {/* Companies with Autocomplete */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-foreground">
-              Target Companies{" "}
-              <span className="text-xs font-normal text-muted-foreground">
-                (optional)
-              </span>
+              Target Companies <span className="text-destructive">*</span>
             </Label>
-            <p className="text-xs text-muted-foreground">
-              Press <kbd className="rounded bg-muted px-1 py-0.5 text-xs">Enter</kbd>{" "}
-              to add a company
-            </p>
-            <TagInput
-              tags={targetCompanies}
-              onChange={setTargetCompanies}
-              placeholder="Google, Stripe, Notion…"
-              disabled={isSaving}
-              variant="outline"
+            <AutocompleteInput
+              suggestionType="companies"
+              value={targetCompanies[0] || ""}
+              onChange={(val) => {
+                setTargetCompanies(val ? [val] : []);
+                if (errors.companies && val)
+                  setErrors((prev) => ({ ...prev, companies: undefined }));
+              }}
+              placeholder="e.g. Google, Stripe, Notion…"
+              className={cn(
+                errors.companies && "border-destructive focus-visible:ring-destructive"
+              )}
             />
+            {errors.companies && (
+              <p className="text-xs text-destructive">{errors.companies}</p>
+            )}
           </div>
         </div>
 

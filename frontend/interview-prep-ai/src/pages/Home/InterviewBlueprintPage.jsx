@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { Zap } from "lucide-react";
 import { toast } from "../../hooks/use-toast";
 import SkeletonCard from "../../components/ui/SkeletonCard";
@@ -33,7 +34,7 @@ const InterviewBlueprintPage = () => {
   const fetchBlueprint = useCallback(async () => {
     setMode("loading");
     try {
-      const res = await axios.get("/api/blueprint");
+      const res = await axiosInstance.get("/api/blueprint");
       if (res.data && res.data.targetRole) {
         setBlueprint(res.data);
         setMode("view");
@@ -60,29 +61,12 @@ const InterviewBlueprintPage = () => {
     setIsSaving(true);
     try {
       if (blueprint) {
-        await axios.put("http://localhost:8000/api/blueprint",
-        data,
-        {
-          headers:{
-            Authorization:`Bearer ${localStorage.getItem("token")}`
-          }
-        }
-      );
+        await axiosInstance.put("/api/blueprint", data);
       } else {
-        await axios.post(
-  "http://localhost:8000/api/blueprint",
-  data,
-  {
-    headers:{
-      Authorization:`Bearer ${localStorage.getItem("token")}`
-    }
-  }
-);
+        await axiosInstance.post("/api/blueprint", data);
       }
       setBlueprint(data);
-      setMode("view");
-      
-      
+
       toast({
         title: "Blueprint saved! 🎯",
         description: "Your interview profile is ready. Personalized questions await.",
@@ -105,7 +89,7 @@ const InterviewBlueprintPage = () => {
     setIsDeleting(true);
     setDeleteDialogOpen(false);
     try {
-      await axios.delete("/api/blueprint");
+      await axiosInstance.delete("/api/blueprint");
       setBlueprint(null);
       setMode("empty");
       toast({
@@ -160,7 +144,7 @@ const InterviewBlueprintPage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Blueprint?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  
+
                   This will permanently remove your interview blueprint. Your personalized
                   questions will no longer be tailored to your profile. This action cannot be
                   undone.
@@ -216,7 +200,7 @@ const InterviewBlueprintPage = () => {
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Your Interview Blueprint
           </h1>
-        
+
 
 
           <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">

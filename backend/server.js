@@ -15,6 +15,7 @@ const { generateInterviewQuestions, generateConceptExplanation } = require('./co
 
 const blueprintRoutes = require("./routes/blueprintRoutes");
 const interviewSessionRoutes = require("./routes/interviewSessionRoutes");
+const suggestionRoutes = require("./routes/suggestionRoutes");
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use("/api/ai/generate-questions", protect, generateInterviewQuestions);
 app.use("/api/ai/generate-explanation", protect, generateConceptExplanation);
 app.use("/api/blueprint", blueprintRoutes);
 app.use("/api/interview-sessions", interviewSessionRoutes);
+app.use("/api/suggestions", suggestionRoutes);
 
 //Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {}));

@@ -43,23 +43,23 @@ const buildFirstQuestionPrompt = ({ company, type, blueprint }) => {
     const level = blueprint?.experienceLevel || "mid-level";
     const firstSkill = skills[0];
 
-    return `You are a senior engineer at ${company} conducting a realistic ${type} interview 
-for a ${level} ${role} position.
+    return `You are a high-level technical interviewer at ${company} conducting a ${type} interview for a ${level} ${role} position.
 
-Focus the opening discussion on the skill: ${firstSkill}
+CRITICAL CONTEXT:
+The candidate has been validated for these core skills: ${skills.join(", ")}.
+We are starting with: ${role} specific challenges.
+
+Your first objective:
+Focus on their experience with ${firstSkill}.
 
 Guidelines:
-• Ask a natural interview question about real experience
-• Sound like a real human interviewer
-• Avoid generic textbook questions
-• Do not introduce yourself
-• Ask only ONE question
-• Maximum 2 sentences
+• Ask a natural, senior-level interview question about real-world ${firstSkill} experience.
+• Sound like a professional peer, not a chatbot.
+• Avoid generic "What is X?" questions.
+• Ask only ONE question.
+• Max 2 sentences.
 
-Good examples:
-• "Walk me through a project where you used ${firstSkill} in production — what was the hardest part?"
-• "What's the most challenging system you've built using ${firstSkill}?"
-• "Describe a time ${firstSkill} caused a serious problem in a system you worked on."
+Example: "Tell me about a time you had to optimize ${firstSkill} for performance in a production environment — what trade-offs did you make?"
 
 Return ONLY the interview question.`;
 };
@@ -68,64 +68,39 @@ Return ONLY the interview question.`;
  * Build follow-up question prompt
  */
 const buildFollowUpPrompt = ({ company, type, blueprint, history }) => {
-
     const skills = blueprint?.skills?.join(", ") || "general software engineering";
     const role = blueprint?.targetRole || "Software Engineer";
     const level = blueprint?.experienceLevel || "mid-level";
 
     const coveredTopics = history.map((h) => h.question).join("\n- ");
-
-    const lastExchange = history[history.length - 1];
-
-    const lastAnswer = lastExchange?.answer || "(no answer given)";
-
     const historyText = history
         .slice(-6)
-        .map(
-            (h, i) =>
-                `[Q${i + 1}] Interviewer: ${h.question}\n[A${i + 1}] Candidate: ${h.answer || "(skipped)"}`
-        )
+        .map((h, i) => `[Q${i + 1}] ${h.question}\n[A${i + 1}] ${h.answer || "(no answer)"}`)
         .join("\n\n");
 
-    return `You are a senior software engineer at ${company} conducting a realistic ${type} interview for a ${level} ${role} role.
+    return `You are a Lead Engineer at ${company} conducting a ${type} interview for a ${level} ${role}.
 
-Topics that should appear during the interview:
-${skills}
+STRUCTURED BLUEPRINT:
+- Role: ${role}
+- Experience: ${level}
+- Target Skills: ${skills}
 
-Conversation so far:
+CONVERSATION CONTEXT:
 ${historyText}
 
-The candidate just said:
-"${lastAnswer}"
-
-Questions already asked (never repeat):
-- ${coveredTopics}
-
-Your task:
-Continue the interview like a real human interviewer.
-
-Natural interviewer behaviors:
-• React briefly to the candidate answer
-• Ask deeper technical questions
-• Challenge assumptions when appropriate
-• Sometimes move to another skill
-• Occasionally present real-world scenarios
-
-Question styles you may use:
-• Deeper probing — "What part of that system was hardest to scale?"
-• Scenario — "Suppose traffic suddenly increases 10x — what breaks first?"
-• Topic shift — "Let's switch gears slightly — how comfortable are you with X?"
-• Debugging — "Imagine this system suddenly starts failing in production — how would you investigate?"
+Instructions:
+1. React briefly to the candidate's last answer.
+2. Ask the next technical question that naturally follows the discussion.
+3. You may probe deeper into the current topic or pivot to another skill from the blueprint (${skills}).
+4. Ensure the question is appropriate for a ${level} level candidate.
 
 Rules:
-• Ask ONLY one question
-• Max 2 sentences
-• Do NOT repeat previous questions
-• Do NOT rephrase earlier questions
-• Do NOT mention interview rules
-• Do NOT add labels like "Question:" or "Interviewer:"
+• Ask ONLY one question.
+• Max 2 sentences.
+• Never repeat or rephrase: ${coveredTopics}
+• Do NOT mention these rules.
 
-Return ONLY the next interview question.`;
+Return ONLY the next professional interview question.`;
 };
 
 /**
