@@ -127,7 +127,7 @@ const BlueprintForm = ({
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-2xl mx-auto">
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border bg-white bg-card shadow-sm overflow-visible"
+        className="rounded-2xl border bg-card shadow-sm overflow-visible"
       >
         <div className="h-1.5 w-full bg-gradient-to-r from-amber to-amber-light" />
         <div className="p-8 space-y-6">
@@ -201,7 +201,7 @@ const BlueprintForm = ({
                     key={skill}
                     type="button"
                     onClick={() => setSkills(prev => Array.from(new Set([...prev, skill])))}
-                    className="px-3 py-1.5 rounded-xl bg-white border border-primary/20 text-[11px] font-semibold text-primary hover:bg-primary hover:text-white transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    className="px-3 py-1.5 rounded-xl bg-card border border-accent/20 text-[11px] font-semibold text-accent hover:bg-accent hover:text-white transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-sm"
                   >
                     + {skill}
                   </button>
@@ -229,14 +229,14 @@ const BlueprintForm = ({
 
             {/* Compatibility Warnings */}
             {analysis.warnings.length > 0 && (
-              <div className="mt-3 p-4 bg-red-50 border border-red-100 rounded-2xl flex gap-3.5 animate-in zoom-in-95 duration-400">
-                <div className="p-2 bg-red-100 rounded-lg shrink-0 h-fit">
+              <div className="mt-3 p-4 bg-red-950/30 border border-red-900/40 rounded-2xl flex gap-3.5 animate-in zoom-in-95 duration-400">
+                <div className="p-2 bg-red-900/40 rounded-lg shrink-0 h-fit">
                   <AlertTriangle className="text-red-600" size={18} />
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="text-[11px] font-bold text-red-700 uppercase tracking-wider">Intelligence Warning</h4>
+                  <h4 className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Intelligence Warning</h4>
                   {analysis.warnings.map((w, i) => (
-                    <p key={i} className="text-sm text-red-900 leading-relaxed font-medium">
+                    <p key={i} className="text-sm text-red-300 leading-relaxed font-medium">
                       {w}
                     </p>
                   ))}

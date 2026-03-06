@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Urbanist:wght@100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,32 +7,96 @@
 /* ---------- ROOT VARIABLES ---------- */
 @layer base {
   :root {
-    --background: 46 100% 97%;
-    --foreground: 20 14% 8%;
-    --border: 43 20% 88%;
-    --input: 43 20% 88%;
-    --ring: 38 92% 50%;
-    --muted: 43 25% 92%;
-    --muted-foreground: 20 10% 45%;
-    --destructive: 0 84% 60%;
-    --primary: 20 14% 8%;
-    --secondary: 43 30% 93%;
+    /* Main page background — deep navy-slate */
+    --background: 222 28% 11%;
+    /* #141c2e */
+    --foreground: 213 20% 92%;
+    /* #e6eaf2 */
 
-    --amber: 38 92% 50%;
-    --amber-light: 43 96% 56%;
-    --amber-foreground: 20 14% 8%;
-    --amber-muted: 43 80% 93%;
+    --border: 220 20% 20%;
+    /* #252f42 */
+    --input: 220 20% 18%;
+    --ring: 231 76% 65%;
+    /* electric blue focus ring */
+
+    --muted: 220 20% 16%;
+    /* #1d2535 */
+    --muted-foreground: 215 16% 55%;
+    /* #7a8faa */
+
+    --destructive: 0 84% 60%;
+    --primary: 231 76% 60%;
+    /* electric blue primary */
+    --secondary: 220 22% 18%;
+
+    /* NEW: Electric Blue / Indigo accent */
+    --accent: 231 76% 60%;
+    /* #4A7CF7 — vibrant electric blue */
+    --accent-light: 237 68% 72%;
+    /* #818CF8 — softer indigo */
+    --accent-foreground: 0 0% 100%;
+    /* white on accent */
+    --accent-muted: 231 50% 18%;
+    /* dark blue tint for surfaces */
+
+    /* Card surface */
+    --card: 220 26% 14%;
+    /* #16202e */
+    --card-border: 220 20% 22%;
   }
 
   html {
-    font-family: "Urbanist", sans-serif;
+    font-family: "Inter", "Urbanist", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-white text-black;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   * {
     border-color: hsl(var(--border));
+  }
+
+  /* Custom blue-themed scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(222, 28%, 9%);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(220, 20%, 28%);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(231, 76%, 60%);
+  }
+}
+
+/* ---------- KEYFRAMES ---------- */
+@keyframes text-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@layer utilities {
+  .animate-text-shine {
+    animation: text-shine 3s ease infinite;
   }
 }

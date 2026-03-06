@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LuCircleAlert, LuCircle, LuListCollapse } from "react-icons/lu";
 import SpinnerLoader from "../../components/Loader/SpinnerLoader";
 import { toast } from "react-hot-toast";
-import DashBoardLayout from "../../components/Layouts/DashBoardLayout";
+
 import RoleInfoHeader from "./components/RoleInfoHeader"
 import axiosInstance from "../../utils/axiosInstance"
 import { API_PATHS } from "../../utils/apiPath"
@@ -155,7 +155,7 @@ const InterviewPrep = () => {
   }, []);
 
   return (
-    <DashBoardLayout>
+    <>
       <RoleInfoHeader
         role={sessionData?.company ? `${sessionData.company} - ${sessionData.type}` : (sessionData?.role || "")}
         topicsToFocus={sessionData?.type || sessionData?.topicsToFocus || ""}
@@ -248,7 +248,7 @@ const InterviewPrep = () => {
           </Drawer>
         </div>
       </div>
-    </DashBoardLayout>
+    </>
   )
 }
 

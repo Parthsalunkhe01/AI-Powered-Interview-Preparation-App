@@ -69,15 +69,15 @@ const AnswerInput = ({ onSubmit, loading, placeholder = "Type your answer here..
 
     return (
         <form onSubmit={handleFormSubmit} className="relative w-full max-w-3xl mx-auto group">
-            <div className="relative flex items-center gap-3 bg-gray-50/50 p-2 rounded-3xl border border-gray-100 group-focus-within:border-black transition-all">
+            <div className="relative flex items-center gap-3 bg-muted p-2 rounded-3xl border border-border group-focus-within:border-accent transition-all">
                 <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={toggleListening}
                     className={`shrink-0 h-10 w-10 rounded-2xl transition-all ${isListening
-                        ? "bg-red-50 text-red-500 animate-pulse hover:bg-red-100"
-                        : "bg-white text-gray-400 hover:text-black hover:bg-white/80"
+                        ? "bg-red-900/30 text-red-400 animate-pulse hover:bg-red-900/50"
+                        : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80"
                         }`}
                 >
                     {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -88,14 +88,14 @@ const AnswerInput = ({ onSubmit, loading, placeholder = "Type your answer here..
                     onChange={(e) => setText(e.target.value)}
                     placeholder={isListening ? "Listening..." : placeholder}
                     disabled={loading}
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 outline-none disabled:opacity-50"
+                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 outline-none disabled:opacity-50 text-foreground placeholder:text-muted-foreground"
                 />
 
                 <Button
                     type="submit"
                     disabled={!text.trim() || loading}
                     size="icon"
-                    className="shrink-0 h-10 w-10 rounded-2xl bg-black hover:bg-black/90 text-white disabled:bg-gray-200 shadow-md transition-all active:scale-95"
+                    className="shrink-0 h-10 w-10 rounded-2xl bg-accent hover:opacity-90 text-white disabled:bg-muted disabled:text-muted-foreground shadow-md transition-all active:scale-95"
                 >
                     {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,45 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
-    Bot,
-    ArrowLeft,
-    CheckCircle2,
-    Building2,
-    Zap,
-    MessageSquare,
-    Info,
-    ChevronRight
+    Bot, ArrowLeft, CheckCircle2, Zap, ChevronRight, Send, Mic, MicOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
-import DashboardLayout from "../../components/Layouts/DashBoardLayout";
-import { Button } from "../../components/ui/button";
+
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import InterviewTimer from "../../components/InterviewTimer";
 import AnswerInput from "../../components/AnswerInput";
+
+/* ── thin progress bar at top ────── */
+const ProgressBar = ({ current, total }) => (
+    <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#1d2535]">
+        <motion.div
+            className="h-full rounded-full"
+            style={{ background: "linear-gradient(90deg,#4A7CF7,#818CF8)" }}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((current / (total || 5)) * 100, 100)}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+    </div>
+);
 
 const InterviewSession = () => {
     const { sessionId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
 
-    // State from setup page
     const { firstQuestion, firstQuestionId, company, type } = location.state || {};
 
     const [currentQuestion, setCurrentQuestion] = useState(firstQuestion || "");
     const [activeQuestionId, setActiveQuestionId] = useState(firstQuestionId || null);
     const [loading, setLoading] = useState(false);
-    const [sessionInfo, setSessionInfo] = useState({
-        company: company || "Target",
-        type: type || "technical"
-    });
+    const [sessionInfo, setSessionInfo] = useState({ company: company || "Target", type: type || "technical" });
     const [questionCount, setQuestionCount] = useState(1);
+    const [totalQuestions] = useState(5);
     const [history, setHistory] = useState([]);
-
     const [isComplete, setIsComplete] = useState(false);
 
-    // Initialize/Fetch session if needed
     useEffect(() => {
         if (!firstQuestion) {
             const fetchSession = async () => {
@@ -48,20 +48,15 @@ const InterviewSession = () => {
                     const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_ONE(sessionId));
                     const session = res.data.session;
                     setSessionInfo({ company: session.company, type: session.type });
-
                     if (session.question?.length > 0) {
                         const lastQ = session.question[session.question.length - 1];
                         setCurrentQuestion(lastQ.question);
                         setActiveQuestionId(lastQ._id);
                         setQuestionCount(session.question.length);
                         setHistory(session.question.slice(0, -1));
-
-                        // Check if session is already complete (has feedback)
-                        if (session.feedback) {
-                            setIsComplete(true);
-                        }
+                        if (session.feedback) setIsComplete(true);
                     }
-                } catch (err) {
+                } catch {
                     toast.error("Could not load session");
                     navigate("/dashboard");
                 } finally {
@@ -74,33 +69,24 @@ const InterviewSession = () => {
 
     const handleSubmitAnswer = async (answerText) => {
         if (!answerText.trim() || loading || isComplete) return;
-
         setLoading(true);
         try {
             const response = await axiosInstance.post(
                 API_PATHS.INTERVIEW_SESSION.SUBMIT_ANSWER(sessionId),
-                {
-                    questionId: activeQuestionId,
-                    answer: answerText,
-                }
+                { questionId: activeQuestionId, answer: answerText }
             );
-
             const { nextQuestion, questionId, isComplete: complete } = response.data;
-
             if (complete) {
                 setIsComplete(true);
                 toast.success("Interview complete! Analysis ready.");
             } else {
-                // Transition to next question
                 setCurrentQuestion(nextQuestion);
                 setActiveQuestionId(questionId);
                 setQuestionCount((prev) => prev + 1);
                 setHistory((prev) => [...prev, { _id: activeQuestionId, question: currentQuestion, answer: answerText }]);
                 toast.success("Answer submitted!");
             }
-
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error("Failed to fetch next question. Please try again.");
         } finally {
             setLoading(false);
@@ -113,161 +99,165 @@ const InterviewSession = () => {
     };
 
     return (
-        <DashboardLayout>
-            <div className="flex flex-col h-[calc(100vh-64px)] bg-[#FAFAFA]">
-                {/* Header */}
-                <header className="px-8 py-5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-                    <div className="flex items-center gap-6">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate(-1)}
-                            className="rounded-xl hover:bg-gray-50 border border-gray-100"
-                        >
-                            <ArrowLeft className="h-5 w-5 text-gray-500" />
-                        </Button>
-                        <div className="h-10 w-[1px] bg-gray-100" />
-                        <div>
-                            <h1 className="text-lg font-bold text-black flex items-center gap-2">
-                                <Building2 className="h-5 w-5 text-amber" />
-                                {sessionInfo.company}
-                            </h1>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">
-                                {sessionInfo.type} Interview • Part {questionCount}
-                            </p>
-                        </div>
-                    </div>
+        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0f1623] relative overflow-hidden">
+            {/* Background glow */}
+            <div className="pointer-events-none absolute inset-0">
+                <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full"
+                    style={{ background: "radial-gradient(circle, rgba(74,124,247,0.06) 0%, transparent 70%)" }} />
+            </div>
 
-                    <div className="flex items-center gap-4">
-                        <InterviewTimer />
-                        <Button
-                            variant="default"
-                            onClick={handleEndInterview}
-                            className="rounded-2xl bg-black hover:bg-black/90 text-white text-xs font-bold px-5 h-11 shadow-lg hover:shadow-black/10 transition-all active:scale-95"
-                        >
-                            <CheckCircle2 className="h-4 w-4 mr-2 text-amber" />
-                            Finish Session
-                        </Button>
-                    </div>
-                </header>
+            {/* Progress bar */}
+            <ProgressBar current={questionCount} total={totalQuestions} />
 
-                {/* Question Display Area */}
-                <main className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
-                    <div className="w-full max-w-4xl">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeQuestionId || "loading"}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.4, ease: "easeOut" }}
-                                className="relative bg-white p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
-                            >
-                                {/* AI Icon/Tag */}
-                                <div className="absolute -top-6 left-12 flex items-center gap-3">
-                                    <div className="h-12 w-12 rounded-2xl bg-amber flex items-center justify-center shadow-lg shadow-amber/20">
-                                        <Bot className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="px-4 py-2 rounded-xl bg-white border border-gray-100 shadow-sm text-[10px] font-bold text-amber uppercase tracking-widest">
-                                        Interviewer
-                                    </div>
-                                </div>
-
-                                {/* Question Content */}
-                                <div className="mt-4">
-                                    <div className="flex items-start gap-4 mb-6 opacity-40">
-                                        <MessageSquare className="h-5 w-5 text-gray-400 mt-1" />
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Question</span>
-                                    </div>
-
-                                    <h2 className="text-2xl sm:text-3xl font-bold text-black leading-snug tracking-tight">
-                                        {loading && !currentQuestion ? "Analysing flow..." : currentQuestion}
-                                    </h2>
-
-                                    <div className="mt-10 flex items-center gap-6 pt-8 border-t border-gray-50">
-                                        <div className="flex -space-x-2">
-                                            {[1, 2, 3].map((i) => (
-                                                <div key={i} className={`h-2 w-2 rounded-full border-2 border-white ${i <= (questionCount % 4) ? 'bg-amber' : 'bg-gray-200'}`} />
-                                            ))}
-                                        </div>
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                                            Round {Math.ceil(questionCount / 3)} • Question {questionCount}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Loading Overlay */}
-                                {loading && (
-                                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] rounded-[2.5rem] flex flex-col items-center justify-center z-10">
-                                        <div className="flex gap-2 mb-4">
-                                            <span className="h-2 w-2 bg-amber rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                            <span className="h-2 w-2 bg-amber rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                            <span className="h-2 w-2 bg-amber rounded-full animate-bounce" />
-                                        </div>
-                                        <span className="text-xs font-bold text-black uppercase tracking-widest">Evaluating Answer...</span>
-                                    </div>
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-                </main>
-
-                {/* Info Bar */}
-                <div className="bg-white border-y border-gray-100 px-8 py-3 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber/5 border border-amber/10">
-                            <Zap className="h-3 w-3 text-amber fill-amber" />
-                            <span className="text-[10px] font-bold text-amber uppercase tracking-widest">Gemini 2.5 Logic</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            <Info className="h-3 w-3" />
-                            Use voice or text to respond
-                        </div>
+            {/* ── Header ── */}
+            <header className="relative px-6 py-4 flex items-center justify-between shrink-0 border-b border-[#1d2535]">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate(-1)}
+                        className="h-9 w-9 rounded-xl flex items-center justify-center border border-[#252f42] hover:bg-[#1d2535] transition-colors">
+                        <ArrowLeft className="h-4 w-4 text-[#7a8faa]" />
+                    </button>
+                    <div className="h-8 w-px bg-[#1d2535]" />
+                    <div>
+                        <p className="text-[10px] font-bold text-[#4A7CF7] uppercase tracking-[0.18em]">
+                            {sessionInfo.type} Interview
+                        </p>
+                        <h1 className="text-sm font-bold text-[#e6eaf2] leading-tight">
+                            {sessionInfo.company}
+                        </h1>
                     </div>
                 </div>
 
-                {/* Footer / Input Area */}
-                <footer className="p-10 bg-white shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-                    <div className="max-w-4xl mx-auto flex flex-col items-center">
+                <div className="flex items-center gap-3">
+                    {/* Q counter pill */}
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1d2535] border border-[#252f42]">
+                        <span className="text-[10px] font-bold text-[#7a8faa] uppercase tracking-widest">Q</span>
+                        <span className="text-sm font-black text-[#e6eaf2]">{questionCount}</span>
+                        <span className="text-[10px] text-[#7a8faa]">/ {totalQuestions}</span>
+                    </div>
+                    {/* Timer */}
+                    <InterviewTimer />
+                    {/* Finish button */}
+                    <button
+                        onClick={handleEndInterview}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
+                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)", boxShadow: "0 4px 16px rgba(74,124,247,0.3)" }}
+                    >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Finish
+                    </button>
+                </div>
+            </header>
+
+            {/* ── Main question area ── */}
+            <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto">
+                <div className="w-full max-w-3xl">
+                    <AnimatePresence mode="wait">
                         {!isComplete ? (
-                            <>
-                                <AnswerInput
-                                    onSubmit={handleSubmitAnswer}
-                                    loading={loading}
-                                    placeholder={`Describe your experience with ${sessionInfo.type} topics...`}
-                                />
-                                <p className="text-center text-[10px] text-gray-400 mt-5 font-bold uppercase tracking-widest opacity-60">
-                                    Professional Simulation • Quality Responses Favored
-                                </p>
-                            </>
-                        ) : (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="text-center space-y-6"
+                                key={activeQuestionId || "loading"}
+                                initial={{ opacity: 0, y: 24 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -24 }}
+                                transition={{ duration: 0.35, ease: "easeOut" }}
                             >
-                                <div className="flex flex-col items-center gap-3">
-                                    <div className="h-16 w-16 rounded-[2rem] bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100 shadow-sm">
-                                        <CheckCircle2 className="h-8 w-8" />
+                                {/* AI badge */}
+                                <div className="flex items-center gap-2 mb-6">
+                                    <div className="h-8 w-8 rounded-xl flex items-center justify-center"
+                                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }}>
+                                        <Bot className="h-4 w-4 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900">Session Completed</h3>
-                                    <p className="text-sm text-gray-500 font-medium max-w-sm">
-                                        You've answered all 3 questions. Your deep-dive AI analysis is now ready for review.
+                                    <span className="text-[10px] font-black text-[#4A7CF7] uppercase tracking-[0.18em]">
+                                        Interviewer · Question {questionCount}
+                                    </span>
+                                    <div className="flex-1 h-px bg-[#1d2535]" />
+                                </div>
+
+                                {/* Question card */}
+                                <div className="relative p-8 rounded-2xl border border-[#252f42] bg-[#141c2e]"
+                                    style={{ boxShadow: "0 0 0 1px rgba(74,124,247,0.05), 0 20px 60px rgba(0,0,0,0.3)" }}>
+                                    {/* Left accent strip */}
+                                    <div className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full"
+                                        style={{ background: "linear-gradient(180deg,#4A7CF7,#818CF8)" }} />
+
+                                    <h2 className="text-xl sm:text-2xl font-bold text-[#e6eaf2] leading-snug pl-5">
+                                        {loading && !currentQuestion ? (
+                                            <span className="text-[#7a8faa] animate-pulse">Generating next question...</span>
+                                        ) : currentQuestion}
+                                    </h2>
+
+                                    {/* Loading dots overlay */}
+                                    {loading && (
+                                        <div className="absolute inset-0 bg-[#141c2e]/80 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                                            <div className="flex gap-2">
+                                                {[0, 0.15, 0.3].map((d, i) => (
+                                                    <span key={i} className="h-2 w-2 rounded-full bg-[#4A7CF7] animate-bounce"
+                                                        style={{ animationDelay: `-${d}s` }} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Gemini tag */}
+                                <div className="flex items-center gap-2 mt-4">
+                                    <Zap className="h-3 w-3 text-[#4A7CF7]" />
+                                    <span className="text-[10px] font-bold text-[#7a8faa] uppercase tracking-widest">
+                                        Powered by Gemini 2.5 · Use voice or text
+                                    </span>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            /* ── Complete state ── */
+                            <motion.div
+                                key="complete"
+                                initial={{ opacity: 0, scale: 0.92 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center space-y-8 py-12"
+                            >
+                                <div className="relative mx-auto w-24 h-24">
+                                    <div className="absolute inset-0 rounded-[2rem] animate-ping opacity-20"
+                                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }} />
+                                    <div className="relative h-24 w-24 rounded-[2rem] flex items-center justify-center"
+                                        style={{ background: "linear-gradient(135deg,rgba(74,124,247,0.2),rgba(129,140,248,0.2))", border: "1px solid rgba(74,124,247,0.3)" }}>
+                                        <CheckCircle2 className="h-10 w-10 text-[#818CF8]" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#e6eaf2]">Session Complete!</h3>
+                                    <p className="text-[#7a8faa] mt-2 max-w-sm mx-auto">
+                                        Your answers have been recorded. Your AI analysis report is ready.
                                     </p>
                                 </div>
-                                <Button
+                                <button
                                     onClick={handleEndInterview}
-                                    className="rounded-[1.5rem] bg-black hover:bg-black/90 text-white px-10 h-14 text-sm font-bold shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-3"
+                                    className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold transition-all active:scale-95"
+                                    style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)", boxShadow: "0 8px 32px rgba(74,124,247,0.35)" }}
                                 >
-                                    Finish & View Feedback
+                                    View Full Feedback
                                     <ChevronRight className="h-5 w-5" />
-                                </Button>
+                                </button>
                             </motion.div>
                         )}
+                    </AnimatePresence>
+                </div>
+            </main>
+
+            {/* ── Answer footer ── */}
+            {!isComplete && (
+                <footer className="shrink-0 px-6 pb-6 pt-4 border-t border-[#1d2535] bg-[#0f1623]">
+                    <div className="max-w-3xl mx-auto">
+                        <AnswerInput
+                            onSubmit={handleSubmitAnswer}
+                            loading={loading}
+                            placeholder={`Your answer to this ${sessionInfo.type} question...`}
+                        />
+                        <p className="text-center text-[10px] text-[#3a4a60] mt-3 font-semibold uppercase tracking-widest">
+                            Professional Simulation · Quality responses favored
+                        </p>
                     </div>
                 </footer>
-            </div>
-        </DashboardLayout>
+            )}
+        </div>
     );
 };
 

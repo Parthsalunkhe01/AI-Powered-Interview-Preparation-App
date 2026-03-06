@@ -11,27 +11,27 @@ import {
 
 const SessionSettings = ({ settings, onChange }) => {
     return (
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm space-y-8">
+        <div className="bg-card rounded-3xl border border-border p-8 shadow-sm space-y-8">
             <div>
-                <h3 className="text-lg font-bold text-black mb-1">Session Configuration</h3>
-                <p className="text-sm text-gray-500">Tune the AI behavior for this interview</p>
+                <h3 className="text-lg font-bold text-foreground mb-1">Session Configuration</h3>
+                <p className="text-sm text-muted-foreground">Tune the AI behavior for this interview</p>
             </div>
 
             <div className="space-y-6">
                 {/* Interview Type */}
                 <div className="space-y-3">
-                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4 text-amber" />
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-accent" />
                         Interview Type
                     </Label>
                     <Select
                         value={settings.type}
                         onValueChange={(val) => onChange("type", val)}
                     >
-                        <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50/50 shadow-none">
+                        <SelectTrigger className="h-12 rounded-xl border-border bg-muted shadow-none text-foreground">
                             <SelectValue placeholder="Select type" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-gray-100">
+                        <SelectContent className="rounded-xl border-border bg-card">
                             <SelectItem value="technical">Technical (Coding & Concepts)</SelectItem>
                             <SelectItem value="behavioural">Behavioural (STAR Method)</SelectItem>
                             <SelectItem value="mixed">Mixed (A bit of both)</SelectItem>
@@ -41,18 +41,18 @@ const SessionSettings = ({ settings, onChange }) => {
 
                 {/* Difficulty */}
                 <div className="space-y-3">
-                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                        <Gauge className="h-4 w-4 text-amber" />
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <Gauge className="h-4 w-4 text-accent" />
                         Difficulty Level
                     </Label>
                     <Select
                         value={settings.difficulty}
                         onValueChange={(val) => onChange("difficulty", val)}
                     >
-                        <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50/50 shadow-none">
+                        <SelectTrigger className="h-12 rounded-xl border-border bg-muted shadow-none text-foreground">
                             <SelectValue placeholder="Select difficulty" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-gray-100">
+                        <SelectContent className="rounded-xl border-border bg-card">
                             <SelectItem value="easy">Easy (Fundamentals)</SelectItem>
                             <SelectItem value="medium">Medium (Standard Industry)</SelectItem>
                             <SelectItem value="hard">Hard (Advanced Topics)</SelectItem>
@@ -63,18 +63,18 @@ const SessionSettings = ({ settings, onChange }) => {
 
                 {/* Question Count */}
                 <div className="space-y-3">
-                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                        <ListOrdered className="h-4 w-4 text-amber" />
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <ListOrdered className="h-4 w-4 text-accent" />
                         Question Count
                     </Label>
                     <Select
                         value={settings.questionLimit.toString()}
                         onValueChange={(val) => onChange("questionLimit", parseInt(val))}
                     >
-                        <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50/50 shadow-none">
+                        <SelectTrigger className="h-12 rounded-xl border-border bg-muted shadow-none text-foreground">
                             <SelectValue placeholder="Select length" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-gray-100">
+                        <SelectContent className="rounded-xl border-border bg-card">
                             <SelectItem value="5">Standard (5 Questions)</SelectItem>
                             <SelectItem value="10">Deep Dive (10 Questions)</SelectItem>
                             <SelectItem value="15">Extended (15 Questions)</SelectItem>

@@ -2,7 +2,7 @@
 export default {
   content: [
     "./index.html",
-     "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -15,24 +15,31 @@ export default {
         ring: "hsl(var(--ring))",
 
         primary: "hsl(var(--primary))",
-        "primary-foreground": "hsl(var(--primary-foreground))",
+        "primary-foreground": "hsl(var(--background))",
 
         secondary: "hsl(var(--secondary))",
-        "secondary-foreground": "hsl(var(--secondary-foreground))",
+        "secondary-foreground": "hsl(var(--foreground))",
 
         muted: "hsl(var(--muted))",
         "muted-foreground": "hsl(var(--muted-foreground))",
 
+        // Electric blue accent (replaces amber)
         accent: "hsl(var(--accent))",
+        "accent-light": "hsl(var(--accent-light))",
         "accent-foreground": "hsl(var(--accent-foreground))",
+        "accent-muted": "hsl(var(--accent-muted))",
 
         destructive: "hsl(var(--destructive))",
-        "destructive-foreground": "hsl(var(--destructive-foreground))",
+        "destructive-foreground": "hsl(var(--foreground))",
 
-        amber: "hsl(var(--amber))",
-        "amber-light": "hsl(var(--amber-light))",
-        "amber-foreground": "hsl(var(--amber-foreground))",
-        "amber-muted": "hsl(var(--amber-muted))",
+        // Keep amber aliases mapped to blue for backwards compat
+        amber: "hsl(var(--accent))",
+        "amber-light": "hsl(var(--accent-light))",
+        "amber-foreground": "hsl(var(--accent-foreground))",
+        "amber-muted": "hsl(var(--accent-muted))",
+
+        card: "hsl(var(--card))",
+        "card-border": "hsl(var(--card-border))",
       },
     },
   },
