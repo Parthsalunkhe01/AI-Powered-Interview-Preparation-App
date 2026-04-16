@@ -11,7 +11,7 @@ const CareerTargetBanner = ({ blueprint, onEdit, onDelete, isDeleting }) => {
     <div className="rounded-2xl border bg-card p-6 shadow-sm relative overflow-hidden">
       <div className="absolute top-0 left-0 w-1.5 h-full bg-amber" />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 relative z-10">
 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-3">
@@ -36,8 +36,8 @@ const CareerTargetBanner = ({ blueprint, onEdit, onDelete, isDeleting }) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 items-center md:justify-end">
-          <div className="flex flex-wrap gap-2 mr-4 border-r border-border pr-6">
+        <div className="flex flex-wrap gap-4 items-center md:justify-end">
+          <div className="flex flex-wrap gap-2.5">
             {companies.map((company) => (
               <span
                 key={company}

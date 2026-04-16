@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
-    Bot, ArrowLeft, CheckCircle2, Zap, ChevronRight, Send, Mic, MicOff
+    Bot, ArrowLeft, CheckCircle2, Zap, ChevronRight, Send, Mic, MicOff,
+    MonitorPlay, Cpu, Sparkles, MessageSquare, Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
@@ -10,16 +11,18 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import InterviewTimer from "../../components/InterviewTimer";
 import AnswerInput from "../../components/AnswerInput";
+import SaaSCard from "../../components/ui/SaaSCard";
+import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../components/ui/button";
+import { Skeleton } from "../../components/ui/Skeleton";
 
-/* ── thin progress bar at top ────── */
-const ProgressBar = ({ current, total }) => (
-    <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#1d2535]">
+const FocusedProgressBar = ({ current, total }) => (
+    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-8 border border-white/5">
         <motion.div
-            className="h-full rounded-full"
-            style={{ background: "linear-gradient(90deg,#4A7CF7,#818CF8)" }}
+            className="h-full bg-gradient-to-r from-primary to-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
             initial={{ width: 0 }}
             animate={{ width: `${Math.min((current / (total || 5)) * 100, 100)}%` }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "circOut" }}
         />
     </div>
 );
@@ -37,7 +40,6 @@ const InterviewSession = () => {
     const [sessionInfo, setSessionInfo] = useState({ company: company || "Target", type: type || "technical" });
     const [questionCount, setQuestionCount] = useState(1);
     const [totalQuestions] = useState(5);
-    const [history, setHistory] = useState([]);
     const [isComplete, setIsComplete] = useState(false);
 
     useEffect(() => {
@@ -53,7 +55,6 @@ const InterviewSession = () => {
                         setCurrentQuestion(lastQ.question);
                         setActiveQuestionId(lastQ._id);
                         setQuestionCount(session.question.length);
-                        setHistory(session.question.slice(0, -1));
                         if (session.feedback) setIsComplete(true);
                     }
                 } catch {
@@ -67,8 +68,13 @@ const InterviewSession = () => {
         }
     }, [sessionId, firstQuestion, navigate]);
 
-    const handleSubmitAnswer = async (answerText) => {
-        if (!answerText.trim() || loading || isComplete) return;
+    const handleSubmitAnswer = useCallback(async (answerText) => {
+        if (!answerText || !answerText.trim()) {
+            toast.error("Input protocol required. Please articulate your response.");
+            return;
+        }
+        if (loading || isComplete) return;
+
         setLoading(true);
         try {
             const response = await axiosInstance.post(
@@ -78,187 +84,183 @@ const InterviewSession = () => {
             const { nextQuestion, questionId, isComplete: complete } = response.data;
             if (complete) {
                 setIsComplete(true);
-                toast.success("Interview complete! Analysis ready.");
+                toast.success("Intelligence gathering complete. Analysis ready.");
             } else {
                 setCurrentQuestion(nextQuestion);
                 setActiveQuestionId(questionId);
                 setQuestionCount((prev) => prev + 1);
-                setHistory((prev) => [...prev, { _id: activeQuestionId, question: currentQuestion, answer: answerText }]);
-                toast.success("Answer submitted!");
+                toast.success("Signal captured.");
             }
         } catch {
-            toast.error("Failed to fetch next question. Please try again.");
+            toast.error("Neural link synchronization error. Retrying...");
         } finally {
             setLoading(false);
         }
-    };
+    }, [sessionId, activeQuestionId, loading, isComplete]);
 
-    const handleEndInterview = () => {
-        toast.success("Navigating to feedback analysis...");
+    const handleEndInterview = useCallback(() => {
         navigate(`/ai-interview/feedback/${sessionId}`);
-    };
+    }, [navigate, sessionId]);
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0f1623] relative overflow-hidden">
-            {/* Background glow */}
-            <div className="pointer-events-none absolute inset-0">
-                <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full"
-                    style={{ background: "radial-gradient(circle, rgba(74,124,247,0.06) 0%, transparent 70%)" }} />
-            </div>
-
-            {/* Progress bar */}
-            <ProgressBar current={questionCount} total={totalQuestions} />
-
-            {/* ── Header ── */}
-            <header className="relative px-6 py-4 flex items-center justify-between shrink-0 border-b border-[#1d2535]">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)}
-                        className="h-9 w-9 rounded-xl flex items-center justify-center border border-[#252f42] hover:bg-[#1d2535] transition-colors">
-                        <ArrowLeft className="h-4 w-4 text-[#7a8faa]" />
-                    </button>
-                    <div className="h-8 w-px bg-[#1d2535]" />
-                    <div>
-                        <p className="text-[10px] font-bold text-[#4A7CF7] uppercase tracking-[0.18em]">
-                            {sessionInfo.type} Interview
-                        </p>
-                        <h1 className="text-sm font-bold text-[#e6eaf2] leading-tight">
-                            {sessionInfo.company}
-                        </h1>
+        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
+            {/* ── Initial Loading Flow ── */}
+            {loading && !currentQuestion ? (
+                <div className="space-y-8">
+                    <div className="flex justify-between items-center px-1">
+                        <div className="flex items-center gap-4">
+                            <Skeleton className="h-12 w-12 rounded-2xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-6 w-48" />
+                            </div>
+                        </div>
+                        <Skeleton className="h-10 w-32 rounded-2xl" />
                     </div>
+                    <Skeleton className="h-1.5 w-full rounded-full" />
+                    <Skeleton className="h-[400px] w-full rounded-[32px]" />
+                    <Skeleton className="h-14 w-full rounded-2xl" />
                 </div>
+            ) : (
+                <>
+                    {/* ── Status Header ── */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                <Cpu className="h-6 w-6 text-primary animate-pulse" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Badge variant="info">{sessionInfo.type} Context</Badge>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">• Simulation {sessionId.slice(-4)}</span>
+                                </div>
+                                <h1 className="text-2xl font-black tracking-tight">{sessionInfo.company} Simulation</h1>
+                            </div>
+                        </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Q counter pill */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1d2535] border border-[#252f42]">
-                        <span className="text-[10px] font-bold text-[#7a8faa] uppercase tracking-widest">Q</span>
-                        <span className="text-sm font-black text-[#e6eaf2]">{questionCount}</span>
-                        <span className="text-[10px] text-[#7a8faa]">/ {totalQuestions}</span>
+                        <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl">
+                            <div className="px-3 border-r border-white/10 flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-primary" />
+                                <InterviewTimer />
+                            </div>
+                            <div className="px-3 flex items-center gap-2">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase">Progress</span>
+                                <span className="text-sm font-black text-foreground">{questionCount}</span>
+                                <span className="text-[10px] text-muted-foreground">/ {totalQuestions}</span>
+                            </div>
+                        </div>
                     </div>
-                    {/* Timer */}
-                    <InterviewTimer />
-                    {/* Finish button */}
-                    <button
-                        onClick={handleEndInterview}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
-                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)", boxShadow: "0 4px 16px rgba(74,124,247,0.3)" }}
-                    >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Finish
-                    </button>
-                </div>
-            </header>
 
-            {/* ── Main question area ── */}
-            <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto">
-                <div className="w-full max-w-3xl">
-                    <AnimatePresence mode="wait">
-                        {!isComplete ? (
-                            <motion.div
-                                key={activeQuestionId || "loading"}
-                                initial={{ opacity: 0, y: 24 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -24 }}
-                                transition={{ duration: 0.35, ease: "easeOut" }}
-                            >
-                                {/* AI badge */}
-                                <div className="flex items-center gap-2 mb-6">
-                                    <div className="h-8 w-8 rounded-xl flex items-center justify-center"
-                                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }}>
+                    <FocusedProgressBar current={questionCount} total={totalQuestions} />
+                </>
+            )}
+
+
+            <div className="relative">
+                <AnimatePresence mode="wait">
+                    {!isComplete ? (
+                        <motion.div
+                            key={activeQuestionId || "loading"}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.4, ease: "circOut" }}
+                            className="space-y-8"
+                        >
+                            <SaaSCard className="p-10 md:p-14 min-h-[300px] flex flex-col justify-center border-primary/5">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shadow-primary/20">
                                         <Bot className="h-4 w-4 text-white" />
                                     </div>
-                                    <span className="text-[10px] font-black text-[#4A7CF7] uppercase tracking-[0.18em]">
-                                        Interviewer · Question {questionCount}
-                                    </span>
-                                    <div className="flex-1 h-px bg-[#1d2535]" />
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">AI Intelligence Node</span>
+                                    <div className="flex-1 h-px bg-white/5 mx-2" />
+                                    <Badge variant="outline" className="opacity-60">Q{questionCount}</Badge>
                                 </div>
 
-                                {/* Question card */}
-                                <div className="relative p-8 rounded-2xl border border-[#252f42] bg-[#141c2e]"
-                                    style={{ boxShadow: "0 0 0 1px rgba(74,124,247,0.05), 0 20px 60px rgba(0,0,0,0.3)" }}>
-                                    {/* Left accent strip */}
-                                    <div className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full"
-                                        style={{ background: "linear-gradient(180deg,#4A7CF7,#818CF8)" }} />
+                                <h2 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-foreground/90">
+                                    {loading && !currentQuestion ? (
+                                        <span className="text-muted-foreground animate-pulse">Synthesizing personalized inquiry...</span>
+                                    ) : currentQuestion}
+                                </h2>
 
-                                    <h2 className="text-xl sm:text-2xl font-bold text-[#e6eaf2] leading-snug pl-5">
-                                        {loading && !currentQuestion ? (
-                                            <span className="text-[#7a8faa] animate-pulse">Generating next question...</span>
-                                        ) : currentQuestion}
-                                    </h2>
-
-                                    {/* Loading dots overlay */}
-                                    {loading && (
-                                        <div className="absolute inset-0 bg-[#141c2e]/80 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                                            <div className="flex gap-2">
-                                                {[0, 0.15, 0.3].map((d, i) => (
-                                                    <span key={i} className="h-2 w-2 rounded-full bg-[#4A7CF7] animate-bounce"
-                                                        style={{ animationDelay: `-${d}s` }} />
-                                                ))}
-                                            </div>
+                                {loading && (
+                                    <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center z-20">
+                                        <div className="flex gap-1.5 p-4 bg-black/40 rounded-full border border-white/10">
+                                            {[0, 0.2, 0.4].map((d, i) => (
+                                                <motion.span 
+                                                    key={i} 
+                                                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1, 0.8] }}
+                                                    transition={{ repeat: Infinity, duration: 1, delay: d }}
+                                                    className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" 
+                                                />
+                                            ))}
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
+                            </SaaSCard>
 
-                                {/* Gemini tag */}
-                                <div className="flex items-center gap-2 mt-4">
-                                    <Zap className="h-3 w-3 text-[#4A7CF7]" />
-                                    <span className="text-[10px] font-bold text-[#7a8faa] uppercase tracking-widest">
-                                        Powered by Gemini 2.5 · Use voice or text
+                            {/* ── Input Area ── */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-2 px-1">
+                                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                        Response Input · Voice or Text active
                                     </span>
                                 </div>
-                            </motion.div>
-                        ) : (
-                            /* ── Complete state ── */
-                            <motion.div
-                                key="complete"
-                                initial={{ opacity: 0, scale: 0.92 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="text-center space-y-8 py-12"
-                            >
-                                <div className="relative mx-auto w-24 h-24">
-                                    <div className="absolute inset-0 rounded-[2rem] animate-ping opacity-20"
-                                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }} />
-                                    <div className="relative h-24 w-24 rounded-[2rem] flex items-center justify-center"
-                                        style={{ background: "linear-gradient(135deg,rgba(74,124,247,0.2),rgba(129,140,248,0.2))", border: "1px solid rgba(74,124,247,0.3)" }}>
-                                        <CheckCircle2 className="h-10 w-10 text-[#818CF8]" />
+                                <AnswerInput
+                                    onSubmit={handleSubmitAnswer}
+                                    loading={loading}
+                                    placeholder={`Your response for the ${sessionInfo.company} interview...`}
+                                />
+                                <div className="flex items-center justify-between px-2">
+                                    <div className="flex items-center gap-2 opacity-40">
+                                        <Zap className="h-3 w-3 text-primary" />
+                                        <span className="text-[9px] font-bold uppercase">End-to-End Encryption</span>
+                                    </div>
+                                    <button 
+                                        onClick={handleEndInterview}
+                                        className="text-[10px] font-black text-rose-500/60 hover:text-rose-400 transition-colors uppercase tracking-widest"
+                                    >
+                                        Force Terminate Session
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="complete"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center py-20"
+                        >
+                            <SaaSCard className="max-w-lg mx-auto p-16">
+                                <div className="relative mx-auto w-28 h-28 mb-10">
+                                    <div className="absolute inset-0 rounded-[2.5rem] bg-primary/20 animate-ping opacity-20" />
+                                    <div className="relative h-28 w-28 rounded-[2.5rem] bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                        <CheckCircle2 className="h-12 w-12 text-primary" />
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-[#e6eaf2]">Session Complete!</h3>
-                                    <p className="text-[#7a8faa] mt-2 max-w-sm mx-auto">
-                                        Your answers have been recorded. Your AI analysis report is ready.
-                                    </p>
-                                </div>
-                                <button
+                                <h3 className="text-3xl font-black tracking-tighter mb-4">Mastery Session Decoded</h3>
+                                <p className="text-muted-foreground text-lg mb-10 leading-relaxed max-w-sm mx-auto">
+                                    The interview is finalized. Our AI is currently processing your performance metrics and contextual answers.
+                                </p>
+                                <Button
+                                    variant="saas"
+                                    size="lg"
                                     onClick={handleEndInterview}
-                                    className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold transition-all active:scale-95"
-                                    style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)", boxShadow: "0 8px 32px rgba(74,124,247,0.35)" }}
+                                    className="w-full py-7 text-lg rounded-2xl shadow-2xl shadow-primary/30"
                                 >
-                                    View Full Feedback
-                                    <ChevronRight className="h-5 w-5" />
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </main>
-
-            {/* ── Answer footer ── */}
-            {!isComplete && (
-                <footer className="shrink-0 px-6 pb-6 pt-4 border-t border-[#1d2535] bg-[#0f1623]">
-                    <div className="max-w-3xl mx-auto">
-                        <AnswerInput
-                            onSubmit={handleSubmitAnswer}
-                            loading={loading}
-                            placeholder={`Your answer to this ${sessionInfo.type} question...`}
-                        />
-                        <p className="text-center text-[10px] text-[#3a4a60] mt-3 font-semibold uppercase tracking-widest">
-                            Professional Simulation · Quality responses favored
-                        </p>
-                    </div>
-                </footer>
-            )}
+                                    Access Performance Intelligence
+                                    <ChevronRight className="ml-2 h-5 w-5" />
+                                </Button>
+                            </SaaSCard>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
 
 export default InterviewSession;
+

@@ -13,6 +13,7 @@ const BLUE_BORDER = "rgba(74,124,247,0.30)";
 const navLinks = [
   { label: "Home", path: "/" },
   { label: "Dashboard", path: "/dashboard" },
+  { label: "Analytics", path: "/analytics" },
   { label: "Resources", path: "/resources" },
   { label: "Contact Us", path: "/contact" },
 ];

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Loader2, Save, X, Sparkles, AlertTriangle } from "lucide-react";
+import { Loader2, Save, X, Sparkles, AlertTriangle, PlusCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/label";
@@ -124,17 +124,17 @@ const BlueprintForm = ({
 
   return (
 
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-2xl mx-auto">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border bg-card shadow-sm overflow-visible"
+        className="rounded-[32px] border border-white/10 bg-neutral-950/80 shadow-2xl overflow-visible backdrop-blur-3xl"
       >
-        <div className="h-1.5 w-full bg-gradient-to-r from-amber to-amber-light" />
-        <div className="p-8 space-y-6">
+        <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 rounded-t-[32px]" />
+        <div className="p-8 space-y-7 pb-10">
           {/* Target Role with Autocomplete */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-foreground">
-              Target Role <span className="text-destructive">*</span>
+            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+              Target Role <span className="text-rose-500">*</span>
             </Label>
             <AutocompleteInput
               suggestionType="roles"
@@ -156,7 +156,7 @@ const BlueprintForm = ({
 
           {/* Experience */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-foreground">
+            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
               Years of Experience
             </Label>
             <Select
@@ -164,15 +164,15 @@ const BlueprintForm = ({
               onValueChange={setYearsOfExperience}
               disabled={isSaving}
             >
-              <SelectTrigger className="h-11 rounded-xl border-input bg-background text-sm">
+              <SelectTrigger className="h-11 rounded-xl border-white/10 bg-white/[0.03] text-sm focus:ring-blue-500/50">
                 <SelectValue placeholder="Select experience level" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl">
+              <SelectContent className="rounded-2xl bg-neutral-900 border-white/10 backdrop-blur-3xl shadow-2xl">
                 {EXPERIENCE_OPTIONS.map((opt) => (
                   <SelectItem
                     key={opt.value}
                     value={opt.value}
-                    className="rounded-lg"
+                    className="rounded-xl focus:bg-white/10 focus:text-white"
                   >
                     {opt.label}
                   </SelectItem>
@@ -183,17 +183,17 @@ const BlueprintForm = ({
 
           {/* Skills with Smart Recommendations */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-foreground">
-              Skills <span className="text-destructive">*</span>
+            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+              Skills <span className="text-rose-500">*</span>
             </Label>
 
             {/* Recommended Skills Area */}
             {analysis.recommendedSkills.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3 p-3.5 bg-primary/5 rounded-2xl border border-primary/10 animate-in slide-in-from-top-2 duration-300">
-                <div className="flex items-center gap-1.5 w-full mb-1">
-                  <Sparkles size={14} className="text-primary animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">
-                    Recommended for {targetRole || "this role"}
+              <div className="flex flex-wrap gap-2.5 mb-5 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 animate-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center gap-2 w-full mb-1.5">
+                  <Sparkles size={14} className="text-blue-400 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/70">
+                    Recommended Intel
                   </span>
                 </div>
                 {analysis.recommendedSkills.map(skill => (
@@ -201,9 +201,9 @@ const BlueprintForm = ({
                     key={skill}
                     type="button"
                     onClick={() => setSkills(prev => Array.from(new Set([...prev, skill])))}
-                    className="px-3 py-1.5 rounded-xl bg-card border border-accent/20 text-[11px] font-semibold text-accent hover:bg-accent hover:text-white transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shadow-sm"
+                    className="px-4 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] font-bold text-blue-400 hover:bg-blue-600/20 hover:border-blue-500/40 hover:scale-[1.03] transition-all flex items-center gap-2 shadow-sm whitespace-nowrap"
                   >
-                    + {skill}
+                    <PlusCircle size={12} className="opacity-60" /> {skill}
                   </button>
                 ))}
               </div>
@@ -223,7 +223,7 @@ const BlueprintForm = ({
               }}
               placeholder="React, TypeScript, Node.js…"
               disabled={isSaving}
-              variant="amber"
+              variant="premium"
               error={errors.skills}
             />
 
@@ -247,8 +247,8 @@ const BlueprintForm = ({
 
           {/* Companies with Autocomplete */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-foreground">
-              Target Companies <span className="text-destructive">*</span>
+            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+              Target Companies <span className="text-rose-500">*</span>
             </Label>
             <AutocompleteInput
               suggestionType="companies"
@@ -269,10 +269,10 @@ const BlueprintForm = ({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border bg-muted/30 px-8 py-5 flex items-center justify-between flex-wrap gap-3">
-          <p className="text-xs text-muted-foreground">
-            {isEditing ? "Editing your blueprint" : "Creating a new blueprint"}
+        {/* Footer (Dark Accent) */}
+        <div className="border-t border-white/5 bg-neutral-900/40 px-8 py-7 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
+          <p className="text-xs font-medium text-zinc-500 italic tracking-wide">
+            {isEditing ? "Synthesizing profile update..." : "Initializing new interview directive"}
           </p>
 
           <div className="flex items-center gap-3">
@@ -292,17 +292,17 @@ const BlueprintForm = ({
             <Button
               type="submit"
               disabled={isSaving}
-              className="h-10 gap-2 rounded-xl bg-gradient-to-r from-amber to-amber-light px-6 font-semibold shadow-sm hover:opacity-90 hover:shadow-md transition-all duration-200 disabled:opacity-60"
+              className="h-11 gap-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 text-white font-black uppercase tracking-tighter text-xs px-8 shadow-[0_8px_30px_rgba(37,99,235,0.2)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:grayscale"
             >
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving…
+                  Processing…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Save Blueprint
+                  Secure Blueprint
                 </>
               )}
             </Button>

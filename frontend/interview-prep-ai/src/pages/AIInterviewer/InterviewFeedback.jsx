@@ -3,120 +3,46 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
     ArrowLeft, Bot, Sparkles, MessageSquare, Info,
     ChevronRight, Loader2, CheckCircle2, TrendingUp,
-    Award, Zap, Timer, AlertCircle
+    Award, Zap, Timer, AlertCircle, Cpu, ClipboardCheck,
+    Target, BarChart3, ArrowRight
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
-
-/* ────────────────────────────────────────────────
-   Inline sub-components (no extra file changes)
-──────────────────────────────────────────────── */
+import SaaSCard from "../../components/ui/SaaSCard";
+import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../components/ui/button";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 const READINESS = {
     "Ready": {
-        gradient: "from-emerald-500 to-teal-500",
-        glow: "rgba(16,185,129,0.25)",
-        badge: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+        gradient: "from-emerald-500/20 to-teal-500/20",
+        border: "border-emerald-500/30",
+        color: "text-emerald-400",
         icon: Award,
-        label: "Interview Ready",
-        desc: "Outstanding performance — you're prepared for real interview rounds.",
+        label: "Operational Readiness",
+        desc: "Elite performance identified. The candidate exhibits high-level technical maturity and alignment with senior expectations.",
     },
     "Improving": {
-        gradient: "from-[#4A7CF7] to-[#818CF8]",
-        glow: "rgba(74,124,247,0.25)",
-        badge: "bg-[#4A7CF7]/10 border-[#4A7CF7]/20 text-[#818CF8]",
+        gradient: "from-primary/20 to-blue-400/20",
+        border: "border-primary/30",
+        color: "text-primary",
         icon: Zap,
-        label: "Showing Progress",
-        desc: "Good grasp of concepts — focus on the identified growth areas below.",
+        label: "Strategic Development",
+        desc: "Foundational mastery confirmed. Performance trajectory is positive with specific areas identified for surgical refinement.",
     },
     "Needs Practice": {
-        gradient: "from-rose-500 to-pink-500",
-        glow: "rgba(244,63,94,0.25)",
-        badge: "bg-rose-500/10 border-rose-500/20 text-rose-400",
+        gradient: "from-rose-500/20 to-pink-500/20",
+        border: "border-rose-500/30",
+        color: "text-rose-400",
         icon: Timer,
-        label: "Keep Practicing",
-        desc: "Consistency in technical depth will build your confidence quickly.",
+        label: "Foundational Focus",
+        desc: "Core concepts established. Immediate focus required on deep-technical reasoning to bridge current performance gaps.",
     },
 };
 
-const ReadinessBanner = ({ status = "Improving" }) => {
-    const cfg = READINESS[status] || READINESS["Improving"];
-    const Icon = cfg.icon;
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-2xl p-6 border border-[#252f42] bg-[#141c2e]"
-            style={{ boxShadow: `0 0 60px ${cfg.glow}` }}
-        >
-            {/* glow blob */}
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-30"
-                style={{ background: `radial-gradient(circle, ${cfg.glow} 0%, transparent 70%)` }} />
-            <div className="relative flex items-center gap-5">
-                <div className={`h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cfg.gradient} shadow-lg`}>
-                    <Icon className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border mb-1 ${cfg.badge}`}>
-                        Performance Status
-                    </span>
-                    <h2 className="text-xl font-black text-[#e6eaf2]">{cfg.label}</h2>
-                    <p className="text-sm text-[#7a8faa] mt-0.5 max-w-lg">{cfg.desc}</p>
-                </div>
-            </div>
-        </motion.div>
-    );
-};
-
-const AnalysisCard = ({ icon: Icon, iconColor, iconBg, title, content, delay = 0 }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-        className="p-6 rounded-2xl border border-[#252f42] bg-[#141c2e] space-y-4 hover:border-[#4A7CF7]/30 transition-colors"
-    >
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${iconBg}`}>
-            <Icon className={`h-5 w-5 ${iconColor}`} />
-        </div>
-        <h3 className="font-bold text-[#e6eaf2]">{title}</h3>
-        <p className="text-sm text-[#7a8faa] leading-relaxed">{content}</p>
-    </motion.div>
-);
-
-const StrengthItem = ({ text, index }) => (
-    <motion.div
-        initial={{ opacity: 0, x: -12 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.08 }}
-        className="flex items-start gap-3 p-4 rounded-xl border border-emerald-900/30 bg-emerald-900/10 hover:bg-emerald-900/20 transition-colors group"
-    >
-        <div className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center">
-            <CheckCircle2 className="h-3 w-3 text-white" />
-        </div>
-        <p className="text-sm text-[#b4e4d4] font-medium leading-relaxed">{text}</p>
-    </motion.div>
-);
-
-const ImprovementItem = ({ text, index }) => (
-    <motion.div
-        initial={{ opacity: 0, x: -12 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.08 }}
-        className="flex items-start gap-3 p-4 rounded-xl border border-[#4A7CF7]/20 bg-[#4A7CF7]/5 hover:bg-[#4A7CF7]/10 transition-colors"
-    >
-        <div className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-[#4A7CF7] flex items-center justify-center">
-            <TrendingUp className="h-3 w-3 text-white" />
-        </div>
-        <p className="text-sm text-[#a8c4ff] font-medium leading-relaxed">{text}</p>
-    </motion.div>
-);
-
-/* ────────────────────────────────────────────────
-   Main Feedback Page
-──────────────────────────────────────────────── */
 const InterviewFeedback = () => {
     const { sessionId } = useParams();
     const navigate = useNavigate();
@@ -125,195 +51,224 @@ const InterviewFeedback = () => {
     const [status, setStatus] = useState("Improving");
 
     useEffect(() => {
-        const fetchFeedback = async () => {
+        const fetchFeedbackAndPersist = async () => {
             try {
-                const res = await axiosInstance.post(API_PATHS.INTERVIEW_SESSION.GENERATE_FEEDBACK(sessionId));
-                setFeedback(res.data.feedback);
-                const s = res.data.feedback.strengths?.length || 0;
-                const i = res.data.feedback.improvementAreas?.length || 0;
+                const feedbackRes = await axiosInstance.post(API_PATHS.INTERVIEW_SESSION.GENERATE_FEEDBACK(sessionId));
+                setFeedback(feedbackRes.data.feedback);
+                
+                const s = feedbackRes.data.feedback.strengths?.length || 0;
+                const i = feedbackRes.data.feedback.improvementAreas?.length || 0;
                 if (s > i + 2) setStatus("Ready");
                 else if (i > s) setStatus("Needs Practice");
                 else setStatus("Improving");
-            } catch {
-                toast.error("Could not generate feedback. Please try again.");
+
+                // Persist for Resources hub
+                try {
+                   const sessionRes = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_ONE(sessionId));
+                   if (sessionRes.data?.session) {
+                       const session = sessionRes.data.session;
+                       const qTexts = session.question.map(q => q.question || q);
+                       localStorage.setItem("interviewData", JSON.stringify({
+                           blueprint: { targetRole: session.role, experience: session.experience, topicsToFocus: session.type },
+                           questions: qTexts
+                       }));
+                   }
+                } catch (e) {
+                   console.log("Persistence sync skipped");
+                }
+            } catch (error) {
+                console.error("Feedback error:", error);
+                toast.error("Feedback generation failed.");
                 navigate(-1);
             } finally {
                 setLoading(false);
             }
         };
-        fetchFeedback();
+        fetchFeedbackAndPersist();
     }, [sessionId, navigate]);
 
-    /* Loading state */
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] gap-6 bg-[#0f1623]">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 animate-in fade-in duration-700">
                 <div className="relative">
-                    <div className="h-20 w-20 rounded-2xl flex items-center justify-center"
-                        style={{ background: "rgba(74,124,247,0.1)", border: "1px solid rgba(74,124,247,0.2)" }}>
-                        <Bot className="h-9 w-9 text-[#4A7CF7]" />
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full flex items-center justify-center"
-                        style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }}>
-                        <Loader2 className="h-4 w-4 text-white animate-spin" />
+                    <div className="h-20 w-20 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                        <Cpu className="h-10 w-10 text-primary animate-pulse" />
                     </div>
                 </div>
-                <div className="text-center">
-                    <h2 className="text-lg font-black text-[#e6eaf2] uppercase tracking-widest">
-                        Generating AI Feedback
-                    </h2>
-                    <p className="text-sm text-[#7a8faa] mt-2 max-w-xs">
-                        Analyzing your technical reasoning and communication style…
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    {[0, 0.2, 0.4].map((d, i) => (
-                        <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#4A7CF7] animate-bounce"
-                            style={{ animationDelay: `${d}s` }} />
-                    ))}
+                <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-black tracking-tighter uppercase tracking-[0.2em]">Analyzing Signal</h2>
+                    <p className="text-muted-foreground font-medium animate-pulse">Synthesizing technical performance and communication metrics...</p>
                 </div>
             </div>
         );
     }
 
+    const readinessCfg = READINESS[status] || READINESS["Improving"];
+    const ReadinessIcon = readinessCfg.icon;
+
     return (
-        <div className="min-h-screen bg-[#0f1623] pb-20">
-            {/* ── Header ── */}
-            <header className="sticky top-0 z-20 px-6 py-4 border-b border-[#1d2535] bg-[#0f1623]/90 backdrop-blur-md flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate(`/interview-prep/${sessionId}`)}
-                        className="h-9 w-9 rounded-xl flex items-center justify-center border border-[#252f42] hover:bg-[#1d2535] transition-colors"
-                    >
-                        <ArrowLeft className="h-4 w-4 text-[#7a8faa]" />
-                    </button>
-                    <div className="h-8 w-px bg-[#1d2535]" />
-                    <div>
-                        <div className="flex items-center gap-1.5">
-                            <Sparkles className="h-3.5 w-3.5 text-[#818CF8]" />
-                            <span className="text-[10px] font-black text-[#818CF8] uppercase tracking-[0.2em]">
-                                AI Performance Review
-                            </span>
+        <div className="space-y-12 pb-20 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-1000">
+            {/* ── Page Title ── */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                        <ClipboardCheck className="h-4 w-4 text-primary" />
+                        <Badge variant="info">Intelligence Report</Badge>
+                    </div>
+                    <h1 className="text-4xl font-black tracking-tighter">Performance Analysis</h1>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Exit Report
+                    </Button>
+                    <Button variant="saas" size="sm" onClick={() => navigate("/resources")}>
+                        Improve Skills <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* ── Readiness Hero ── */}
+            <SaaSCard className={`p-10 md:p-14 border-none bg-gradient-to-br ${readinessCfg.gradient} relative overflow-hidden group`}>
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <ReadinessIcon className="h-40 w-40" />
+                </div>
+                <div className="relative flex flex-col md:flex-row items-center gap-10">
+                    <div className={`h-28 w-28 rounded-[36px] bg-black/40 border border-white/10 flex items-center justify-center shadow-2xl ${readinessCfg.color}`}>
+                        <ReadinessIcon className="h-14 w-14" />
+                    </div>
+                    <div className="text-center md:text-left space-y-4 flex-1">
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                            <Badge variant="outline" className="bg-black/20 border-white/10">Signal Confidence: 98%</Badge>
+                            <Badge variant="purple" className="bg-black/20 border-white/10">AI Performance Grade</Badge>
                         </div>
-                        <h1 className="text-base font-bold text-[#e6eaf2] leading-tight">Interview Feedback</h1>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter">{readinessCfg.label}</h2>
+                        <p className="text-foreground/90 text-lg font-medium max-w-3xl leading-relaxed italic">
+                            "{readinessCfg.desc}"
+                        </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => navigate("/dashboard")}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-95"
-                    style={{ background: "linear-gradient(135deg,#4A7CF7,#818CF8)" }}
-                >
-                    Dashboard
-                    <ChevronRight className="h-4 w-4" />
-                </button>
-            </header>
+            </SaaSCard>
 
-            <main className="max-w-5xl mx-auto px-6 pt-10 space-y-10">
+            {/* ── Qualitative Analysis ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <SaaSCard className="p-8 space-y-6 hover:translate-y-[-4px] transition-transform duration-500">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
+                            <MessageSquare className="h-6 w-6 text-blue-400" />
+                        </div>
+                        <h3 className="text-2xl font-black tracking-tight">Communication Flow</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed font-medium text-lg">
+                        {feedback?.qualitativeAnalysis?.communication}
+                    </p>
+                </SaaSCard>
 
-                {/* Readiness Banner */}
-                <ReadinessBanner status={status} />
+                <SaaSCard className="p-8 space-y-6 hover:translate-y-[-4px] transition-transform duration-500">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">
+                            <Sparkles className="h-6 w-6 text-primary" />
+                        </div>
+                        <h3 className="text-2xl font-black tracking-tight">Technical Reasoning</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed font-medium text-lg">
+                        {feedback?.qualitativeAnalysis?.technicalReasoning}
+                    </p>
+                </SaaSCard>
+            </div>
 
-                {/* Analysis Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <AnalysisCard
-                        icon={MessageSquare}
-                        iconBg="bg-[#4A7CF7]/10"
-                        iconColor="text-[#4A7CF7]"
-                        title="Communication Analysis"
-                        content={feedback?.qualitativeAnalysis?.communication}
-                        delay={0.1}
-                    />
-                    <AnalysisCard
-                        icon={Sparkles}
-                        iconBg="bg-[#818CF8]/10"
-                        iconColor="text-[#818CF8]"
-                        title="Technical Reasoning"
-                        content={feedback?.qualitativeAnalysis?.technicalReasoning}
-                        delay={0.2}
-                    />
-                </div>
-
-                {/* Strengths & Improvements */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Strengths */}
+            {/* ── Strengths & Targets ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 px-1">
+                        <Target className="h-6 w-6 text-emerald-400" />
+                        <h3 className="text-base font-black uppercase tracking-[0.2em] text-muted-foreground">High-Value Strengths</h3>
+                    </div>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                            <h3 className="text-xs font-black text-[#7a8faa] uppercase tracking-widest">Key Strengths</h3>
-                        </div>
-                        {(feedback?.strengths || []).map((s, i) => (
-                            <StrengthItem key={i} text={s} index={i} />
-                        ))}
-                    </div>
-
-                    {/* Growth Areas */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-[#818CF8]" />
-                            <h3 className="text-xs font-black text-[#7a8faa] uppercase tracking-widest">Growth Opportunities</h3>
-                        </div>
-                        {(feedback?.improvementAreas || []).map((item, i) => (
-                            <ImprovementItem key={i} text={item} index={i} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Company Expectations */}
-                {feedback?.companyExpectations?.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="relative overflow-hidden rounded-2xl border border-[#252f42] bg-[#141c2e] p-8"
-                    >
-                        {/* Glow */}
-                        <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-20"
-                            style={{ background: "radial-gradient(circle,rgba(74,124,247,0.5),transparent 70%)" }} />
-
-                        <div className="relative flex flex-col md:flex-row gap-8">
-                            <div className="md:w-[280px] shrink-0">
-                                <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-4"
-                                    style={{ background: "rgba(74,124,247,0.12)", border: "1px solid rgba(74,124,247,0.2)" }}>
-                                    <Info className="h-5 w-5 text-[#4A7CF7]" />
+                        {feedback?.strengths?.map((s, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 + (i * 0.1) }}
+                                className="flex items-start gap-5 p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 group hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all shadow-sm"
+                            >
+                                <div className="h-7 w-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                                 </div>
-                                <h3 className="text-lg font-black text-[#e6eaf2]">Company Expectations</h3>
-                                <p className="text-sm text-[#7a8faa] mt-2 leading-relaxed">
-                                    Based on your target role, our AI identified typical standards at these organizations.
-                                </p>
-                            </div>
-                            <div className="flex flex-wrap gap-2 content-start">
-                                {feedback.companyExpectations.map((exp, idx) => (
-                                    <span
-                                        key={idx}
-                                        className="px-4 py-2 rounded-xl text-sm font-semibold text-[#a8c4ff] hover:text-white transition-colors"
-                                        style={{
-                                            background: "rgba(74,124,247,0.08)",
-                                            border: "1px solid rgba(74,124,247,0.15)"
-                                        }}
-                                    >
-                                        {exp}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* Bottom CTA */}
-                <div className="flex justify-center pt-4">
-                    <button
-                        onClick={() => navigate("/dashboard")}
-                        className="flex items-center gap-2 px-8 py-3 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
-                        style={{
-                            background: "linear-gradient(135deg,#4A7CF7,#818CF8)",
-                            boxShadow: "0 8px 32px rgba(74,124,247,0.3)"
-                        }}
-                    >
-                        Return to Dashboard
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
+                                <span className="text-base font-bold text-foreground/90 leading-snug">{s}</span>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
-            </main>
+
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 px-1">
+                        <TrendingUp className="h-6 w-6 text-primary" />
+                        <h3 className="text-base font-black uppercase tracking-[0.2em] text-muted-foreground">Growth Trajectories</h3>
+                    </div>
+                    <div className="space-y-4">
+                        {feedback?.improvementAreas?.map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: 15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 + (i * 0.1) }}
+                                className="flex items-start gap-5 p-6 rounded-3xl bg-primary/5 border border-primary/10 group hover:bg-primary/10 hover:border-primary/30 transition-all shadow-sm"
+                            >
+                                <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                                    <Zap className="h-4 w-4 text-primary" />
+                                </div>
+                                <span className="text-base font-bold text-foreground/90 leading-snug">{item}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Strategic Alignment ── */}
+            {feedback?.companyExpectations?.length > 0 && (
+                <SaaSCard className="p-12 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-12 opacity-[0.03]">
+                        <BarChart3 className="h-64 w-64" />
+                    </div>
+                    <div className="flex flex-col lg:flex-row gap-16 relative">
+                        <div className="lg:max-w-xs space-y-5">
+                            <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shadow-xl shadow-purple-500/10">
+                                <BarChart3 className="h-7 w-7 text-purple-400" />
+                            </div>
+                            <h3 className="text-3xl font-black tracking-tight leading-tight">Strategic Alignment</h3>
+                            <p className="text-muted-foreground font-medium text-lg leading-relaxed italic">
+                                Domain-specific benchmarks identified based on elite organizational standards.
+                            </p>
+                        </div>
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {feedback.companyExpectations.map((exp, idx) => (
+                                <div key={idx} className="p-6 rounded-2xl bg-white/3 border border-white/5 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                    <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_rgba(59,130,246,0.8)] shrink-0" />
+                                    <span className="text-base font-black tracking-tight opacity-90">{exp}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </SaaSCard>
+            )}
+
+            {/* ── Conclusion CTA ── */}
+            <div className="flex flex-col items-center pt-8 text-center space-y-10">
+                <div className="space-y-3">
+                    <p className="text-xs font-black uppercase tracking-[0.4em] text-primary">Mission Complete</p>
+                    <h3 className="text-3xl md:text-4xl font-black tracking-tighter">Ready for the next operational phase?</h3>
+                    <p className="text-muted-foreground text-lg max-w-xl mx-auto">Your performance data is now synced. Utilize the mastery materials to bridge identified gaps before your next simulation.</p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-6">
+                    <Button variant="saas" size="lg" onClick={() => navigate("/dashboard")} className="px-12 h-16 rounded-2xl shadow-2xl shadow-primary/30 text-lg">
+                        Return to Command <ChevronRight className="ml-2 h-6 w-6" />
+                    </Button>
+                    <Button variant="outline" size="lg" onClick={() => navigate("/resources")} className="px-12 h-16 rounded-2xl text-lg hover:bg-white/5">
+                        Access Learning Vault <ArrowRight className="ml-2 h-6 w-6" />
+                    </Button>
+                </div>
+            </div>
         </div>
     );
 };

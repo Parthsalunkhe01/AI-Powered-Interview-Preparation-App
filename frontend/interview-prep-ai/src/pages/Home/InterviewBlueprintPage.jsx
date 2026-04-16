@@ -170,42 +170,23 @@ const InterviewBlueprintPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Top nav bar */}
-      <nav className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber to-amber-light shadow-sm">
-              <Zap className="h-4 w-4 text-amber-foreground" strokeWidth={2.5} />
-            </div>
-            <span className="text-sm font-semibold text-foreground tracking-tight">
-              Interview Prep AI
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="hidden sm:inline">Dashboard</span>
-            <span className="hidden sm:inline">/</span>
-            <span className="font-medium text-foreground">Blueprint</span>
-          </div>
-        </div>
-      </nav>
-
+      
       {/* Page content */}
-      <main className="mx-auto max-w-5xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-4 pt-8 pb-20">
         {/* Page header */}
-        <div className="mb-10 text-center space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber/30 bg-amber-muted px-4 py-1.5 text-xs font-semibold text-amber-foreground mb-2">
-            <Zap className="h-3.5 w-3.5" />
-            Personalized Interview Engine
+        <div className="mb-8 text-center space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/5 px-4 py-1 text-[11px] font-black uppercase tracking-widest text-blue-400 mb-2">
+            <Zap className="h-3.5 w-3.5 text-blue-400" />
+            Intelligence Blueprint
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Your Interview Blueprint
+          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+            Surgical Interview Roadmap
           </h1>
 
 
 
-          <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Define your goal once.{" "}
-            <span className="text-foreground font-medium">Get personalized questions forever.</span>
+          <p className="text-md text-muted-foreground/80 max-w-sm mx-auto leading-relaxed font-medium italic">
+            "One Directive. Infinite Personalized Mastery."
           </p>
         </div>
 

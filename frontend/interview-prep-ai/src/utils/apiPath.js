@@ -14,6 +14,8 @@ export const API_PATHS = {
   AI: {
     GENERATE_QUESTIONS: "/api/ai/generate-questions", // Generate interview questions and answers using Gemini
     GENERATE_EXPLANATION: "/api/ai/generate-explanation", // Generate concept explanation using Gemini
+    GET_RESOURCES: "/api/ai/resources", // Generate resources using AI
+    GENERATE_ANSWERS: "/api/ai/generate-answers",
   },
 
   SESSION: {
@@ -29,7 +31,8 @@ export const API_PATHS = {
     UPDATE_NOTE: (id) => `/api/questions/${id}/note`, // Update/Add a note to a question
   },
   BLUEPRINT: {
-    CREATE: "/api/blueprint"
+    CREATE: "/api/blueprint",
+    GET: "/api/blueprint",
   },
   INTERVIEW_SESSION: {
     CREATE: "/api/interview-sessions",
@@ -38,5 +41,8 @@ export const API_PATHS = {
     SUBMIT_ANSWER: (id) => `/api/interview-sessions/${id}/answer`,
     SAVE_FEEDBACK: (id) => `/api/interview-sessions/${id}/feedback`,
     GENERATE_FEEDBACK: (id) => `/api/interview-sessions/${id}/generate-feedback`,
+  },
+  ANALYTICS: {
+    GET_STATS: "/api/analytics",
   }
 };

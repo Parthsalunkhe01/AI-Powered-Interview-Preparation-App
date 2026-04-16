@@ -4,8 +4,8 @@ import Input from "../../components/Inputs/Input";
 import SpinnerLoader from "../../components/Loader/SpinnerLoader";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
-
 const CreateSessionForm = () => {
+    const [blueprintId, setBlueprintId] = useState(null);
     const [formData , setFormData] = useState({
         role:"",
         experience:"",
@@ -54,9 +54,15 @@ const CreateSessionForm = () => {
             const response = await axiosInstance.post(API_PATHS.SESSION.CREATE, {
                 ...formData,
                 questions: generatedQuestions,
+                blueprint: blueprintId,
             });
 
             if(response.data?.session?._id) {
+                // 💾 PERSIST FOR GLOBAL RESOURCES
+                const interviewData = { blueprint: formData, questions: generatedQuestions };
+                console.log("SAVED DATA:", interviewData);
+                localStorage.setItem("interviewData", JSON.stringify(interviewData));
+                
                 navigate(`/interview-prep/${response.data?.session?._id}`);
             }
         } catch (error) {
@@ -69,6 +75,18 @@ const CreateSessionForm = () => {
             setIsLoading(false);
         }
     };
+    useEffect(() => {
+        const fetchBlueprint = async () => {
+            try {
+                const res = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
+                if (res.data) setBlueprintId(res.data._id);
+            } catch (err) {
+                console.error("Error fetching blueprint for session:", err);
+            }
+        };
+        fetchBlueprint();
+    }, []);
+
     return (
     <div className="w-[90vw] md:w-[35vw] p-7 flex flex-col justify-center">
         <h3 className="text-lg font-semibold text-black">

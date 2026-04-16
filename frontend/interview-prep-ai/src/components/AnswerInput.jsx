@@ -95,10 +95,10 @@ const AnswerInput = ({ onSubmit, loading, placeholder = "Type your answer here..
                     type="submit"
                     disabled={!text.trim() || loading}
                     size="icon"
-                    className="shrink-0 h-10 w-10 rounded-2xl bg-accent hover:opacity-90 text-white disabled:bg-muted disabled:text-muted-foreground shadow-md transition-all active:scale-95"
+                    className="shrink-0 h-10 w-10 rounded-2xl bg-primary hover:bg-primary/90 text-white disabled:bg-white/5 disabled:text-white/20 shadow-xl shadow-primary/20 transition-all active:scale-95"
                 >
                     {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                         <Send className="h-5 w-5" />
                     )}

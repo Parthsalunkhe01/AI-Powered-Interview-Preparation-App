@@ -79,7 +79,7 @@ const AutocompleteInput = ({
             </div>
 
             {isOpen && query.length >= 2 && (
-                <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute z-50 w-full mt-2 bg-[#09090b]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-h-64 overflow-auto animate-in fade-in zoom-in-95 duration-200 ring-1 ring-white/5">
                     {isLoading ? (
                         <div className="p-4 text-sm text-center text-muted-foreground flex items-center justify-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />

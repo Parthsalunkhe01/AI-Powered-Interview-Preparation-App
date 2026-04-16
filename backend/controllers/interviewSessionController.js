@@ -1,6 +1,7 @@
 const InterviewSession = require("../models/InterviewSession");
 const Question = require("../models/Question");
 const Blueprint = require("../models/InterviewBlueprint");
+const InterviewResult = require("../models/InterviewResult");
 const { generateFirstQuestion, generateFollowUpQuestion } = require("../services/aiInterviewEngine");
 const { generateFeedback } = require("../services/aiFeedbackEngine");
 
@@ -53,7 +54,7 @@ exports.getMyInterviewSessions = async (req, res) => {
     try {
         const sessions = await InterviewSession.find({ user: req.user.id })
             .sort({ createdAt: -1 })
-            .populate("questions");
+            .populate("question");
 
         res.status(200).json(sessions);
     } catch (error) {
@@ -66,7 +67,7 @@ exports.getMyInterviewSessions = async (req, res) => {
 //@access Private
 exports.getInterviewSessionById = async (req, res) => {
     try {
-        const session = await InterviewSession.findById(req.params.id)
+        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id })
             .populate({
                 path: "question",
                 options: { sort: { isPinned: -1, createdAt: 1 } },
@@ -94,14 +95,10 @@ exports.saveAnswers = async (req, res) => {
             return res.status(400).json({ message: "answers must be an array." });
         }
 
-        const session = await InterviewSession.findById(req.params.id);
+        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user.id });
 
         if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found." });
-        }
-
-        if (session.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: "Not authorized to update this session." });
+            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
         }
 
         session.answers = answers;
@@ -120,14 +117,10 @@ exports.saveFeedback = async (req, res) => {
     try {
         const { feedback } = req.body;
 
-        const session = await InterviewSession.findById(req.params.id);
+        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user.id });
 
         if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found." });
-        }
-
-        if (session.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: "Not authorized to update this session." });
+            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
         }
 
         session.feedback = feedback || "";
@@ -144,13 +137,10 @@ exports.saveFeedback = async (req, res) => {
 //@access Private
 exports.generateAISessionFeedback = async (req, res) => {
     try {
-        const session = await InterviewSession.findById(req.params.id).populate("question");
+        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id }).populate("question");
+        
         if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found." });
-        }
-
-        if (session.user.toString() !== req.user._id.toString()) {
-            return res.status(401).json({ message: "Not authorized to access this session feedback." });
+            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
         }
 
         const answerMap = {};
@@ -170,6 +160,34 @@ exports.generateAISessionFeedback = async (req, res) => {
             experience: session.experience,
             history,
         });
+
+        // Parse extracted mathematical analytics for InterviewResult
+        const score = typeof feedbackData.score === "number" ? feedbackData.score : 0;
+        const correctAnswers = typeof feedbackData.correctAnswers === "number" ? feedbackData.correctAnswers : 0;
+        const topics = Array.isArray(feedbackData.topics) ? feedbackData.topics : [];
+        const totalQuestions = history.length;
+        
+        // Time taken in seconds (from session start to now)
+        const timeTaken = Math.max(0, Math.floor((new Date() - session.createdAt) / 1000));
+
+        // Attempt securing against duplicate final saves by fetching if user recently saved one
+        const tenSecondsAgo = new Date(Date.now() - 10000);
+        const duplicateCheck = await InterviewResult.findOne({ 
+             userId: req.user._id, 
+             createdAt: { $gte: tenSecondsAgo }
+        });
+
+        if (!duplicateCheck) {
+             await InterviewResult.create({
+                 userId: req.user._id,
+                 score,
+                 totalQuestions,
+                 correctAnswers,
+                 topics,
+                 timeTaken
+             });
+             console.log(`📊 Analytics saved for User ${req.user._id} | Score: ${score}%`);
+        }
 
         res.status(200).json({
             success: true,
@@ -194,19 +212,13 @@ exports.submitAnswer = async (req, res) => {
         const { questionId, answer } = req.body;
 
         // 1. Find the session (populate existing questions for history)
-        const session = await InterviewSession.findById(req.params.id).populate("question");
+        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id }).populate("question");
         if (!session) {
-            console.error("Submit Answer: Session not found", req.params.id);
-            return res.status(404).json({ success: false, message: "Interview session not found." });
+            console.error("Submit Answer: Session not found or unauthorized", req.params.id);
+            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
         }
 
-        // 2. Ownership check
-        if (session.user.toString() !== req.user._id.toString()) {
-            console.error("Submit Answer: Unauthorized access", session.user, req.user._id);
-            return res.status(401).json({ message: "Not authorized to update this session." });
-        }
-
-        // 3. Save the candidate's answer if a questionId was supplied
+        // 2. Save the candidate's answer if a questionId was supplied
         if (questionId) {
             session.answers.push({ questionId, answerText: answer || "" });
         }

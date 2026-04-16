@@ -6,7 +6,8 @@ const RoleInfoHeader = ({
     experience,
     questions,
     description,
-    lastUpdated
+    lastUpdated,
+    onViewResources
 }) => {
     return (
     <div className="bg-white relative">
@@ -35,6 +36,13 @@ const RoleInfoHeader = ({
                     <div className="text-[10px] font-semibold text-white bg-black px-2 py-1 rounded-full">
                         Last Updated: {lastUpdated}
                     </div>
+
+                    <button 
+                        onClick={onViewResources}
+                        className="text-[10px] font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-full transition-colors cursor-pointer"
+                    >
+                        View AI Resources
+                    </button>
                 </div>
             </div>
 

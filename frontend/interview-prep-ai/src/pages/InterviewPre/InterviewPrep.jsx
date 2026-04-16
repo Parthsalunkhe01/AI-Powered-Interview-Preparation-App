@@ -167,6 +167,7 @@ const InterviewPrep = () => {
             ? moment(sessionData.updatedAt).format("Do MMM YYYY")
             : ""
         }
+        onViewResources={() => window.open(`/resources/${sessionId}`, "_blank")}
       />
       <div className="container mx-auto pt-4 pb-4 px-4 md:px-0">
         <h2 className="text-lg font-semibold color-black">

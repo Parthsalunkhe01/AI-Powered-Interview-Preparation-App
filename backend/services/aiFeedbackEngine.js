@@ -1,6 +1,6 @@
-const { GoogleGenAI } = require("@google/genai");
+const Groq = require("groq-sdk");
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
  * Generate structured qualitative feedback for an interview session
@@ -33,36 +33,47 @@ Return the response as a valid JSON object with EXACTLY the following format:
   "strengths": ["string", "string"],
   "improvementAreas": ["string", "string"],
   "qualitativeAnalysis": {
-    "communication": "Detailed analysis of how they explain concepts...",
-    "technicalReasoning": "Detailed analysis of their logic and problem-solving..."
+    "communication": "Detailed analysis...",
+    "technicalReasoning": "Detailed analysis..."
   },
-  "companyExpectations": ["What ${company} typically looks for..."]
+  "companyExpectations": ["What ${company} typically looks for..."],
+  "score": 0,
+  "topics": ["string", "string"],
+  "correctAnswers": 0
 }
 
 Guidelines:
-1. Be specific. Don't just say "Good communication." Say "Effectively used analogies to explain complex distributed systems concepts."
-2. Analyze the "Why" behind their answers.
-3. Be professional but honest.
-4. Ensure the JSON is valid and contains no other text.`;
+1. Be specific.
+2. Analyze deeply.
+3. Be professional.
+4. "score" must be a Number from 0 to 100 representing technical accuracy.
+5. "correctAnswers" must be a Number representing how many questions they successfully answered.
+6. Return ONLY JSON. No text, no markdown.`;
 
     try {
-        const result = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            generationConfig: {
-                temperature: 0.7,
-                response_mime_type: "application/json",
-            },
+        const result = await ai.chat.completions.create({
+            model: "llama-3.1-8b-instant",
+            messages: [
+                {
+                    role: "system",
+                    content: "Return ONLY valid JSON. No markdown, no explanation."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            temperature: 0.7,
         });
 
-        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || result?.text || "";
+        const text = result?.choices?.[0]?.message?.content || "";
 
-        // Safety check for empty response
+        // Safety check
         if (!text) {
             throw new Error("Empty response from AI feedback engine.");
         }
 
-        // Clean the response: remove markdown code blocks if they exist
+        // Clean response
         const cleanedText = text
             .replace(/```json/g, "")
             .replace(/```/g, "")
@@ -75,9 +86,11 @@ Guidelines:
             const { jsonrepair } = require("jsonrepair");
             return JSON.parse(jsonrepair(cleanedText));
         }
+
     } catch (error) {
         console.error("AI_FEEDBACK_ENGINE_ERROR:", error);
-        // Fallback structured feedback in case of AI failure
+
+        // Fallback response
         return {
             strengths: ["Completed the interview session."],
             improvementAreas: ["AI feedback was temporarily unavailable for detailed analysis."],
@@ -85,7 +98,10 @@ Guidelines:
                 communication: "Communication analysis pending.",
                 technicalReasoning: "Technical reasoning analysis pending."
             },
-            companyExpectations: ["Company-specific expectations could not be retrieved at this moment."]
+            companyExpectations: ["Company-specific expectations could not be retrieved at this moment."],
+            score: 0,
+            topics: ["Session Analysis Partial"],
+            correctAnswers: 0
         };
     }
 };

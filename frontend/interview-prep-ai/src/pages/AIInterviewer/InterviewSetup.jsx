@@ -98,16 +98,16 @@ const InterviewSetup = () => {
 
     return (
         <>
-            <div className="max-w-6xl mx-auto py-12 px-6">
-                <div className="text-center mb-12 space-y-4">
+            <div className="max-w-6xl mx-auto pt-4 pb-12 px-6">
+                <div className="text-center mb-8 space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent mb-2">
                         <Zap className="h-3.5 w-3.5" />
                         Simulation Environment Ready
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
-                        Start Your High-Fidelity Interview
+                    <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl leading-[0.95]">
+                        Start Your <span className="text-primary italic">High-Fidelity</span> Interview
                     </h1>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-base font-bold text-zinc-300 max-w-2xl mx-auto leading-relaxed">
                         Your blueprint has been loaded. Configure your session parameters below to begin the technical evaluation.
                     </p>
                 </div>
@@ -134,14 +134,14 @@ const InterviewSetup = () => {
                     <div className="grid lg:grid-cols-2 gap-8">
                         {/* Left: Summary */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-2">Summary</h3>
+                            <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] pl-2 mb-2">Protocol Summary</h3>
                             <BlueprintSummary blueprint={blueprint} />
-                            <div className="p-6 rounded-3xl bg-card border border-border text-foreground space-y-4">
-                                <h4 className="font-bold flex items-center gap-2">
-                                    <Zap className="h-4 w-4 text-accent fill-accent" />
+                            <div className="!bg-[#0B1220] p-6 rounded-[24px] border border-white/5 ring-1 ring-white/5 shadow-xl space-y-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-primary">
+                                    <Zap className="h-3.5 w-3.5 text-primary fill-primary" />
                                     AI Logic Primed
                                 </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                <p className="text-xs font-bold text-zinc-300 leading-relaxed italic">
                                     The engine will use your {blueprint.skills.length} skills and targeting for {blueprint.company || "tech companies"} to generate unique, challenging questions.
                                 </p>
                             </div>
@@ -149,7 +149,7 @@ const InterviewSetup = () => {
 
                         {/* Right: Settings */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-2">Session Parameters</h3>
+                            <h3 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] pl-2 mb-2">Session Parameters</h3>
                             <SessionSettings settings={settings} onChange={handleSettingChange} />
 
                             <div className="pt-4">
