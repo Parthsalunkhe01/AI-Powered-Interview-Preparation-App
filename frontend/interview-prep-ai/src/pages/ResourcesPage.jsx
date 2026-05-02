@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import { useNavigate } from "react-router-dom";
-import SummaryCard from "../components/cards/SummaryCard";
+import SummaryCard from "../components/Cards/SummaryCard";
 import { CARD_BG } from "../utils/data";
 import moment from "moment";
 import { 
