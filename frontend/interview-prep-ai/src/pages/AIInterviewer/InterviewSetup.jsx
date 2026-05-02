@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Zap, AlertCircle, ChevronRight, ArrowRight } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 import { BlueprintSummary } from "../../components/ui/BlueprintSummary";
 import { SessionSettings } from "../../components/ui/SessionSettings";
 import axiosInstance from "../../utils/axiosInstance";

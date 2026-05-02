@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import SaaSCard from "../components/ui/SaaSCard";
 import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 

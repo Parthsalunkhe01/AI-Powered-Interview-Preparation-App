@@ -1,5 +1,5 @@
 import { Briefcase, Clock, Code2, Building2, Edit2, Trash2 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 
 const BlueprintSummaryCard = ({
   blueprint,

@@ -27,7 +27,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import SaaSCard from "../components/ui/SaaSCard";
 import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { UserContext } from "../context/userContext";
 
 

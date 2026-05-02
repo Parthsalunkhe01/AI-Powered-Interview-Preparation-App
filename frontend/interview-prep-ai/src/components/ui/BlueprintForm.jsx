@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { Loader2, Save, X, Sparkles, AlertTriangle, PlusCircle } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { Label } from "../../components/ui/label";
+import { Label } from "../../components/ui/Label";
 import {
   Select,
   SelectContent,

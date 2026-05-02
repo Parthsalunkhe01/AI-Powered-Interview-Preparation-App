@@ -25,7 +25,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import { Skeleton } from "../../components/ui/Skeleton";
 import SaaSCard from "../../components/ui/SaaSCard";
 import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 import { UserContext } from "../../context/userContext";
 
 

@@ -13,7 +13,7 @@ import InterviewTimer from "../../components/InterviewTimer";
 import AnswerInput from "../../components/AnswerInput";
 import SaaSCard from "../../components/ui/SaaSCard";
 import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../components/ui/Button";
 import { Skeleton } from "../../components/ui/Skeleton";
 
 const FocusedProgressBar = ({ current, total }) => (
