@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import RoleInfoHeader from "./components/RoleInfoHeader"
 import axiosInstance from "../../utils/axiosInstance"
 import { API_PATHS } from "../../utils/apiPath"
-import QuestionCard from "../../components/Cards/QuestionCard"
+import QuestionCard from "../../components/cards/QuestionCard"
 import Drawer from "../../components/Drawer"
 import SkeletonLoader from "../../components/loader/SkeletonLoader";
 import AIResponsePreview from "./components/AIResponseReview";

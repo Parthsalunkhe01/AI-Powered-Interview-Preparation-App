@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../../context/userContext";
-import ProfileInfoCard from "../Cards/ProfileInfoCard";
+import ProfileInfoCard from "../cards/ProfileInfoCard";
 
 // Blue-indigo accent palette
 const BLUE = "#4A7CF7";

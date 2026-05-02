@@ -2,7 +2,7 @@ import { Calendar, Target, Sparkles, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import SaaSCard from "./ui/SaaSCard";
 import { Badge } from "./ui/Badge";
-import { Button } from "./ui/button";
+import { Button } from "./ui/Button";
 
 const TodaysMissionCard = ({ sessionLabel = "Session 1" }) => {
   return (

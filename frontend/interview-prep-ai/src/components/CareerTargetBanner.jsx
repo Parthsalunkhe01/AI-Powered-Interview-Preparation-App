@@ -1,5 +1,5 @@
 import { Briefcase, Clock, Building2, Edit2, Trash2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "./ui/Button";
 
 const CareerTargetBanner = ({ blueprint, onEdit, onDelete, isDeleting }) => {
 
