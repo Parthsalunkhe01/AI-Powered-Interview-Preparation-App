@@ -39,7 +39,7 @@ const SidebarItem = ({ icon: Icon, label, path, active, collapsed }) => (
   </Link>
 );
 
-const Sidebar = ({ collapsed, setCollapsed }) => {
+const Sidebar = ({ collapsed, setCollapsed, isMobile }) => {
   const location = useLocation();
   const { clearUser } = useContext(UserContext);
 
@@ -52,15 +52,19 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 80 : 260 }}
+      initial={false}
+      animate={{ 
+        width: isMobile ? 260 : (collapsed ? 80 : 260),
+        x: isMobile && collapsed ? -260 : 0
+      }}
       className="fixed left-0 top-0 h-screen bg-[#FFFFFF] border-r border-slate-200 z-50 flex flex-col pt-6 pb-8 transition-all duration-300 ease-in-out overflow-hidden shadow-sm"
     >
       {/* ── Logo ── */}
-      <div className={`px-6 mb-10 flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
+      <div className={`px-6 mb-10 flex items-center gap-3 ${collapsed && !isMobile ? 'justify-center' : ''}`}>
         <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shrink-0 shadow-sm">
           <Zap className="h-5 w-5 text-white fill-white" />
         </div>
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -78,7 +82,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
             key={link.path} 
             {...link} 
             active={location.pathname === link.path}
-            collapsed={collapsed}
+            collapsed={collapsed && !isMobile}
           />
         ))}
       </div>
@@ -87,17 +91,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       <div className="px-4 space-y-2">
         <button 
           onClick={() => { clearUser(); }}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-all group ${collapsed ? 'justify-center' : ''}`}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-all group ${collapsed && !isMobile ? 'justify-center' : ''}`}
         >
           <LogOut className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
-          {!collapsed && <span>Logout</span>}
+          {(!collapsed || isMobile) && <span>Logout</span>}
         </button>
 
         <button 
           onClick={() => setCollapsed(!collapsed)}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all ${collapsed ? 'justify-center' : ''}`}
+          className={`hidden md:flex w-full items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all ${collapsed && !isMobile ? 'justify-center' : ''}`}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : (
+          {collapsed && !isMobile ? <ChevronRight className="h-4 w-4" /> : (
               <>
                 <ChevronLeft className="h-4 w-4" />
                 <span>Collapse Sidebar</span>
