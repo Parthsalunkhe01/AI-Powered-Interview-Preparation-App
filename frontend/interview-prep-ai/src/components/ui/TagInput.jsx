@@ -46,10 +46,10 @@ const TagInput = ({
     <div className="space-y-1.5">
       <div
         className={cn(
-          "flex min-h-[48px] w-full flex-wrap gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm transition-all duration-300",
-          "focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 focus-within:ring-offset-0",
+          "flex min-h-[48px] w-full flex-wrap gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm transition-all duration-300",
+          "focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:border-indigo-500/50 focus-within:ring-offset-0",
           disabled && "cursor-not-allowed opacity-50 shadow-inner",
-          error ? "border-rose-500" : "border-white/10"
+          error ? "border-rose-500" : "border-slate-200"
         )}
         onClick={() => ref.current?.focus()}
       >
@@ -61,8 +61,8 @@ const TagInput = ({
               variant === "amber"
                 ? "bg-amber text-amber-foreground"
                 : variant === "premium"
-                  ? "bg-white/10 border border-white/10 text-white hover:bg-white/15"
-                  : "border border-border bg-secondary text-secondary-foreground"
+                  ? "bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100"
+                  : "border border-slate-200 bg-slate-50 text-slate-700"
             )}
           >
             {tag}
@@ -73,7 +73,7 @@ const TagInput = ({
                   e.stopPropagation();
                   removeTag(index);
                 }}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-all text-white/60 hover:text-white"
+                className="ml-1 rounded-full p-0.5 hover:bg-indigo-200 transition-all text-indigo-400 hover:text-indigo-600"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -89,7 +89,8 @@ const TagInput = ({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             placeholder={tags.length === 0 ? placeholder : ""}
-            className="min-w-[140px] flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 outline-none"
+            spellCheck={false}
+            className="min-w-[140px] flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none"
             disabled={disabled}
           />
         )}

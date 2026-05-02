@@ -133,14 +133,14 @@ export default function Resources() {
 
   if (!questions || questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-grid">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
           <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-8"
           >
-              <div className="h-20 w-20 rounded-[28px] bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto shadow-2xl">
-                  <Library className="h-10 w-10 text-primary" />
+              <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
+                  <Library className="h-10 w-10 text-indigo-600" />
               </div>
               <div className="space-y-3">
                   <h1 className="text-4xl font-black tracking-tighter">Your Intelligence Hub is Empty</h1>
@@ -162,7 +162,7 @@ export default function Resources() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
           <div className="space-y-2">
               <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
                       <Sparkles className="h-4 w-4" />
                   </div>
                   <Badge variant="purple">AI Synergy</Badge>
@@ -196,13 +196,13 @@ export default function Resources() {
       <div className="space-y-24">
         {aiLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-white/5 border-dashed">
-                 <RefreshCw className="h-10 w-10 animate-spin text-primary mb-6" />
-                 <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Scanning context...</p>
+             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
+                 <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
+                 <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Scanning context...</p>
              </SaaSCard>
-             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-white/5 border-dashed">
-                 <RefreshCw className="h-10 w-10 animate-spin text-primary mb-6" />
-                 <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Generating artifacts...</p>
+             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
+                 <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
+                 <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Generating artifacts...</p>
              </SaaSCard>
           </div>
         ) : (
@@ -221,7 +221,7 @@ export default function Resources() {
                 >
                   {/* Section Title Group */}
                   <div className="flex items-center gap-6 px-1">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-[22px] bg-white/5 border border-white/10 text-primary font-black text-xl shadow-xl">
+                      <div className="flex items-center justify-center h-14 w-14 rounded-[22px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-black text-xl shadow-sm">
                         {idx + 1}
                       </div>
                       <div className="space-y-1">
@@ -234,8 +234,8 @@ export default function Resources() {
                   </div>
 
                   {!hasResources && !hasVideos ? (
-                    <SaaSCard className="p-10 border-dashed border-white/5 bg-transparent text-center">
-                       <p className="text-muted-foreground italic font-medium">Standard resource mapping failed for this unique query. Refine blueprint for better results.</p>
+                    <SaaSCard className="p-10 border-dashed border-slate-200 bg-transparent text-center">
+                       <p className="text-slate-500 italic font-medium">Standard resource mapping failed for this unique query. Refine blueprint for better results.</p>
                     </SaaSCard>
                   ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -255,7 +255,7 @@ export default function Resources() {
                                     rel="noopener noreferrer"
                                     className="group block"
                                 >
-                                    <SaaSCard className="!p-0 border-none bg-white/2 overflow-hidden ring-1 ring-white/5 hover:ring-red-500/30 transition-all duration-500 h-full">
+                                    <SaaSCard className="!p-0 border border-slate-200 bg-white overflow-hidden ring-1 ring-transparent hover:ring-red-500/30 hover:shadow-md transition-all duration-500 h-full">
                                         <div className="relative aspect-video overflow-hidden">
                                             {vid.thumbnail ? (
                                                 <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -271,7 +271,7 @@ export default function Resources() {
                                             </div>
                                         </div>
                                         <div className="p-5">
-                                            <h4 className="font-bold text-sm leading-tight text-foreground/90 group-hover:text-red-400 transition-colors line-clamp-2">{vid.title}</h4>
+                                            <h4 className="font-bold text-sm leading-tight text-slate-800 group-hover:text-red-500 transition-colors line-clamp-2">{vid.title}</h4>
                                         </div>
                                     </SaaSCard>
                                 </a>
@@ -299,13 +299,13 @@ export default function Resources() {
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-2">
                                                     <BookOpen className="h-4 w-4 text-primary" />
-                                                    <span className="text-[10px] font-black text-muted-foreground uppercase">Verified Publication</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase">Verified Publication</span>
                                                 </div>
-                                                <h4 className="text-lg font-black tracking-tight group-hover:text-primary transition-colors leading-snug">{res.title}</h4>
-                                                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{res.snippet}</p>
+                                                <h4 className="text-lg font-black tracking-tight text-slate-800 group-hover:text-primary transition-colors leading-snug">{res.title}</h4>
+                                                <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{res.snippet}</p>
                                             </div>
-                                            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 group-hover:bg-primary/20 group-hover:border-primary/30 transition-all">
-                                                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 group-hover:bg-indigo-50 border group-hover:border-indigo-100 transition-all">
+                                                <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
                                             </div>
                                         </div>
                                     </SaaSCard>

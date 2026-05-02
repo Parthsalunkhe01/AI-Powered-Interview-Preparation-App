@@ -24,7 +24,7 @@ const LandingNavbar = () => {
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
         scrolled 
-          ? "bg-[#09090b]/80 backdrop-blur-xl border-white/10 py-3" 
+          ? "bg-white/80 backdrop-blur-xl border-slate-200/60 py-3 shadow-sm" 
           : "bg-transparent border-transparent py-5"
       }`}
     >
@@ -34,7 +34,7 @@ const LandingNavbar = () => {
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shadow-primary/20">
             <Zap className="h-5 w-5 text-white fill-white" />
           </div>
-          <span className="font-black text-xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+          <span className="font-black text-xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
             AI-powered Interview Prep
           </span>
         </Link>
@@ -84,7 +84,7 @@ const LandingNavbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#09090b] border-b border-white/10 overflow-hidden"
+            className="md:hidden bg-white border-b border-slate-200/60 shadow-lg overflow-hidden"
           >
             <div className="px-6 py-8 flex flex-col gap-6">
               {navLinks.map((link) => (
@@ -97,7 +97,7 @@ const LandingNavbar = () => {
                   {link.name}
                 </a>
               ))}
-              <div className="h-px bg-white/5" />
+              <div className="h-px bg-slate-100" />
               <button 
                 onClick={() => navigate("/login")}
                 className="text-left font-bold text-lg text-muted-foreground"

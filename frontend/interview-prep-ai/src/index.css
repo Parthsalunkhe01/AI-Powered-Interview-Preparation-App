@@ -6,34 +6,34 @@
 
 @layer base {
   :root {
-    /* SaaS Theme: Dark Slate / Zinc Core */
-    --background: 240 10% 3.9%; /* #09090b */
-    --foreground: 0 0% 98%;      /* #fafafa */
+    /* Premium SaaS Theme: Soft Light & Indigo Core */
+    --background: 210 40% 98%;    /* #F8FAFC */
+    --foreground: 222.2 84% 4.9%; /* #0F172A */
 
-    --card: 240 10% 5.9%;       /* #141416 */
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;            /* #FFFFFF */
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 217.2 91.2% 59.8%; /* #3b82f6 - Vercel/Linear style blue */
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 243 75% 59%;       /* #4F46E5 - Indigo */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 190 95% 36%;     /* #06B6D4 - Soft Cyan */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 75%; /* High-contrast Zinc-400 equivalent */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B */
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 255 92% 76%;        /* #A78BFA - Soft Purple */
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 243 75% 59%;
   }
 
   html {
@@ -49,20 +49,21 @@
 }
 
 @layer components {
-  /* ── Glassmorphism Utils ── */
+  /* ── Light Glassmorphism Utils ── */
   .glass {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   }
 
   .glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
   }
 
   /* ── SaaS Layout Components ── */
@@ -81,14 +82,14 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
   }
 
   .bg-grid {
     background-size: 40px 40px;
     background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.005) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+      linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
   }
 
   /* Subtle glow effects */
@@ -117,42 +118,38 @@
 }
 /* -- Premium Scrollbar -- */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 20px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
 }
-
-
-
 
 /* -- SaaS Theme Layers -- */
 @layer base {
   :root {
-    --background: 240 10% 2%; /* Ultra-dark but not flat black */
-    --surface: 240 10% 4%;
-    --surface-hover: 240 10% 6%;
+    --surface: 210 40% 98%;
+    --surface-hover: 210 40% 96%;
   }
 
   body {
-    background: radial-gradient(circle at 50% -20%, #151b2e 0%, #09090b 100%);
+    background: radial-gradient(circle at 50% -20%, #EEF2FF 0%, #F8FAFC 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
 }
 
-.glass-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.005) 100%);
+.glass-card-light {
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.05);
 }
 

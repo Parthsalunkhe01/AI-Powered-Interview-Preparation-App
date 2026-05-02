@@ -175,8 +175,8 @@ const InterviewBlueprintPage = () => {
       <main className="mx-auto max-w-3xl px-4 pt-8 pb-20">
         {/* Page header */}
         <div className="mb-8 text-center space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/5 px-4 py-1 text-[11px] font-black uppercase tracking-widest text-blue-400 mb-2">
-            <Zap className="h-3.5 w-3.5 text-blue-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 mb-2">
+            <Zap className="h-3.5 w-3.5 text-indigo-600" />
             Intelligence Blueprint
           </div>
           <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
@@ -185,7 +185,7 @@ const InterviewBlueprintPage = () => {
 
 
 
-          <p className="text-md text-muted-foreground/80 max-w-sm mx-auto leading-relaxed font-medium italic">
+          <p className="text-md text-slate-500 max-w-sm mx-auto leading-relaxed font-medium italic">
             "One Directive. Infinite Personalized Mastery."
           </p>
         </div>

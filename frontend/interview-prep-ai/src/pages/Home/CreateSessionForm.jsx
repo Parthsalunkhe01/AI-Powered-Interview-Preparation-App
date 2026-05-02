@@ -89,7 +89,7 @@ const CreateSessionForm = () => {
 
     return (
     <div className="w-[90vw] md:w-[35vw] p-7 flex flex-col justify-center">
-        <h3 className="text-lg font-semibold text-black">
+        <h3 className="text-lg font-semibold text-slate-900">
             Start a New Interview Journey
         </h3>
         <p className="text-xs text-slate-700 mt-[5px] mb-3">
@@ -134,7 +134,7 @@ const CreateSessionForm = () => {
 
             <button
             type="submit"
-            className="h-10 w-full text-white bg-black hover:bg-[#f4cfc3] rounded transition-colors duration-300"
+            className="h-10 w-full text-white bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 rounded transition-colors duration-300 font-bold shadow-sm"
             disabled={isLoading}
             >
                 <div className="flex justify-center items-center gap-3">

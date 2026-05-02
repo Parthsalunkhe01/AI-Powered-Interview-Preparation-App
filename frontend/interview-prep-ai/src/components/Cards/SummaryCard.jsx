@@ -27,7 +27,7 @@ const SummaryCard = ({
             {/* ── Outer Glow & Deep Glass Layer ── */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10 rounded-[32px]" />
             
-            <div className="h-full overflow-hidden rounded-[32px] border border-white/10 bg-[#09090b]/95 p-1 backdrop-blur-3xl transition-all duration-500 hover:border-indigo-500/30 shadow-2xl ring-1 ring-white/5">
+            <div className="h-full overflow-hidden rounded-[32px] border border-slate-200 bg-white p-1 backdrop-blur-3xl transition-all duration-500 hover:border-indigo-300 shadow-xl ring-1 ring-transparent">
                 
                 {/* ── Top Header Section (Deep Gradient Accent) ── */}
                 <div 
@@ -50,17 +50,17 @@ const SummaryCard = ({
 
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <Sparkles className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400/80">Intelligence Directive</span>
+                                <Sparkles className="h-3.5 w-3.5 text-indigo-200 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-100">Intelligence Directive</span>
                             </div>
-                            <h2 className="text-2xl font-black tracking-tight text-white leading-none drop-shadow-lg">{role}</h2>
+                            <h2 className="text-2xl font-black tracking-tight text-white leading-none drop-shadow-sm">{role}</h2>
                         </div>
                     </div>
 
                     {/* Delete Toggle */}
                     {onDelete && (
                         <button 
-                            className="absolute right-6 top-6 h-10 w-10 flex items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 opacity-0 group-hover:opacity-100 transition-all duration-500 hover:bg-rose-500 hover:text-white shadow-lg"
+                            className="absolute right-6 top-6 h-10 w-10 flex items-center justify-center rounded-xl bg-rose-50 border border-rose-200 text-rose-600 opacity-0 group-hover:opacity-100 transition-all duration-500 hover:bg-rose-500 hover:text-white shadow-sm"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onDelete();
@@ -75,27 +75,27 @@ const SummaryCard = ({
                 <div className="space-y-6 p-7">
                     {/* Metadata Pills (High Contrast) */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-2 rounded-full bg-white/5 border border-white/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-100 transition-colors group-hover:border-indigo-500/20 group-hover:bg-indigo-500/5">
-                            <Target className="h-3 w-3 text-indigo-400" />
+                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-colors group-hover:border-indigo-200 group-hover:bg-indigo-50">
+                            <Target className="h-3 w-3 text-indigo-500" />
                             {experience} {experience == 1 ? "YR" : "YRS"} EXP
                         </div>
-                        <div className="flex items-center gap-2 rounded-full bg-white/5 border border-white/5 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-100 transition-colors group-hover:border-purple-500/20 group-hover:bg-purple-500/5">
-                            <Clock className="h-3 w-3 text-purple-400" />
+                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-colors group-hover:border-purple-200 group-hover:bg-purple-50">
+                            <Clock className="h-3 w-3 text-purple-500" />
                             {questions} ARTIFACTS
                         </div>
                     </div>
 
                     {/* Description Insight */}
                     <div className="space-y-3">
-                         <div className="h-px bg-gradient-to-r from-indigo-500/20 via-zinc-800 to-transparent w-full" />
-                         <p className="text-sm font-bold text-zinc-200/90 leading-relaxed line-clamp-2">
+                         <div className="h-px bg-gradient-to-r from-slate-200 via-slate-100 to-transparent w-full" />
+                         <p className="text-sm font-bold text-slate-600 leading-relaxed line-clamp-2">
                             {description || "Strategic roadmap containing surgical technical deep-dives and video simulations."}
                         </p>
                     </div>
 
                     {/* Timeline Tracker */}
                     <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             <Calendar className="h-3 w-3 opacity-60" />
                             Updated {lastUpdated}
                         </div>

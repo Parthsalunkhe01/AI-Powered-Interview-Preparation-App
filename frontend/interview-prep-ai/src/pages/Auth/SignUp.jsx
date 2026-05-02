@@ -79,7 +79,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6 bg-grid selection:bg-primary/30 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 bg-grid selection:bg-primary/30 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -101,7 +101,7 @@ const SignUp = () => {
         </div>
 
         {/* Card */}
-        <div className="p-8 rounded-[32px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl shadow-2xl">
+        <div className="p-8 rounded-[32px] border border-slate-200 bg-white shadow-2xl shadow-slate-200/50">
           <form onSubmit={handleSignUp} className="space-y-6">
             
             {/* Profile Pic Selector Refined */}
@@ -118,7 +118,7 @@ const SignUp = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Alex Henderson"
-                  className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-foreground placeholder:text-muted-foreground/30"
+                  className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ const SignUp = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@nexus.com"
-                  className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-foreground placeholder:text-muted-foreground/30"
+                  className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -146,7 +146,7 @@ const SignUp = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-foreground placeholder:text-muted-foreground/30"
+                  className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ const SignUp = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-white/5 text-center">
+          <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <p className="text-sm font-medium text-muted-foreground">
               Already have an identity?{" "}
               <Link to="/login" className="text-primary font-black hover:underline underline-offset-4">Authenticate Instead</Link>
@@ -184,7 +184,7 @@ const SignUp = () => {
         </div>
 
         <div className="mt-8 text-center px-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 leading-relaxed">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-relaxed transition-colors">
                 By clicking "Initialize Discovery", you agree to our Terms of Protocol and Neural Security Policy.
             </p>
         </div>

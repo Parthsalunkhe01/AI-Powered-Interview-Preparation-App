@@ -59,8 +59,8 @@ const AnalyticsPage = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-6">
                 <SaaSCard className="max-w-md p-12" hover={false}>
-                    <div className="h-20 w-20 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-center mb-8 mx-auto shadow-2xl">
-                        <BarChart2 className="h-10 w-10 text-primary/40" />
+                    <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-8 mx-auto shadow-sm">
+                        <BarChart2 className="h-10 w-10 text-primary" />
                     </div>
                     <h2 className="text-3xl font-black tracking-tighter mb-4">No Performance History</h2>
                     <p className="text-muted-foreground mb-8 text-lg font-medium leading-relaxed">
@@ -81,9 +81,9 @@ const AnalyticsPage = () => {
     }
 
     const stats = [
-        { label: "Total Sessions", value: data.totalInterviews, icon: Zap, color: "text-blue-400", bg: "bg-blue-400/10" },
-        { label: "Mastery Level", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-        { label: "Prep Intensity", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-400", bg: "bg-amber-400/10" },
+        { label: "Total Sessions", value: data.totalInterviews, icon: Zap, color: "text-blue-600", bg: "bg-blue-50 hover:bg-blue-100/50" },
+        { label: "Mastery Level", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100/50" },
+        { label: "Prep Intensity", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100/50" },
     ];
 
     const containerVariants = {
@@ -109,12 +109,12 @@ const AnalyticsPage = () => {
                             <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                                 <stat.icon className="h-6 w-6" />
                             </div>
-                            <div className="h-8 w-8 rounded-full border border-white/5 flex items-center justify-center">
-                                <ArrowUpRight className="h-4 w-4 text-muted-foreground/40" />
+                            <div className="h-8 w-8 rounded-full border border-slate-200 flex items-center justify-center">
+                                <ArrowUpRight className="h-4 w-4 text-slate-400" />
                             </div>
                         </div>
-                        <p className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                        <h3 className="text-4xl font-black tracking-tight">{stat.value}</h3>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                        <h3 className="text-4xl font-black tracking-tight text-slate-900">{stat.value}</h3>
                     </SaaSCard>
                 ))}
             </div>
@@ -125,8 +125,8 @@ const AnalyticsPage = () => {
                 <SaaSCard className="lg:col-span-8 p-10">
                     <div className="flex items-center justify-between mb-10">
                         <div className="space-y-1">
-                            <h3 className="text-2xl font-black tracking-tight">Performance Velocity</h3>
-                            <p className="text-sm text-zinc-300 font-bold italic">Trajectory across your session history</p>
+                            <h3 className="text-2xl font-black tracking-tight text-slate-900">Performance Velocity</h3>
+                            <p className="text-sm text-slate-500 font-medium italic">Trajectory across your session history</p>
                         </div>
                         <div className="flex gap-2">
                            <Badge variant="outline">Score Focus</Badge>
@@ -142,31 +142,31 @@ const AnalyticsPage = () => {
                                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis 
                                     dataKey="index" 
-                                    stroke="rgba(255,255,255,0.2)" 
+                                    stroke="#cbd5e1" 
                                     fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
-                                    tick={{fill: 'rgba(255,255,255,0.4)', fontWeight: 700}}
+                                    tick={{fill: '#64748b', fontWeight: 700}}
                                 />
                                 <YAxis 
-                                    stroke="rgba(255,255,255,0.2)" 
+                                    stroke="#cbd5e1" 
                                     fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
-                                    tick={{fill: 'rgba(255,255,255,0.4)', fontWeight: 700}}
+                                    tick={{fill: '#64748b', fontWeight: 700}}
                                     domain={[0, 100]}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
-                                        backgroundColor: '#0d0d0f', 
+                                        backgroundColor: '#ffffff', 
                                         borderRadius: '16px', 
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                                        border: '1px solid #e2e8f0',
+                                        boxShadow: '0 10px 25px rgba(0,0,0,0.05)'
                                     }}
-                                    itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 800 }}
+                                    itemStyle={{ color: '#0f172a', fontSize: '12px', fontWeight: 800 }}
                                 />
                                 <Area 
                                     type="monotone" 
@@ -184,16 +184,16 @@ const AnalyticsPage = () => {
                 {/* Radar: Topic Mastery */}
                 <div className="lg:col-span-4 space-y-8">
                     <SaaSCard className="h-full p-8 flex flex-col items-center justify-center text-center">
-                        <div className="p-4 rounded-[24px] bg-primary/15 border border-primary/20 mb-6 shadow-2xl shadow-primary/10">
+                        <div className="p-4 rounded-[24px] bg-indigo-50 border border-indigo-100 mb-6 shadow-sm">
             
-                            <h2 className="text-xl font-black mb-1">AI Contextual Insight</h2>
+                            <h2 className="text-xl font-black mb-1 text-indigo-700">AI Contextual Insight</h2>
                         </div>
                         
-                        <p className="text-sm font-bold text-zinc-300 leading-relaxed italic">
+                        <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
                             "{data.insight}"
                         </p>
-                        <div className="mt-8 pt-8 border-t border-white/5 w-full">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-6">Top Signal Areas</p>
+                        <div className="mt-8 pt-8 border-t border-slate-100 w-full">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Top Signal Areas</p>
                             <div className="space-y-4 text-left">
                                 {data.topicPerformance.slice(0, 3).map((tp, i) => (
                                     <div key={i} className="flex flex-col gap-2">
@@ -201,7 +201,7 @@ const AnalyticsPage = () => {
                                             <span>{tp.topic}</span>
                                             <span className="text-primary">{tp.avgScore}%</span>
                                         </div>
-                                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${tp.avgScore}%` }}
@@ -218,13 +218,13 @@ const AnalyticsPage = () => {
 
             {/* ── Strategy Board ── */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <SaaSCard className="p-10 border-rose-500/10">
+                <SaaSCard className="p-10 border-rose-100">
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="h-10 w-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
-                            <AlertCircle className="h-5 w-5 text-rose-400" />
+                        <div className="h-10 w-10 rounded-2xl bg-rose-50 flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-rose-600" />
                         </div>
                         <div>
-                             <h3 className="text-lg font-black leading-none">Practice Prioritization</h3>
+                             <h3 className="text-lg font-black leading-none text-slate-900">Practice Prioritization</h3>
                              <p className="text-xs text-muted-foreground mt-1 font-medium italic">High-impact growth areas</p>
                         </div>
                     </div>
@@ -239,13 +239,13 @@ const AnalyticsPage = () => {
                     </div>
                 </SaaSCard>
 
-                <SaaSCard className="p-10 border-emerald-500/10">
+                <SaaSCard className="p-10 border-emerald-100">
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                        <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
-                             <h3 className="text-lg font-black leading-none">Core Dominance</h3>
+                             <h3 className="text-lg font-black leading-none text-slate-900">Core Dominance</h3>
                              <p className="text-xs text-muted-foreground mt-1 font-medium italic">Verified mastery zones</p>
                         </div>
                     </div>

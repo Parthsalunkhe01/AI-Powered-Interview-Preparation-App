@@ -154,8 +154,8 @@ export default function ResourcesQuestions() {
   if (!data.questions || data.questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 space-y-8">
-          <div className="h-20 w-20 rounded-[28px] bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto shadow-2xl">
-              <Library className="h-10 w-10 text-primary" />
+          <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
+              <Library className="h-10 w-10 text-indigo-600" />
           </div>
           <div className="space-y-3">
               <h1 className="text-4xl font-black tracking-tighter">Roadmap Unavailable</h1>
@@ -181,19 +181,19 @@ export default function ResourcesQuestions() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl space-y-8"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/90 backdrop-blur-xl space-y-8"
           >
             <div className="relative">
-              <div className="h-24 w-24 rounded-[32px] bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Cpu className="h-12 w-12 text-primary animate-pulse" />
+              <div className="h-24 w-24 rounded-[32px] bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-lg shadow-indigo-100/50">
+                <Cpu className="h-12 w-12 text-indigo-600 animate-pulse" />
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-primary p-2 rounded-full shadow-2xl">
+              <div className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-2xl">
                 <RefreshCw className="h-5 w-5 text-white animate-spin" />
               </div>
             </div>
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black tracking-tighter uppercase tracking-[0.2em]">Synthesizing Intelligence</h2>
-              <p className="text-muted-foreground font-medium italic">Architecting master-level technical deep-dives for {questions.length} domains...</p>
+              <h2 className="text-3xl font-black tracking-tighter uppercase tracking-[0.2em] text-slate-900">Synthesizing Intelligence</h2>
+              <p className="text-slate-500 font-medium italic">Architecting master-level technical deep-dives for {questions.length} domains...</p>
             </div>
           </motion.div>
         )}
@@ -242,7 +242,7 @@ export default function ResourcesQuestions() {
                 transition={{ delay: idx * 0.05 }}
               >
                 <SaaSCard className={`overflow-hidden transition-all duration-500 !p-0 ${
-                  isExpanded ? 'ring-2 ring-primary/20 shadow-2xl shadow-primary/5' : 'hover:border-primary/20'
+                  isExpanded ? 'ring-2 ring-indigo-200 shadow-xl shadow-indigo-100/50 border-transparent' : 'hover:border-slate-300 hover:shadow-md'
                 }`}>
                   <button
                     onClick={() => toggleAccordion(idx)}
@@ -250,16 +250,16 @@ export default function ResourcesQuestions() {
                   >
                     <div className="flex items-center gap-6">
                       <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border ${
-                        isExpanded ? 'bg-primary border-primary text-white rotate-12 scale-110 shadow-xl shadow-primary/30' : 'bg-white/5 border-white/5 text-muted-foreground group-hover:text-primary group-hover:border-primary/20'
+                        isExpanded ? 'bg-primary border-primary text-white rotate-12 scale-110 shadow-lg shadow-indigo-500/30' : 'bg-slate-50 border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200'
                       }`}>
                         <span className="text-base font-black italic">Q{idx + 1}</span>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
                           <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
-                            item.difficulty === 'hard' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                            item.difficulty === 'medium' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                            'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                            item.difficulty === 'hard' ? 'bg-rose-50 border-rose-200 text-rose-600' :
+                            item.difficulty === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-600' :
+                            'bg-emerald-50 border-emerald-200 text-emerald-600'
                           }`}>
                             {item.difficulty || "medium"}
                           </span>
@@ -268,14 +268,14 @@ export default function ResourcesQuestions() {
                           </span>
                         </div>
                         <h3 className={`text-xl font-black tracking-tight leading-snug transition-colors duration-500 ${
-                          isExpanded ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'
+                          isExpanded ? 'text-slate-900' : 'text-slate-700 group-hover:text-slate-900'
                         }`}>
                           {qText}
                         </h3>
                       </div>
                     </div>
-                    <div className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 transition-all duration-500 ${isExpanded ? 'rotate-180 border-primary/20 bg-primary/10' : ''}`}>
-                      <ChevronDown className={`h-5 w-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 transition-all duration-500 ${isExpanded ? 'rotate-180 border-indigo-200 bg-indigo-50' : 'group-hover:border-indigo-100 group-hover:bg-indigo-50/50'}`}>
+                      <ChevronDown className={`h-5 w-5 transition-colors ${isExpanded ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'}`} />
                     </div>
                   </button>
 
@@ -288,23 +288,23 @@ export default function ResourcesQuestions() {
                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                       >
                         <div className="px-10 pb-10 pt-2 space-y-10 animate-in fade-in slide-in-from-top-2 duration-500">
-                          <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent w-full" />
+                          <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent w-full" />
                           
                           <div className="space-y-12">
                             {/* Master Explanation */}
                             <div className="space-y-6">
                               <div className="flex items-center gap-3 px-1">
-                                <BookOpen className="h-4 w-4 text-primary" />
-                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Master Perspective</span>
+                                <BookOpen className="h-4 w-4 text-indigo-600" />
+                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Master Perspective</span>
                               </div>
-                              <div className="text-foreground/80 leading-relaxed text-lg font-medium space-y-5 italic border-l-2 border-primary/20 pl-8">
+                              <div className="text-slate-700 leading-relaxed text-lg font-medium space-y-5 italic border-l-2 border-indigo-200 pl-8">
                                 {detailed.explanation.includes("could not be generated") ? (
                                   <div className="space-y-6 pt-2 not-italic">
-                                    <div className="p-6 rounded-2xl bg-rose-500/5 border border-rose-500/10 flex items-start gap-4">
-                                        <AlertCircle className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
+                                    <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-4">
+                                        <AlertCircle className="h-6 w-6 text-rose-600 shrink-0 mt-0.5" />
                                         <div className="space-y-2">
-                                            <p className="text-rose-200 font-bold">Signal Interference Detected</p>
-                                            <p className="text-sm text-rose-200/60 leading-relaxed">
+                                            <p className="text-rose-700 font-bold">Signal Interference Detected</p>
+                                            <p className="text-sm text-rose-600/80 leading-relaxed">
                                                 Our AI nodes failed to architect a deep-dive for this specific domain. This usually happens during high network volatility.
                                             </p>
                                         </div>
@@ -316,7 +316,7 @@ export default function ResourcesQuestions() {
                                             e.stopPropagation();
                                             handleSingleRetry([questions[idx]]);
                                         }}
-                                        className="w-full bg-rose-500/5 hover:bg-rose-500/10 border-rose-500/20 text-rose-400 font-black uppercase tracking-widest"
+                                        className="w-full bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-600 font-black uppercase tracking-widest"
                                     >
                                         <RefreshCw className={`mr-2 h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
                                         Regenerate Intelligence
@@ -331,27 +331,27 @@ export default function ResourcesQuestions() {
                             </div>
 
                             {/* Practical Insights Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="p-8 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10 space-y-5 hover:bg-emerald-500/10 transition-colors">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 outline-none">
+                                <div className="p-8 rounded-[32px] bg-emerald-50 border border-emerald-100 space-y-5 hover:bg-emerald-100/50 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Key Insights</span>
+                                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Key Insights</span>
                                     </div>
                                     <ul className="space-y-4">
                                         {detailed.keyInsights?.map((insight, kit) => (
                                           <li key={kit} className="flex items-start gap-3 group/li">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/40 mt-2 group-hover/li:bg-emerald-400 transition-colors" />
-                                            <span className="text-sm text-foreground/70 font-medium leading-relaxed">{insight}</span>
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 group-hover/li:bg-emerald-500 transition-colors" />
+                                            <span className="text-sm text-slate-700 font-medium leading-relaxed">{insight}</span>
                                           </li>
                                         ))}
                                     </ul>
                                 </div>
-                                <div className="p-8 rounded-[32px] bg-amber-500/5 border border-amber-500/10 space-y-5 hover:bg-amber-500/10 transition-colors">
-                                    <div className="flex items-center gap-3 text-amber-400">
+                                <div className="p-8 rounded-[32px] bg-amber-50 border border-amber-100 space-y-5 hover:bg-amber-100/50 transition-colors">
+                                    <div className="flex items-center gap-3 text-amber-600">
                                         <Lightbulb className="h-5 w-5" />
                                         <span className="text-[10px] font-black uppercase tracking-widest">Tactical Edge</span>
                                     </div>
-                                    <p className="text-lg text-amber-100/80 font-bold italic leading-relaxed">
+                                    <p className="text-lg text-amber-700/90 font-bold italic leading-relaxed">
                                         "{detailed.interviewerTip || "Focus on the strategic trade-offs of this approach."}"
                                     </p>
                                 </div>
@@ -364,10 +364,10 @@ export default function ResourcesQuestions() {
                                       <Terminal className="h-5 w-5 text-primary" />
                                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Implementation Syntax</span>
                                   </div>
-                                  <div className="relative group/code">
-                                    <div className="absolute -inset-[1px] bg-gradient-to-br from-primary/30 to-blue-400/30 rounded-[32px] blur-sm opacity-0 group-hover/code:opacity-100 transition duration-700" />
-                                    <div className="relative bg-black/40 border border-white/5 rounded-[32px] p-8 font-mono text-sm leading-relaxed overflow-x-auto shadow-inner ring-1 ring-white/5">
-                                        <code className="text-primary/90">{detailed.codeExample}</code>
+                                  <div className="relative group/code mt-2">
+                                    <div className="absolute -inset-[1px] bg-slate-200 rounded-[32px] blur-sm opacity-0 group-hover/code:opacity-100 transition duration-700" />
+                                    <div className="relative bg-slate-900 border border-slate-700 rounded-[32px] p-8 font-mono text-sm leading-relaxed overflow-x-auto shadow-inner">
+                                        <code className="text-[13px] text-blue-300">{detailed.codeExample}</code>
                                         <div className="absolute top-4 right-6 flex items-center gap-2">
                                             <div className="h-1.5 w-1.5 rounded-full bg-rose-500/40" />
                                             <div className="h-1.5 w-1.5 rounded-full bg-amber-500/40" />

@@ -17,7 +17,7 @@ import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/Skeleton";
 
 const FocusedProgressBar = ({ current, total }) => (
-    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-8 border border-white/5">
+    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-8 border border-slate-200">
         <motion.div
             className="h-full bg-gradient-to-r from-primary to-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
             initial={{ width: 0 }}
@@ -126,27 +126,27 @@ const InterviewSession = () => {
                     {/* ── Status Header ── */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
                         <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                <Cpu className="h-6 w-6 text-primary animate-pulse" />
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-sm">
+                                <Cpu className="h-6 w-6 text-indigo-600 animate-pulse" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <Badge variant="info">{sessionInfo.type} Context</Badge>
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">• Simulation {sessionId.slice(-4)}</span>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">• Simulation {sessionId.slice(-4)}</span>
                                 </div>
-                                <h1 className="text-2xl font-black tracking-tight">{sessionInfo.company} Simulation</h1>
+                                <h1 className="text-2xl font-black tracking-tight text-slate-900">{sessionInfo.company} Simulation</h1>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl">
-                            <div className="px-3 border-r border-white/10 flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-primary" />
+                        <div className="flex items-center gap-3 bg-white border border-slate-200 shadow-sm p-2 rounded-2xl">
+                            <div className="px-3 border-r border-slate-200 flex items-center gap-2">
+                                <Activity className="h-4 w-4 text-indigo-500" />
                                 <InterviewTimer />
                             </div>
                             <div className="px-3 flex items-center gap-2">
-                                <span className="text-[10px] font-black text-muted-foreground uppercase">Progress</span>
-                                <span className="text-sm font-black text-foreground">{questionCount}</span>
-                                <span className="text-[10px] text-muted-foreground">/ {totalQuestions}</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase">Progress</span>
+                                <span className="text-sm font-black text-slate-800">{questionCount}</span>
+                                <span className="text-[10px] text-slate-400">/ {totalQuestions}</span>
                             </div>
                         </div>
                     </div>
@@ -167,31 +167,31 @@ const InterviewSession = () => {
                             transition={{ duration: 0.4, ease: "circOut" }}
                             className="space-y-8"
                         >
-                            <SaaSCard className="p-10 md:p-14 min-h-[300px] flex flex-col justify-center border-primary/5">
+                            <SaaSCard className="p-10 md:p-14 min-h-[300px] flex flex-col justify-center border-slate-200 bg-white">
                                 <div className="flex items-center gap-3 mb-8">
-                                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shadow-primary/20">
+                                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-sm">
                                         <Bot className="h-4 w-4 text-white" />
                                     </div>
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">AI Intelligence Node</span>
-                                    <div className="flex-1 h-px bg-white/5 mx-2" />
-                                    <Badge variant="outline" className="opacity-60">Q{questionCount}</Badge>
+                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">AI Intelligence Node</span>
+                                    <div className="flex-1 h-px bg-slate-200 mx-2" />
+                                    <Badge variant="outline" className="opacity-60 text-slate-500 border-slate-200">Q{questionCount}</Badge>
                                 </div>
 
-                                <h2 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-foreground/90">
+                                <h2 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-slate-800">
                                     {loading && !currentQuestion ? (
                                         <span className="text-muted-foreground animate-pulse">Synthesizing personalized inquiry...</span>
                                     ) : currentQuestion}
                                 </h2>
 
                                 {loading && (
-                                    <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center z-20">
-                                        <div className="flex gap-1.5 p-4 bg-black/40 rounded-full border border-white/10">
+                                    <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center z-20">
+                                        <div className="flex gap-1.5 p-4 bg-white rounded-full border border-slate-200 shadow-sm">
                                             {[0, 0.2, 0.4].map((d, i) => (
                                                 <motion.span 
                                                     key={i} 
                                                     animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1, 0.8] }}
                                                     transition={{ repeat: Infinity, duration: 1, delay: d }}
-                                                    className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" 
+                                                    className="h-2 w-2 rounded-full bg-indigo-500 shadow-sm" 
                                                 />
                                             ))}
                                         </div>
@@ -202,8 +202,8 @@ const InterviewSession = () => {
                             {/* ── Input Area ── */}
                             <div className="space-y-6">
                                 <div className="flex items-center gap-2 px-1">
-                                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                    <MessageSquare className="h-4 w-4 text-slate-500" />
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                                         Response Input · Voice or Text active
                                     </span>
                                 </div>
@@ -213,9 +213,9 @@ const InterviewSession = () => {
                                     placeholder={`Your response for the ${sessionInfo.company} interview...`}
                                 />
                                 <div className="flex items-center justify-between px-2">
-                                    <div className="flex items-center gap-2 opacity-40">
-                                        <Zap className="h-3 w-3 text-primary" />
-                                        <span className="text-[9px] font-bold uppercase">End-to-End Encryption</span>
+                                    <div className="flex items-center gap-2 opacity-60">
+                                        <Zap className="h-3 w-3 text-indigo-500" />
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase">End-to-End Encryption</span>
                                     </div>
                                     <button 
                                         onClick={handleEndInterview}
@@ -235,9 +235,9 @@ const InterviewSession = () => {
                         >
                             <SaaSCard className="max-w-lg mx-auto p-16">
                                 <div className="relative mx-auto w-28 h-28 mb-10">
-                                    <div className="absolute inset-0 rounded-[2.5rem] bg-primary/20 animate-ping opacity-20" />
-                                    <div className="relative h-28 w-28 rounded-[2.5rem] bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                        <CheckCircle2 className="h-12 w-12 text-primary" />
+                                    <div className="absolute inset-0 rounded-[2.5rem] bg-indigo-100 animate-ping opacity-60" />
+                                    <div className="relative h-28 w-28 rounded-[2.5rem] bg-indigo-50 border border-indigo-100 flex items-center justify-center z-10 shadow-sm">
+                                        <CheckCircle2 className="h-12 w-12 text-indigo-500" />
                                     </div>
                                 </div>
                                 <h3 className="text-3xl font-black tracking-tighter mb-4">Mastery Session Decoded</h3>
@@ -248,7 +248,7 @@ const InterviewSession = () => {
                                     variant="saas"
                                     size="lg"
                                     onClick={handleEndInterview}
-                                    className="w-full py-7 text-lg rounded-2xl shadow-2xl shadow-primary/30"
+                                    className="w-full py-7 text-lg rounded-2xl shadow-md bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600"
                                 >
                                     Access Performance Intelligence
                                     <ChevronRight className="ml-2 h-5 w-5" />

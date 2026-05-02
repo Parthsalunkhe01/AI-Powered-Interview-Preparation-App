@@ -69,15 +69,15 @@ const AnswerInput = ({ onSubmit, loading, placeholder = "Type your answer here..
 
     return (
         <form onSubmit={handleFormSubmit} className="relative w-full max-w-3xl mx-auto group">
-            <div className="relative flex items-center gap-3 bg-muted p-2 rounded-3xl border border-border group-focus-within:border-accent transition-all">
+            <div className="relative flex items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 group-focus-within:border-indigo-300 transition-all shadow-sm">
                 <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={toggleListening}
-                    className={`shrink-0 h-10 w-10 rounded-2xl transition-all ${isListening
-                        ? "bg-red-900/30 text-red-400 animate-pulse hover:bg-red-900/50"
-                        : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80"
+                    className={`shrink-0 h-10 w-10 rounded-2xl transition-all border border-transparent ${isListening
+                        ? "bg-red-50 border-red-200 text-red-500 animate-pulse"
+                        : "bg-slate-50 text-slate-500 hover:text-slate-900 border-slate-200"
                         }`}
                 >
                     {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -88,14 +88,14 @@ const AnswerInput = ({ onSubmit, loading, placeholder = "Type your answer here..
                     onChange={(e) => setText(e.target.value)}
                     placeholder={isListening ? "Listening..." : placeholder}
                     disabled={loading}
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 outline-none disabled:opacity-50 text-foreground placeholder:text-muted-foreground"
+                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 outline-none disabled:opacity-50 text-slate-900 placeholder:text-slate-400"
                 />
 
                 <Button
                     type="submit"
                     disabled={!text.trim() || loading}
                     size="icon"
-                    className="shrink-0 h-10 w-10 rounded-2xl bg-primary hover:bg-primary/90 text-white disabled:bg-white/5 disabled:text-white/20 shadow-xl shadow-primary/20 transition-all active:scale-95"
+                    className="shrink-0 h-10 w-10 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white disabled:opacity-50 shadow-sm transition-all active:scale-95 border-0 hover:from-indigo-600 hover:to-violet-600"
                 >
                     {loading ? (
                         <Loader2 className="h-5 w-5 animate-spin" />

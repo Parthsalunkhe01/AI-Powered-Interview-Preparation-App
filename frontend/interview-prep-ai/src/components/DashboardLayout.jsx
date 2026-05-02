@@ -11,7 +11,7 @@ const DashboardLayout = ({ children }) => {
   const { user } = useContext(UserContext);
 
   return (
-    <div className="flex min-h-screen bg-[#09090b] text-foreground transition-colors duration-300">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-800 transition-colors duration-300">
       {/* ── Sidebar ── */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 

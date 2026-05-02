@@ -211,7 +211,7 @@ const InterviewPrep = () => {
 
                       {!isLoading && sessionData?.question?.length == index + 1 && (
                         <div className="flex items-center justify-center mt-5">
-                          <button className="flex items-center gap-3 text-sm text-white font-medium bg-black px-5 py-2 mr-2 rounded text-nowrap cursor-pointer"
+                          <button className="flex items-center gap-3 text-sm text-slate-700 font-medium bg-white border border-slate-300 shadow-sm px-5 py-2 mr-2 rounded text-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
                             disabled={isLoading || isUpdateLoader}
                             onClick={uploadMoreQuestions}>
                             {isUpdateLoader ? (

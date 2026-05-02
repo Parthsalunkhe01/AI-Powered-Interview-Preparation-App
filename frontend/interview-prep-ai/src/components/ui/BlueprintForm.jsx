@@ -124,16 +124,16 @@ const BlueprintForm = ({
 
   return (
 
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-xl shadow-slate-200/50">
       <form
         onSubmit={handleSubmit}
-        className="rounded-[32px] border border-white/10 bg-neutral-950/80 shadow-2xl overflow-visible backdrop-blur-3xl"
+        className="rounded-[32px] border border-slate-200 bg-white shadow-xl overflow-visible backdrop-blur-3xl"
       >
         <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 rounded-t-[32px]" />
         <div className="p-8 space-y-7 pb-10">
           {/* Target Role with Autocomplete */}
           <div className="space-y-2">
-            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+            <Label className="text-sm font-bold text-slate-700 tracking-tight">
               Target Role <span className="text-rose-500">*</span>
             </Label>
             <AutocompleteInput
@@ -156,7 +156,7 @@ const BlueprintForm = ({
 
           {/* Experience */}
           <div className="space-y-2">
-            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+            <Label className="text-sm font-bold text-slate-700 tracking-tight">
               Years of Experience
             </Label>
             <Select
@@ -164,15 +164,15 @@ const BlueprintForm = ({
               onValueChange={setYearsOfExperience}
               disabled={isSaving}
             >
-              <SelectTrigger className="h-11 rounded-xl border-white/10 bg-white/[0.03] text-sm focus:ring-blue-500/50">
+              <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm focus:ring-indigo-500/50">
                 <SelectValue placeholder="Select experience level" />
               </SelectTrigger>
-              <SelectContent className="rounded-2xl bg-neutral-900 border-white/10 backdrop-blur-3xl shadow-2xl">
+              <SelectContent className="rounded-2xl bg-white border-slate-200 shadow-xl">
                 {EXPERIENCE_OPTIONS.map((opt) => (
                   <SelectItem
                     key={opt.value}
                     value={opt.value}
-                    className="rounded-xl focus:bg-white/10 focus:text-white"
+                    className="rounded-xl text-slate-700 focus:bg-slate-50 focus:text-slate-900"
                   >
                     {opt.label}
                   </SelectItem>
@@ -183,7 +183,7 @@ const BlueprintForm = ({
 
           {/* Skills with Smart Recommendations */}
           <div className="space-y-2">
-            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+            <Label className="text-sm font-bold text-slate-700 tracking-tight">
               Skills <span className="text-rose-500">*</span>
             </Label>
 
@@ -247,7 +247,7 @@ const BlueprintForm = ({
 
           {/* Companies with Autocomplete */}
           <div className="space-y-2">
-            <Label className="text-sm font-bold text-zinc-200 tracking-tight">
+            <Label className="text-sm font-bold text-slate-700 tracking-tight">
               Target Companies <span className="text-rose-500">*</span>
             </Label>
             <AutocompleteInput
@@ -270,8 +270,8 @@ const BlueprintForm = ({
         </div>
 
         {/* Footer (Dark Accent) */}
-        <div className="border-t border-white/5 bg-neutral-900/40 px-8 py-7 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
-          <p className="text-xs font-medium text-zinc-500 italic tracking-wide">
+        <div className="border-t border-slate-200/60 bg-slate-50 px-8 py-7 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
+          <p className="text-xs font-medium text-slate-500 italic tracking-wide">
             {isEditing ? "Synthesizing profile update..." : "Initializing new interview directive"}
           </p>
 

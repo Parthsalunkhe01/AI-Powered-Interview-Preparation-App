@@ -79,9 +79,9 @@ const AutocompleteInput = ({
             </div>
 
             {isOpen && query.length >= 2 && (
-                <div className="absolute z-50 w-full mt-2 bg-[#09090b]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-h-64 overflow-auto animate-in fade-in zoom-in-95 duration-200 ring-1 ring-white/5">
+                <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-64 overflow-auto animate-in fade-in zoom-in-95 duration-200">
                     {isLoading ? (
-                        <div className="p-4 text-sm text-center text-muted-foreground flex items-center justify-center gap-2">
+                        <div className="p-4 text-sm text-center text-slate-500 flex items-center justify-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
                             Searching...
                         </div>
@@ -91,15 +91,15 @@ const AutocompleteInput = ({
                                 <li
                                     key={index}
                                     onClick={() => handleSelect(item)}
-                                    className="px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors flex items-center gap-2"
                                 >
-                                    <Search className="h-3 w-3 text-muted-foreground" />
+                                    <Search className="h-3 w-3 text-slate-400" />
                                     {item}
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <div className="p-4 text-sm text-center text-muted-foreground">
+                        <div className="p-4 text-sm text-center text-slate-500">
                             No professional matches found.
                         </div>
                     )}

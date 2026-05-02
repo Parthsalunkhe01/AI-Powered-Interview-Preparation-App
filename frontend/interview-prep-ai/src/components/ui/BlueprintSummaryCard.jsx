@@ -8,9 +8,9 @@ const BlueprintSummaryCard = ({
   isDeleting,
 }) => {
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-xl shadow-slate-200/50">
       {/* Main Card */}
-      <div className="rounded-[32px] border border-white/10 bg-neutral-950/80 shadow-2xl overflow-hidden backdrop-blur-3xl">
+      <div className="rounded-[32px] border border-slate-200 bg-white shadow-xl overflow-hidden backdrop-blur-3xl">
         
         {/* Accent Top Bar */}
         <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 shadow-lg" />
@@ -21,41 +21,41 @@ const BlueprintSummaryCard = ({
 
           {/* Role + Experience Header */}
           <div className="space-y-4 relative z-10">
-            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
-              <Briefcase className="h-3.5 w-3.5 text-blue-400" />
+            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+              <Briefcase className="h-3.5 w-3.5 text-blue-500" />
               Active Objective
             </div>
             <div className="flex flex-col gap-4">
-              <h2 className="text-3xl font-black tracking-tighter text-white leading-none">
+              <h2 className="text-3xl font-black tracking-tighter text-slate-900 leading-none">
                 {blueprint.targetRole}
               </h2>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-blue-400">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-100 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-blue-600">
                   <Clock className="h-3 w-3" />
                   {blueprint.experienceLevel === "Entry"
                     ? "ENTRY LEVEL"
                     : `${blueprint.experienceLevel.toUpperCase()} EXPERIENCE`}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 border border-slate-200 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500">
                    {blueprint.questions?.length || 0} Artifacts Linked
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="h-px bg-gradient-to-r from-zinc-800/50 via-white/5 to-transparent w-full" />
+          <div className="h-px bg-gradient-to-r from-slate-200 via-slate-100 to-transparent w-full" />
 
           {/* Expertise Mapping */}
           <div className="space-y-4 relative z-10">
-            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
-              <Code2 className="h-3.5 w-3.5 text-indigo-400" />
+            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+              <Code2 className="h-3.5 w-3.5 text-indigo-500" />
               Intelligence Domains
             </div>
             <div className="flex flex-wrap gap-2.5">
               {blueprint.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-xl bg-white/5 border border-white/10 px-4 py-1.5 text-[11px] font-bold text-zinc-200 tracking-tight shadow-inner"
+                  className="rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-1.5 text-[11px] font-bold text-indigo-700 tracking-tight shadow-sm"
                 >
                   {skill}
                 </span>
@@ -66,15 +66,15 @@ const BlueprintSummaryCard = ({
           {/* Target Entities */}
           {blueprint.companies?.length > 0 && (
             <div className="space-y-4 relative z-10">
-              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                <Building2 className="h-3.5 w-3.5 text-purple-400" />
+              <div className="flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                <Building2 className="h-3.5 w-3.5 text-purple-500" />
                 Target Organizations
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {blueprint.companies.map((company) => (
                   <span
                     key={company}
-                    className="rounded-full bg-purple-500/5 border border-purple-500/20 px-4 py-1 text-[11px] font-bold text-purple-300 tracking-tight"
+                    className="rounded-full bg-purple-50 border border-purple-200 px-4 py-1 text-[11px] font-bold text-purple-700 tracking-tight"
                   >
                     {company}
                   </span>
@@ -85,8 +85,8 @@ const BlueprintSummaryCard = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-white/5 bg-neutral-900/40 px-10 py-6 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
-          <p className="text-[10px] font-bold text-zinc-500/60 uppercase tracking-[0.2em] italic">
+        <div className="border-t border-slate-200/60 bg-slate-50 px-10 py-6 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">
             Objective Active · Strategy Decentralized
           </p>
 
@@ -94,9 +94,9 @@ const BlueprintSummaryCard = ({
             <Button
               onClick={onDelete}
               disabled={isDeleting}
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-10 px-6 gap-2 text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all"
+              className="h-10 px-6 gap-2 text-[11px] font-black uppercase tracking-widest bg-white border-rose-200 text-rose-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-all"
             >
               {isDeleting ? (
                 <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
