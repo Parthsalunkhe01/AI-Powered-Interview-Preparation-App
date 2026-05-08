@@ -13,16 +13,16 @@ const SessionSettings = ({ settings, onChange }) => {
     return (
         <div className="bg-white rounded-[32px] border border-slate-200 ring-1 ring-slate-100 p-8 shadow-xl space-y-8">
             <div>
-                <h3 className="text-xl font-black text-slate-900 mb-1">Session Configuration</h3>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tune the AI behavior for this interview</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Interview Settings</h3>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Customize your mock interview experience</p>
             </div>
 
             <div className="space-y-6">
                 {/* Interview Type */}
                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                         <MessageSquare className="h-3.5 w-3.5 text-indigo-500" />
-                        Interview Type protocol
+                        Interview Type
                     </Label>
                     <Select
                         value={settings.type}
@@ -41,9 +41,9 @@ const SessionSettings = ({ settings, onChange }) => {
 
                 {/* Difficulty */}
                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                         <Gauge className="h-3.5 w-3.5 text-indigo-500" />
-                        Difficulty Level parameter
+                        Difficulty Level
                     </Label>
                     <Select
                         value={settings.difficulty}
@@ -61,11 +61,11 @@ const SessionSettings = ({ settings, onChange }) => {
                     </Select>
                 </div>
 
-                {/* Question Count */}
+                {/* Number of Questions */}
                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                         <ListOrdered className="h-3.5 w-3.5 text-indigo-500" />
-                        Question Count density
+                        Number of Questions
                     </Label>
                     <Select
                         value={settings.questionLimit.toString()}
@@ -81,7 +81,7 @@ const SessionSettings = ({ settings, onChange }) => {
                         </SelectContent>
                     </Select>
                     <p className="text-[10px] text-slate-400 font-bold italic pl-1">
-                        Note: Extended sessions calibrate deeper qualitative feedback strings.
+                        Note: Longer sessions provide more detailed feedback on your performance.
                     </p>
                 </div>
             </div>

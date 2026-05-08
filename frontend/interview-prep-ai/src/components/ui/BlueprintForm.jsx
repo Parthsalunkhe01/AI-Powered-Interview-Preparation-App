@@ -192,8 +192,8 @@ const BlueprintForm = ({
               <div className="flex flex-wrap gap-2.5 mb-5 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 animate-in slide-in-from-top-2 duration-300">
                 <div className="flex items-center gap-2 w-full mb-1.5">
                   <Sparkles size={14} className="text-blue-400 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/70">
-                    Recommended Intel
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400/70">
+                    Suggested Skills
                   </span>
                 </div>
                 {analysis.recommendedSkills.map(skill => (
@@ -211,7 +211,7 @@ const BlueprintForm = ({
 
             <p className="text-xs text-muted-foreground flex items-center justify-between">
               <span>Press <kbd className="rounded bg-muted px-1 py-0.5 text-xs text-foreground uppercase font-bold">Enter</kbd> to add</span>
-              {isAnalyzing && <span className="flex items-center gap-1.5 animate-pulse text-primary font-medium italic"><Loader2 size={12} className="animate-spin" /> Analyzing compatibility...</span>}
+              {isAnalyzing && <span className="flex items-center gap-1.5 animate-pulse text-primary font-medium italic"><Loader2 size={12} className="animate-spin" /> Checking skills...</span>}
             </p>
 
             <TagInput
@@ -234,7 +234,7 @@ const BlueprintForm = ({
                   <AlertTriangle className="text-red-600" size={18} />
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Intelligence Warning</h4>
+                  <h4 className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Heads Up!</h4>
                   {analysis.warnings.map((w, i) => (
                     <p key={i} className="text-sm text-red-300 leading-relaxed font-medium">
                       {w}
@@ -272,7 +272,7 @@ const BlueprintForm = ({
         {/* Footer (Dark Accent) */}
         <div className="border-t border-slate-200/60 bg-slate-50 px-8 py-7 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
           <p className="text-xs font-medium text-slate-500 italic tracking-wide">
-            {isEditing ? "Synthesizing profile update..." : "Initializing new interview directive"}
+            {isEditing ? "Updating your profile..." : "Creating your interview profile"}
           </p>
 
           <div className="flex items-center gap-3">
@@ -292,17 +292,17 @@ const BlueprintForm = ({
             <Button
               type="submit"
               disabled={isSaving}
-              className="h-11 gap-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 text-white font-black uppercase tracking-tighter text-xs px-8 shadow-[0_8px_30px_rgba(37,99,235,0.2)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:grayscale"
+              className="h-11 gap-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 text-white font-bold uppercase tracking-tight text-xs px-8 shadow-[0_8px_30px_rgba(37,99,235,0.2)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:grayscale"
             >
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing…
+                  Saving…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Secure Blueprint
+                  Save Profile
                 </>
               )}
             </Button>

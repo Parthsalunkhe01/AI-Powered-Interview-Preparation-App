@@ -13,9 +13,9 @@ const TodaysMissionCard = ({ sessionLabel = "Session 1" }) => {
           <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100">
             <Calendar size={20} />
           </div>
-          <h3 className="text-xl font-black tracking-tight text-slate-900">Today's Mission</h3>
+          <h3 className="text-xl font-bold tracking-tight text-slate-900">Daily Goal</h3>
         </div>
-        <Badge variant="outline" className="border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest px-3 py-1">
+        <Badge variant="outline" className="border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest px-3 py-1">
           {sessionLabel}
         </Badge>
       </div>
@@ -26,18 +26,18 @@ const TodaysMissionCard = ({ sessionLabel = "Session 1" }) => {
              <Sparkles size={40} className="text-blue-500" />
           </div>
           
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-500">
             <Target size={12} />
-            Active Directive
+            Today's Task
           </div>
-          <p className="text-base font-bold leading-relaxed text-slate-700">
-            Complete your daily <span className="text-blue-600 font-black">interview session</span> to synchronize your <span className="text-blue-600 font-black">blueprint data</span> and maintain peak performance.
+          <p className="text-base font-medium leading-relaxed text-slate-700">
+            Complete your <span className="text-blue-600 font-bold">mock interview</span> to track your progress and improve your skills.
           </p>
         </div>
 
         <Link to="/ai-interview/setup" className="block mt-auto">
-          <Button className="w-full h-12 gap-2 rounded-xl bg-primary text-white font-black uppercase tracking-widest text-[11px] shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
-            Initialize Session
+          <Button className="w-full h-12 gap-2 rounded-xl bg-primary text-white font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
+            Start Practice
             <ArrowRight size={14} />
           </Button>
         </Link>

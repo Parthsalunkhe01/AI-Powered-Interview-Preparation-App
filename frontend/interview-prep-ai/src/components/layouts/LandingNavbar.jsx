@@ -34,8 +34,8 @@ const LandingNavbar = () => {
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shadow-primary/20">
             <Zap className="h-5 w-5 text-white fill-white" />
           </div>
-          <span className="font-black text-xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
-            AI-powered Interview Prep
+          <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
+            InterviewAI
           </span>
         </Link>
 
@@ -56,15 +56,15 @@ const LandingNavbar = () => {
         <div className="hidden md:flex items-center gap-4">
           <button 
             onClick={() => navigate("/login")}
-            className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Sign In
+            Login
           </button>
           <button 
             onClick={() => navigate("/signup")}
             className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 flex items-center gap-2 group"
           >
-            Get Started <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+            Try for Free <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 

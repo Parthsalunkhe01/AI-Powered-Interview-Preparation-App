@@ -17,31 +17,31 @@ const RoleInfoHeader = ({
                     <div className="flex-grow">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h2 className="text-2xl font-medium">{role}</h2>
-                                <p className="text-sm text-medium text-gray-900 mt-1">{topicsToFocus}</p>
+                                <h2 className="text-3xl font-bold tracking-tight text-slate-900">{role}</h2>
+                                <p className="text-sm font-medium text-slate-500 mt-1">{topicsToFocus}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 mt-4">
-                    <div className="text-[10px] font-semibold text-white bg-black px-2 py-1 rounded-full">
+                <div className="flex items-center gap-3 mt-6">
+                    <div className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
                         Experience: {experience} {experience == 1 ? "Year": "Years"}
                     </div>
 
-                    <div className="text-[10px] font-semibold text-white bg-black px-2 py-1 rounded-full">
-                        {questions} Q&A
+                    <div className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                        {questions} Questions
                     </div>
 
-                    <div className="text-[10px] font-semibold text-white bg-black px-2 py-1 rounded-full">
-                        Last Updated: {lastUpdated}
+                    <div className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                        Updated: {lastUpdated}
                     </div>
 
                     <button 
                         onClick={onViewResources}
-                        className="text-[10px] font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-full transition-colors cursor-pointer"
+                        className="text-[10px] font-bold text-white bg-primary hover:opacity-90 px-4 py-1.5 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-500/20"
                     >
-                        View AI Resources
+                        View Resources
                     </button>
                 </div>
             </div>

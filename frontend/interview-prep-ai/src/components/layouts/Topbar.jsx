@@ -23,8 +23,8 @@ const Topbar = ({ collapsed, setCollapsed }) => {
                 >
                   <Menu className="h-5 w-5" />
                 </button>
-                <span className="hidden sm:inline-block text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] px-2 py-1">
-                    Intelligence Platform
+                <span className="hidden sm:inline-block text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] px-2 py-1">
+                    InterviewAI
                 </span>
                 {pathSegments.length > 0 && pathSegments.map((segment, index) => (
                     <React.Fragment key={index}>

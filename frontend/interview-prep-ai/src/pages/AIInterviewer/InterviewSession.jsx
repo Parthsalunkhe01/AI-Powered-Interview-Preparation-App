@@ -70,7 +70,7 @@ const InterviewSession = () => {
 
     const handleSubmitAnswer = useCallback(async (answerText) => {
         if (!answerText || !answerText.trim()) {
-            toast.error("Input protocol required. Please articulate your response.");
+            toast.error("Please enter an answer before submitting.");
             return;
         }
         if (loading || isComplete) return;
@@ -84,15 +84,15 @@ const InterviewSession = () => {
             const { nextQuestion, questionId, isComplete: complete } = response.data;
             if (complete) {
                 setIsComplete(true);
-                toast.success("Intelligence gathering complete. Analysis ready.");
+                toast.success("Interview finished! Preparing your feedback.");
             } else {
                 setCurrentQuestion(nextQuestion);
                 setActiveQuestionId(questionId);
                 setQuestionCount((prev) => prev + 1);
-                toast.success("Signal captured.");
+                toast.success("Answer saved.");
             }
         } catch {
-            toast.error("Neural link synchronization error. Retrying...");
+            toast.error("Connection error. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -131,10 +131,10 @@ const InterviewSession = () => {
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <Badge variant="info">{sessionInfo.type} Context</Badge>
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">• Simulation {sessionId.slice(-4)}</span>
+                                    <Badge variant="info">{sessionInfo.type} Interview</Badge>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">• Session {sessionId.slice(-4)}</span>
                                 </div>
-                                <h1 className="text-2xl font-black tracking-tight text-slate-900">{sessionInfo.company} Simulation</h1>
+                                <h1 className="text-2xl font-bold tracking-tight text-slate-900">{sessionInfo.company} Mock Interview</h1>
                             </div>
                         </div>
 
@@ -144,8 +144,8 @@ const InterviewSession = () => {
                                 <InterviewTimer />
                             </div>
                             <div className="px-3 flex items-center gap-2">
-                                <span className="text-[10px] font-black text-slate-400 uppercase">Progress</span>
-                                <span className="text-sm font-black text-slate-800">{questionCount}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Progress</span>
+                                <span className="text-sm font-bold text-slate-800">{questionCount}</span>
                                 <span className="text-[10px] text-slate-400">/ {totalQuestions}</span>
                             </div>
                         </div>
@@ -172,14 +172,14 @@ const InterviewSession = () => {
                                     <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-sm">
                                         <Bot className="h-4 w-4 text-white" />
                                     </div>
-                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">AI Intelligence Node</span>
+                                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">AI Interviewer</span>
                                     <div className="flex-1 h-px bg-slate-200 mx-2" />
-                                    <Badge variant="outline" className="opacity-60 text-slate-500 border-slate-200">Q{questionCount}</Badge>
+                                    <Badge variant="outline" className="opacity-60 text-slate-500 border-slate-200">Question {questionCount}</Badge>
                                 </div>
 
-                                <h2 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-slate-800">
+                                <h2 className="text-2xl md:text-3xl font-bold leading-tight tracking-tight text-slate-800">
                                     {loading && !currentQuestion ? (
-                                        <span className="text-muted-foreground animate-pulse">Synthesizing personalized inquiry...</span>
+                                        <span className="text-muted-foreground animate-pulse">Preparing your next question...</span>
                                     ) : currentQuestion}
                                 </h2>
 
@@ -203,8 +203,8 @@ const InterviewSession = () => {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-2 px-1">
                                     <MessageSquare className="h-4 w-4 text-slate-500" />
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                        Response Input · Voice or Text active
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                        Type your answer below
                                     </span>
                                 </div>
                                 <AnswerInput
@@ -215,13 +215,13 @@ const InterviewSession = () => {
                                 <div className="flex items-center justify-between px-2">
                                     <div className="flex items-center gap-2 opacity-60">
                                         <Zap className="h-3 w-3 text-indigo-500" />
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase">End-to-End Encryption</span>
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase">Secure Interview Session</span>
                                     </div>
                                     <button 
                                         onClick={handleEndInterview}
-                                        className="text-[10px] font-black text-rose-500/60 hover:text-rose-400 transition-colors uppercase tracking-widest"
+                                        className="text-[10px] font-bold text-rose-500/60 hover:text-rose-400 transition-colors uppercase tracking-widest"
                                     >
-                                        Force Terminate Session
+                                        End Interview Early
                                     </button>
                                 </div>
                             </div>
@@ -240,17 +240,17 @@ const InterviewSession = () => {
                                         <CheckCircle2 className="h-12 w-12 text-indigo-500" />
                                     </div>
                                 </div>
-                                <h3 className="text-3xl font-black tracking-tighter mb-4">Mastery Session Decoded</h3>
+                                <h3 className="text-3xl font-black tracking-tighter mb-4">Interview Completed</h3>
                                 <p className="text-muted-foreground text-lg mb-10 leading-relaxed max-w-sm mx-auto">
-                                    The interview is finalized. Our AI is currently processing your performance metrics and contextual answers.
+                                    Great job! Our AI is now reviewing your answers to provide personalized feedback and tips.
                                 </p>
                                 <Button
                                     variant="saas"
                                     size="lg"
                                     onClick={handleEndInterview}
-                                    className="w-full py-7 text-lg rounded-2xl shadow-md bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600"
+                                    className="w-full py-7 text-lg rounded-2xl shadow-md bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 font-bold"
                                 >
-                                    Access Performance Intelligence
+                                    View My Feedback
                                     <ChevronRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </SaaSCard>

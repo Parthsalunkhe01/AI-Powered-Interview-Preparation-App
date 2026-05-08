@@ -175,18 +175,16 @@ const InterviewBlueprintPage = () => {
       <main className="mx-auto max-w-3xl px-4 pt-8 pb-20">
         {/* Page header */}
         <div className="mb-8 text-center space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 mb-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-indigo-600 mb-2">
             <Zap className="h-3.5 w-3.5 text-indigo-600" />
-            Intelligence Blueprint
+            Interview Profile
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            Surgical Interview Roadmap
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Personalized Interview Plan
           </h1>
 
-
-
           <p className="text-md text-slate-500 max-w-sm mx-auto leading-relaxed font-medium italic">
-            "One Directive. Infinite Personalized Mastery."
+            "Your journey to success starts with a clear plan."
           </p>
         </div>
 

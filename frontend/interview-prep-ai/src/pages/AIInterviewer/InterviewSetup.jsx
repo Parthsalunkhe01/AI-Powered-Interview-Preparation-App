@@ -102,13 +102,13 @@ const InterviewSetup = () => {
                 <div className="text-center mb-8 space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-600 mb-2">
                         <Zap className="h-3.5 w-3.5" />
-                        Simulation Environment Ready
+                        Ready to Practice
                     </div>
                     <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-6xl leading-[0.95]">
-                        Start Your <span className="text-primary italic">High-Fidelity</span> Interview
+                        Start Your <span className="text-primary italic">Realistic</span> Interview
                     </h1>
                     <p className="text-base font-bold text-slate-500 max-w-2xl mx-auto leading-relaxed">
-                        Your blueprint has been loaded. Configure your session parameters below to begin the technical evaluation.
+                        Your profile is ready. Choose your settings below to begin your mock interview.
                     </p>
                 </div>
 
@@ -118,60 +118,60 @@ const InterviewSetup = () => {
                             <AlertCircle className="h-10 w-10 text-accent" />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-foreground">Blueprint Required</h2>
+                            <h2 className="text-2xl font-bold text-foreground">Profile Required</h2>
                             <p className="text-muted-foreground max-w-md mx-auto">
-                                We couldn't find an interview blueprint for your account. Blueprints are required to fuel the AI's technical reasoning.
+                                We couldn't find an interview profile for your account. Profiles are used to generate relevant questions for you.
                             </p>
                         </div>
                         <Button
                             onClick={() => navigate("/blueprint")}
                             className="bg-accent hover:opacity-90 text-white rounded-xl h-12 px-8 font-bold"
                         >
-                            Create Blueprint Now <ChevronRight className="h-4 w-4 ml-2" />
+                            Create Profile Now <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
                     </div>
                 ) : (
                     <div className="grid lg:grid-cols-2 gap-8">
                         {/* Left: Summary */}
                         <div className="space-y-4">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-2 mb-2">Protocol Summary</h3>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pl-2 mb-2">Session Summary</h3>
                             <BlueprintSummary blueprint={blueprint} />
                             <div className="bg-indigo-50 p-6 rounded-[24px] border border-indigo-100 shadow-sm space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-indigo-600">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 text-indigo-600">
                                     <Zap className="h-3.5 w-3.5 text-indigo-600 fill-indigo-600" />
-                                    AI Logic Primed
+                                    AI Assistant Ready
                                 </h4>
                                 <p className="text-xs font-bold text-slate-500 leading-relaxed italic">
-                                    The engine will use your {blueprint.skills.length} skills and targeting for {blueprint.company || "tech companies"} to generate unique, challenging questions.
+                                    The AI will use your {blueprint.skills.length} skills to generate challenging and helpful questions for you.
                                 </p>
                             </div>
                         </div>
 
                         {/* Right: Settings */}
                         <div className="space-y-4">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-2 mb-2">Session Parameters</h3>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pl-2 mb-2">Interview Settings</h3>
                             <SessionSettings settings={settings} onChange={handleSettingChange} />
 
                             <div className="pt-4">
                                 <Button
                                     onClick={handleStartInterview}
                                     disabled={loading}
-                                    className="w-full h-16 rounded-3xl bg-accent hover:opacity-90 text-white font-black text-xl shadow-xl shadow-accent/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                                    className="w-full h-16 rounded-3xl bg-accent hover:opacity-90 text-white font-bold text-xl shadow-xl shadow-accent/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
                                 >
                                     {loading ? (
                                         <>
                                             <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Authenticating with AI...
+                                            Starting Interview...
                                         </>
                                     ) : (
                                         <>
-                                            Begin Technical Session
+                                            Start Mock Interview
                                             <ArrowRight className="h-6 w-6" />
                                         </>
                                     )}
                                 </Button>
                                 <p className="text-center text-[10px] text-muted-foreground mt-4">
-                                    Clicking "Begin" will initialize a dedicated virtual environment for your interview.
+                                    Clicking "Start" will begin your personalized interview session.
                                 </p>
                             </div>
                         </div>

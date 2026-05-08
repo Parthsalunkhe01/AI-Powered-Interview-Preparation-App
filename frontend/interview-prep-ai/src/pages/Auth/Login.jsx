@@ -84,22 +84,22 @@ const Login = () => {
             </div>
             <span className="font-black text-3xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Personnel Authentication</h1>
-          <p className="text-muted-foreground font-medium mt-2">Enter credentials to access the intelligence suite.</p>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Login</h1>
+          <p className="text-muted-foreground font-medium mt-2">Enter your details to access your account.</p>
         </div>
 
         {/* Card */}
         <div className="p-8 rounded-[32px] border border-slate-200 bg-white shadow-2xl shadow-slate-200/50">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Email Protocol</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
+                  placeholder="name@email.com"
                   className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
               </div>
@@ -107,8 +107,8 @@ const Login = () => {
 
             <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Access Key</label>
-                    <a href="#" className="text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors">Forgot PWD?</a>
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Password</label>
+                    <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary transition-colors">Forgot Password?</a>
                 </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -136,11 +136,11 @@ const Login = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
             >
               {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                 <>
-                  Initialize Login <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Sign In <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
@@ -148,16 +148,16 @@ const Login = () => {
 
           <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <p className="text-sm font-medium text-muted-foreground">
-              New to the platform?{" "}
-              <Link to="/signup" className="text-primary font-black hover:underline underline-offset-4">Create Personnel ID</Link>
+              New here?{" "}
+              <Link to="/signup" className="text-primary font-bold hover:underline underline-offset-4">Create an Account</Link>
             </p>
           </div>
         </div>
 
         {/* Footer */}
         <div className="mt-8 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 transition-colors">
-                Secure Environment — SSL Encrypted
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 transition-colors">
+                Secure SSL Encryption
             </p>
         </div>
       </motion.div>

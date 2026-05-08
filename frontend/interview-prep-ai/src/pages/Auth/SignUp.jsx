@@ -94,10 +94,10 @@ const SignUp = () => {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-2xl shadow-primary/20 group-hover:scale-110 transition-transform">
               <Zap className="h-6 w-6 text-white fill-white" />
             </div>
-            <span className="font-black text-2xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
+            <span className="font-bold text-2xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>
-          <h1 className="text-2xl font-black tracking-tight text-foreground text-center">New Personnel Enrollment</h1>
-          <p className="text-muted-foreground font-medium mt-2">Initialize your intelligence profile.</p>
+          <h1 className="text-2xl font-black tracking-tight text-foreground text-center">Create Your Account</h1>
+          <p className="text-muted-foreground font-medium mt-2">Join thousands of students preparing for success.</p>
         </div>
 
         {/* Card */}
@@ -110,7 +110,7 @@ const SignUp = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Full Legal Name</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Full Name</label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
@@ -124,21 +124,21 @@ const SignUp = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Communication Protocol</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@nexus.com"
+                  placeholder="name@email.com"
                   className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Security Key (8+ Chars)</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Password (8+ Chars)</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
@@ -165,11 +165,11 @@ const SignUp = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
             >
               {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                 <>
-                  Initialize Discovery <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Create Account <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
@@ -177,15 +177,15 @@ const SignUp = () => {
 
           <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <p className="text-sm font-medium text-muted-foreground">
-              Already have an identity?{" "}
-              <Link to="/login" className="text-primary font-black hover:underline underline-offset-4">Authenticate Instead</Link>
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary font-bold hover:underline underline-offset-4">Sign In Instead</Link>
             </p>
           </div>
         </div>
 
         <div className="mt-8 text-center px-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-relaxed transition-colors">
-                By clicking "Initialize Discovery", you agree to our Terms of Protocol and Neural Security Policy.
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 leading-relaxed transition-colors">
+                By signing up, you agree to our Terms of Service and Privacy Policy.
             </p>
         </div>
       </motion.div>

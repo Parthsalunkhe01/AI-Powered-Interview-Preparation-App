@@ -50,7 +50,7 @@ const AnalyticsPage = () => {
                 <div className="h-16 w-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center animate-spin">
                     <Activity className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-muted-foreground font-black uppercase tracking-widest text-xs animate-pulse">Synchronizing performance data...</p>
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs animate-pulse">Loading your performance data...</p>
             </div>
         );
     }
@@ -62,9 +62,9 @@ const AnalyticsPage = () => {
                     <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-8 mx-auto shadow-sm">
                         <BarChart2 className="h-10 w-10 text-primary" />
                     </div>
-                    <h2 className="text-3xl font-black tracking-tighter mb-4">No Performance History</h2>
+                    <h2 className="text-3xl font-black tracking-tighter mb-4">No Data Yet</h2>
                     <p className="text-muted-foreground mb-8 text-lg font-medium leading-relaxed">
-                        Data is the fuel for improvement. Start your first AI-powered interview session to unlock surgical insights into your performance.
+                        Start your first AI mock interview to see how you perform and get personalized tips for improvement.
                     </p>
                     <Button 
                         variant="saas"
@@ -72,7 +72,7 @@ const AnalyticsPage = () => {
                         onClick={() => window.location.href = '/dashboard'}
                         className="w-full"
                     >
-                        Initialize Mastery Session
+                        Start Your First Interview
                         <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                 </SaaSCard>
@@ -82,8 +82,8 @@ const AnalyticsPage = () => {
 
     const stats = [
         { label: "Total Sessions", value: data.totalInterviews, icon: Zap, color: "text-blue-600", bg: "bg-blue-50 hover:bg-blue-100/50" },
-        { label: "Mastery Level", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100/50" },
-        { label: "Prep Intensity", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100/50" },
+        { label: "Average Score", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100/50" },
+        { label: "Practice Time", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100/50" },
     ];
 
     const containerVariants = {
@@ -113,7 +113,7 @@ const AnalyticsPage = () => {
                                 <ArrowUpRight className="h-4 w-4 text-slate-400" />
                             </div>
                         </div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
                         <h3 className="text-4xl font-black tracking-tight text-slate-900">{stat.value}</h3>
                     </SaaSCard>
                 ))}
@@ -125,11 +125,11 @@ const AnalyticsPage = () => {
                 <SaaSCard className="lg:col-span-8 p-10">
                     <div className="flex items-center justify-between mb-10">
                         <div className="space-y-1">
-                            <h3 className="text-2xl font-black tracking-tight text-slate-900">Performance Velocity</h3>
-                            <p className="text-sm text-slate-500 font-medium italic">Trajectory across your session history</p>
+                            <h3 className="text-2xl font-bold tracking-tight text-slate-900">Score Progress</h3>
+                            <p className="text-sm text-slate-500 font-medium italic">How your scores have changed over time</p>
                         </div>
                         <div className="flex gap-2">
-                           <Badge variant="outline">Score Focus</Badge>
+                           <Badge variant="outline">Performance</Badge>
                         </div>
                     </div>
                     
@@ -186,14 +186,14 @@ const AnalyticsPage = () => {
                     <SaaSCard className="h-full p-8 flex flex-col items-center justify-center text-center">
                         <div className="p-4 rounded-[24px] bg-indigo-50 border border-indigo-100 mb-6 shadow-sm">
             
-                            <h2 className="text-xl font-black mb-1 text-indigo-700">AI Contextual Insight</h2>
+                            <h2 className="text-xl font-bold mb-1 text-indigo-700">AI Feedback</h2>
                         </div>
                         
                         <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
                             "{data.insight}"
                         </p>
                         <div className="mt-8 pt-8 border-t border-slate-100 w-full">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Top Signal Areas</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Top Skills</p>
                             <div className="space-y-4 text-left">
                                 {data.topicPerformance.slice(0, 3).map((tp, i) => (
                                     <div key={i} className="flex flex-col gap-2">
@@ -224,7 +224,7 @@ const AnalyticsPage = () => {
                             <AlertCircle className="h-5 w-5 text-rose-600" />
                         </div>
                         <div>
-                             <h3 className="text-lg font-black leading-none text-slate-900">Practice Prioritization</h3>
+                             <h3 className="text-lg font-bold leading-none text-slate-900">Areas to Improve</h3>
                              <p className="text-xs text-muted-foreground mt-1 font-medium italic">High-impact growth areas</p>
                         </div>
                     </div>
@@ -234,7 +234,7 @@ const AnalyticsPage = () => {
                                 <Badge key={i} variant="destructive" className="px-4 py-1.5 rounded-xl normal-case font-bold">{topic}</Badge>
                             ))
                         ) : (
-                            <p className="text-sm text-muted-foreground italic">Elite performance across all sectors.</p>
+                            <p className="text-sm text-muted-foreground italic">Great performance across all areas.</p>
                         )}
                     </div>
                 </SaaSCard>
@@ -245,8 +245,8 @@ const AnalyticsPage = () => {
                             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
-                             <h3 className="text-lg font-black leading-none text-slate-900">Core Dominance</h3>
-                             <p className="text-xs text-muted-foreground mt-1 font-medium italic">Verified mastery zones</p>
+                             <h3 className="text-lg font-bold leading-none text-slate-900">Your Strengths</h3>
+                             <p className="text-xs text-muted-foreground mt-1 font-medium italic">Topics you have mastered</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2.5">
@@ -255,7 +255,7 @@ const AnalyticsPage = () => {
                                 <Badge key={i} variant="success" className="px-4 py-1.5 rounded-xl normal-case font-bold">{topic}</Badge>
                             ))
                         ) : (
-                            <p className="text-sm text-muted-foreground italic">Establishing mastery profile...</p>
+                            <p className="text-sm text-muted-foreground italic">Start interviews to see your strengths.</p>
                         )}
                     </div>
                 </SaaSCard>

@@ -44,38 +44,38 @@ const LandingPage = () => {
 
   const features = [
     {
-      title: "AI Simulations",
-      description: "Real-time, role-aware interview simulations that adapt to your experience level.",
+      title: "AI Mock Interviews",
+      description: "Realistic, role-based interview practice that adapts to your skill level.",
       icon: Brain,
       color: "bg-blue-500/10 text-blue-400"
     },
     {
-      title: "Intelligence Reports",
-      description: "Deep analytics on your technical signals, communication, and confidence.",
+      title: "Performance Reports",
+      description: "Detailed feedback on your technical skills, communication, and confidence.",
       icon: TrendingUp,
       color: "bg-emerald-500/10 text-emerald-400"
     },
     {
-      title: "Career Blueprints",
-      description: "Custom-tailored roadmaps designed specifically for your target roles.",
+      title: "Career Roadmaps",
+      description: "Custom-tailored study plans designed for your dream job roles.",
       icon: Target,
       color: "bg-purple-500/10 text-purple-400"
     },
     {
-      title: "Technical Deep-Dives",
-      description: "Expand your knowledge with AI-curated resources on specific engineering concepts.",
+      title: "Skill Guides",
+      description: "Learn more with AI-curated resources on specific technical topics.",
       icon: Cpu,
       color: "bg-rose-500/10 text-rose-400"
     },
     {
-      title: "Real-Time Feedback",
-      description: "Get instant corrections and improved ways to articulate complex technical answers.",
+      title: "Instant Feedback",
+      description: "Get immediate tips and better ways to explain complex technical answers.",
       icon: Sparkles,
       color: "bg-amber-500/10 text-amber-400"
     },
     {
-      title: "Global Benchmarks",
-      description: "Compare your performance against anonymized data from the industry's best.",
+      title: "Score Comparison",
+      description: "See how you perform compared to industry standards and other students.",
       icon: Globe,
       color: "bg-cyan-500/10 text-cyan-400"
     }
@@ -97,33 +97,33 @@ const LandingPage = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-white shadow-sm text-primary text-xs font-black uppercase tracking-widest mb-8 animate-pulse">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-white shadow-sm text-primary text-xs font-bold uppercase tracking-widest mb-8">
               <Zap className="h-3 w-3 fill-primary" />
-              Engineered for Excellence
+              Empowering Future Engineers
             </div>
             
             <h1 className="text-5xl lg:text-8xl font-black tracking-tighter mb-8 leading-[0.95] bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500">
               Ace Your Next <br />
-              <span className="text-primary italic">Intelligence</span> Interview.
+              <span className="text-primary italic">Technical</span> Interview.
             </h1>
             
             <p className="text-lg lg:text-xl text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-              The world's most advanced AI-powered platform for technical interview mastery. 
-              Built for high-performing engineers who don't settle for average.
+              The smartest way to prepare for technical interviews. 
+              Practice with AI, get instant feedback, and land your dream job.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button 
                 onClick={() => navigate("/signup")}
-                className="w-full sm:w-auto h-16 px-10 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 flex items-center justify-center gap-3 group"
+                className="w-full sm:w-auto h-16 px-10 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-lg transition-all shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 flex items-center justify-center gap-3 group"
               >
-                Initialize Beta Access <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                Get Started for Free <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button 
                 onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
-                className="w-full sm:w-auto h-16 px-10 bg-white border border-slate-200 text-slate-800 shadow-sm rounded-2xl font-black text-lg transition-all hover:bg-slate-50 flex items-center justify-center gap-3"
+                className="w-full sm:w-auto h-16 px-10 bg-white border border-slate-200 text-slate-800 shadow-sm rounded-2xl font-bold text-lg transition-all hover:bg-slate-50 flex items-center justify-center gap-3"
               >
-                Explore Modules
+                See How it Works
               </button>
             </div>
           </motion.div>
@@ -155,11 +155,11 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl lg:text-5xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
-              Protocol Driven Preparation.
+              Personalized Interview Prep.
             </h2>
             <p className="text-lg text-slate-600 font-medium">
-              We've automated the entire interview lifecycle—from foundational mapping to final evaluation. 
-              No generic theory. Just tactical mission parameters.
+              We've simplified the entire interview preparation process—from learning basics to final practice sessions. 
+              Practical tools for real-world results.
             </p>
           </div>
 
@@ -191,14 +191,14 @@ const LandingPage = () => {
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none" />
             <div className="relative z-10">
               <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter mb-8 leading-tight">
-                Ready to Upgrade Your <br />
-                Professional Protocol?
+                Ready to Boost Your <br />
+                Interview Skills?
               </h2>
               <button 
                 onClick={() => navigate("/signup")}
-                className="h-16 px-12 bg-white text-indigo-600 rounded-2xl font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl"
+                className="h-16 px-12 bg-white text-indigo-600 rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl"
               >
-                Launch Intelligence Suite
+                Start Practicing Now
               </button>
             </div>
           </div>
@@ -212,7 +212,7 @@ const LandingPage = () => {
              <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
                <Zap className="h-4 w-4 text-primary fill-primary" />
              </div>
-             <span className="font-black tracking-tighter text-lg">AI-powered Interview Prep</span>
+             <span className="font-bold tracking-tighter text-lg">AI-powered Interview Prep</span>
           </div>
           
           <div className="flex items-center gap-8 text-sm font-bold text-muted-foreground">
@@ -222,7 +222,7 @@ const LandingPage = () => {
           </div>
           
           <p className="text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">
-            © 2026 DCODEX Labs — All Protocols Reserved.
+            © 2026 DCODEX Labs — All Rights Reserved.
           </p>
         </div>
       </footer>

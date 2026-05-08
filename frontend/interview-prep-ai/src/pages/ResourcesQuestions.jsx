@@ -137,11 +137,11 @@ export default function ResourcesQuestions() {
         };
         setData(updatedData);
         localStorage.setItem("interviewData", JSON.stringify(updatedData));
-        toast.success("Intelligence recovered!");
+        toast.success("Explanation generated successfully!");
       }
     } catch (err) {
       console.error("Single retry failed:", err);
-      toast.error("Recovery failed. System is still experiencing turbulence.");
+      toast.error("Could not generate explanation. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -158,13 +158,13 @@ export default function ResourcesQuestions() {
               <Library className="h-10 w-10 text-indigo-600" />
           </div>
           <div className="space-y-3">
-              <h1 className="text-4xl font-black tracking-tighter">Roadmap Unavailable</h1>
+              <h1 className="text-4xl font-bold tracking-tight">Study Plan Unavailable</h1>
               <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
-                  No operational data detected. Complete a simulation session to generate your personalized technical deep-dives.
+                  No interview data found. Complete a mock interview first to see your personalized study guide.
               </p>
           </div>
           <Button size="lg" variant="saas" onClick={() => navigate("/dashboard")}>
-              Return to Command <ChevronRight className="ml-2 h-4 w-4" />
+              Go to Dashboard <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
       </div>
     );
@@ -192,8 +192,8 @@ export default function ResourcesQuestions() {
               </div>
             </div>
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black tracking-tighter uppercase tracking-[0.2em] text-slate-900">Synthesizing Intelligence</h2>
-              <p className="text-slate-500 font-medium italic">Architecting master-level technical deep-dives for {questions.length} domains...</p>
+              <h2 className="text-3xl font-bold tracking-tight uppercase tracking-[0.2em] text-slate-900">Generating Study Guide</h2>
+              <p className="text-slate-500 font-medium italic">Creating detailed explanations for {questions.length} topics...</p>
             </div>
           </motion.div>
         )}
@@ -213,15 +213,15 @@ export default function ResourcesQuestions() {
             </button>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge variant="purple">Advanced Intelligence</Badge>
+                <Badge variant="purple">AI Analysis</Badge>
                 <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)] animate-pulse" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none">
                 {blueprint?.targetRole || blueprint?.role || "Software Engineer"}
               </h1>
               <div className="flex flex-wrap items-center gap-3 pt-3">
                 <Badge variant="outline" className="px-4 py-1.5 bg-white/5">Exp: {blueprint?.experienceLevel || blueprint?.experience || "Any"}</Badge>
-                <Badge variant="info" className="px-4 py-1.5">{questions.length} Strategic Domains</Badge>
+                <Badge variant="info" className="px-4 py-1.5">{questions.length} Topics</Badge>
               </div>
             </div>
           </div>
@@ -252,22 +252,22 @@ export default function ResourcesQuestions() {
                       <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border ${
                         isExpanded ? 'bg-primary border-primary text-white rotate-12 scale-110 shadow-lg shadow-indigo-500/30' : 'bg-slate-50 border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200'
                       }`}>
-                        <span className="text-base font-black italic">Q{idx + 1}</span>
+                        <span className="text-base font-bold italic">Q{idx + 1}</span>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
+                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
                             item.difficulty === 'hard' ? 'bg-rose-50 border-rose-200 text-rose-600' :
                             item.difficulty === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-600' :
                             'bg-emerald-50 border-emerald-200 text-emerald-600'
                           }`}>
                             {item.difficulty || "medium"}
                           </span>
-                          <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-                            • {item.type || "logic node"}
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                            • {item.type || "concept"}
                           </span>
                         </div>
-                        <h3 className={`text-xl font-black tracking-tight leading-snug transition-colors duration-500 ${
+                        <h3 className={`text-xl font-bold tracking-tight leading-snug transition-colors duration-500 ${
                           isExpanded ? 'text-slate-900' : 'text-slate-700 group-hover:text-slate-900'
                         }`}>
                           {qText}
@@ -295,7 +295,7 @@ export default function ResourcesQuestions() {
                             <div className="space-y-6">
                               <div className="flex items-center gap-3 px-1">
                                 <BookOpen className="h-4 w-4 text-indigo-600" />
-                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Master Perspective</span>
+                                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.3em]">Detailed Explanation</span>
                               </div>
                               <div className="text-slate-700 leading-relaxed text-lg font-medium space-y-5 italic border-l-2 border-indigo-200 pl-8">
                                 {detailed.explanation.includes("could not be generated") ? (
@@ -303,9 +303,9 @@ export default function ResourcesQuestions() {
                                     <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-4">
                                         <AlertCircle className="h-6 w-6 text-rose-600 shrink-0 mt-0.5" />
                                         <div className="space-y-2">
-                                            <p className="text-rose-700 font-bold">Signal Interference Detected</p>
+                                            <p className="text-rose-700 font-bold">Generation Failed</p>
                                             <p className="text-sm text-rose-600/80 leading-relaxed">
-                                                Our AI nodes failed to architect a deep-dive for this specific domain. This usually happens during high network volatility.
+                                                We couldn't generate a detailed explanation for this topic right now. This can happen during peak times.
                                             </p>
                                         </div>
                                     </div>
@@ -316,10 +316,10 @@ export default function ResourcesQuestions() {
                                             e.stopPropagation();
                                             handleSingleRetry([questions[idx]]);
                                         }}
-                                        className="w-full bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-600 font-black uppercase tracking-widest"
+                                        className="w-full bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-600 font-bold uppercase tracking-widest"
                                     >
                                         <RefreshCw className={`mr-2 h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
-                                        Regenerate Intelligence
+                                        Try Again
                                     </Button>
                                   </div>
                                 ) : (
@@ -349,7 +349,7 @@ export default function ResourcesQuestions() {
                                 <div className="p-8 rounded-[32px] bg-amber-50 border border-amber-100 space-y-5 hover:bg-amber-100/50 transition-colors">
                                     <div className="flex items-center gap-3 text-amber-600">
                                         <Lightbulb className="h-5 w-5" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Tactical Edge</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">Interviewer Tip</span>
                                     </div>
                                     <p className="text-lg text-amber-700/90 font-bold italic leading-relaxed">
                                         "{detailed.interviewerTip || "Focus on the strategic trade-offs of this approach."}"
@@ -362,7 +362,7 @@ export default function ResourcesQuestions() {
                               <div className="space-y-6">
                                   <div className="flex items-center gap-3 px-1">
                                       <Terminal className="h-5 w-5 text-primary" />
-                                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Implementation Syntax</span>
+                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Code Example</span>
                                   </div>
                                   <div className="relative group/code mt-2">
                                     <div className="absolute -inset-[1px] bg-slate-200 rounded-[32px] blur-sm opacity-0 group-hover/code:opacity-100 transition duration-700" />

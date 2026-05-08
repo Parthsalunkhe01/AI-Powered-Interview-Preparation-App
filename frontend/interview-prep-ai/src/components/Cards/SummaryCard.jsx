@@ -51,9 +51,9 @@ const SummaryCard = ({
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-3.5 w-3.5 text-indigo-200 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-100">Intelligence Directive</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-indigo-100">Interview Profile</span>
                             </div>
-                            <h2 className="text-2xl font-black tracking-tight text-white leading-none drop-shadow-sm">{role}</h2>
+                            <h2 className="text-2xl font-bold tracking-tight text-white leading-none drop-shadow-sm">{role}</h2>
                         </div>
                     </div>
 
@@ -75,13 +75,13 @@ const SummaryCard = ({
                 <div className="space-y-6 p-7">
                     {/* Metadata Pills (High Contrast) */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-colors group-hover:border-indigo-200 group-hover:bg-indigo-50">
+                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 transition-colors group-hover:border-indigo-200 group-hover:bg-indigo-50">
                             <Target className="h-3 w-3 text-indigo-500" />
                             {experience} {experience == 1 ? "YR" : "YRS"} EXP
                         </div>
-                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-colors group-hover:border-purple-200 group-hover:bg-purple-50">
+                        <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 transition-colors group-hover:border-purple-200 group-hover:bg-purple-50">
                             <Clock className="h-3 w-3 text-purple-500" />
-                            {questions} ARTIFACTS
+                            {questions} QUESTIONS
                         </div>
                     </div>
 
@@ -89,7 +89,7 @@ const SummaryCard = ({
                     <div className="space-y-3">
                          <div className="h-px bg-gradient-to-r from-slate-200 via-slate-100 to-transparent w-full" />
                          <p className="text-sm font-bold text-slate-600 leading-relaxed line-clamp-2">
-                            {description || "Strategic roadmap containing surgical technical deep-dives and video simulations."}
+                            {description || "Personalized study plan with technical resources and video tutorials."}
                         </p>
                     </div>
 

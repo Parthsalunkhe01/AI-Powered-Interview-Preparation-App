@@ -12,26 +12,26 @@ const BlueprintSummary = ({ blueprint, className }) => {
                     <Briefcase className="h-6 w-6 text-indigo-600" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Interview Blueprint</h3>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Protocol Source of Truth</p>
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">Interview Profile</h3>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Your Personalized Profile</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Target Role</p>
-                    <p className="text-sm font-black text-slate-900 capitalize">{blueprint.targetRole}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">Target Role</p>
+                    <p className="text-sm font-bold text-slate-900 capitalize">{blueprint.targetRole}</p>
                 </div>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Experience</p>
-                    <p className="text-sm font-black text-slate-900 capitalize">{blueprint.experienceLevel}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">Experience</p>
+                    <p className="text-sm font-bold text-slate-900 capitalize">{blueprint.experienceLevel}</p>
                 </div>
             </div>
 
             <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
                     <Sparkles className="h-3 w-3 text-indigo-500 animate-pulse" />
-                    Targeted Technical Signals ({blueprint.skills.length})
+                    Technical Skills ({blueprint.skills.length})
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {blueprint.skills.map((skill, index) => (

@@ -24,7 +24,7 @@ const SidebarItem = ({ icon: Icon, label, path, active, collapsed }) => (
         <motion.span 
           initial={{ opacity: 0, x: -5 }}
           animate={{ opacity: 1, x: 0 }}
-          className={`truncate font-bold tracking-tight text-sm ${active ? 'text-[#0F172A]' : 'text-slate-500 group-hover:text-[#0F172A]'}`}
+          className={`truncate font-semibold tracking-tight text-sm ${active ? 'text-[#0F172A]' : 'text-slate-500 group-hover:text-[#0F172A]'}`}
         >
           {label}
         </motion.span>
@@ -47,7 +47,7 @@ const Sidebar = ({ collapsed, setCollapsed, isMobile }) => {
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { label: "Analytics", path: "/analytics", icon: BarChart2 },
     { label: "Resources", path: "/resources", icon: BookOpen },
-    { label: "Blueprints", path: "/blueprint", icon: Briefcase },
+    { label: "Profiles", path: "/blueprint", icon: Briefcase },
   ];
 
   return (
@@ -68,9 +68,9 @@ const Sidebar = ({ collapsed, setCollapsed, isMobile }) => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="font-black text-xl tracking-tighter text-slate-800"
+            className="font-bold text-xl tracking-tight text-slate-800"
           >
-            AI-powered Interview Prep
+            InterviewAI
           </motion.div>
         )}
       </div>

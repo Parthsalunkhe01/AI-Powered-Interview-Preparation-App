@@ -143,13 +143,13 @@ export default function Resources() {
                   <Library className="h-10 w-10 text-indigo-600" />
               </div>
               <div className="space-y-3">
-                  <h1 className="text-4xl font-black tracking-tighter">Your Intelligence Hub is Empty</h1>
+                  <h1 className="text-4xl font-bold tracking-tight">Your Resource Library is Empty</h1>
                   <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
-                      Complete an interview session first to unlock surgical learning materials tailored to your performance.
+                      Complete a mock interview first to see personalized study materials tailored to your performance.
                   </p>
               </div>
               <Button size="lg" variant="saas" onClick={() => navigate("/dashboard")}>
-                  Initialize First Session <ChevronRight className="ml-2 h-4 w-4" />
+                  Start Your First Session <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
           </motion.div>
       </div>
@@ -165,14 +165,14 @@ export default function Resources() {
                   <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
                       <Sparkles className="h-4 w-4" />
                   </div>
-                  <Badge variant="purple">AI Synergy</Badge>
+                  <Badge variant="purple">Personalized</Badge>
               </div>
-              <h1 className="text-4xl font-black tracking-tighter">Mastery Library</h1>
-              <p className="text-muted-foreground font-medium text-lg italic">Contextual artifacts generated from your latest performance data.</p>
+              <h1 className="text-4xl font-bold tracking-tight">Learning Center</h1>
+              <p className="text-muted-foreground font-medium text-lg italic">Resources selected based on your recent interview performance.</p>
           </div>
           <div className="flex items-center gap-3">
               <Button variant="outline" size="sm" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
-                  View Roadmap Breakdown <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  View Study Plan <ArrowRight className="ml-1 h-3.5 w-3.5" />
               </Button>
           </div>
       </div>
@@ -185,25 +185,25 @@ export default function Resources() {
             topicsToFocus={blueprint?.skills?.join(", ") || blueprint?.topicsToFocus || "General Topics"}
             experience={blueprint?.experienceLevel || blueprint?.experience || "Any"}
             questions={questions.length}
-            description="Operational Learning Directive (Active)"
+            description="Your Current Study Plan"
             lastUpdated={blueprint?.updatedAt ? moment(blueprint.updatedAt).format("Do MMM YYYY") : moment().format("Do MMM YYYY")}
             onSelect={() => navigate("/resources/questions", { state: { blueprint, questions } })} 
             onDelete={null}
           />
       </section>
 
-      {/* ── Intelligence Feed ── */}
+      {/* ── Resource Library ── */}
       <div className="space-y-24">
         {aiLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
-                 <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
-                 <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Scanning context...</p>
-             </SaaSCard>
-             <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
-                 <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
-                 <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Generating artifacts...</p>
-             </SaaSCard>
+              <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
+                  <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
+                  <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] animate-pulse">Checking performance...</p>
+              </SaaSCard>
+              <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
+                  <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
+                  <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] animate-pulse">Finding resources...</p>
+              </SaaSCard>
           </div>
         ) : (
           <AnimatePresence>
@@ -221,21 +221,21 @@ export default function Resources() {
                 >
                   {/* Section Title Group */}
                   <div className="flex items-center gap-6 px-1">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-[22px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-black text-xl shadow-sm">
+                      <div className="flex items-center justify-center h-14 w-14 rounded-[22px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xl shadow-sm">
                         {idx + 1}
                       </div>
                       <div className="space-y-1">
                          <div className="flex items-center gap-2">
-                             <Badge variant="info">Topic Intelligence</Badge>
-                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">• Verified Insight</span>
+                             <Badge variant="info">Topic Insight</Badge>
+                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">• Recommended</span>
                          </div>
-                         <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-tight">{section.topic}</h2>
+                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight">{section.topic}</h2>
                       </div>
                   </div>
 
                   {!hasResources && !hasVideos ? (
                     <SaaSCard className="p-10 border-dashed border-slate-200 bg-transparent text-center">
-                       <p className="text-slate-500 italic font-medium">Standard resource mapping failed for this unique query. Refine blueprint for better results.</p>
+                       <p className="text-slate-500 italic font-medium">No resources found for this specific topic. Try updating your interview profile for better results.</p>
                     </SaaSCard>
                   ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -244,7 +244,7 @@ export default function Resources() {
                       <div className="lg:col-span-7 space-y-6">
                         <div className="flex items-center gap-2 px-1 mb-4">
                             <Youtube className="h-4 w-4 text-red-500" />
-                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60">Visual Mastery</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Video Tutorials</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {section.videos?.slice(0, 4).map((vid, vidx) => (
@@ -283,7 +283,7 @@ export default function Resources() {
                       <div className="lg:col-span-5 space-y-6">
                         <div className="flex items-center gap-2 px-1 mb-4">
                             <Globe className="h-4 w-4 text-primary" />
-                            <h3 className="text-sm font-black uppercase tracking-widest opacity-60">Technical Documentation</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Reading Materials</h3>
                         </div>
                         <div className="space-y-6">
                             {section.resources?.slice(0, 3).map((res, ridx) => (
@@ -299,9 +299,9 @@ export default function Resources() {
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-2">
                                                     <BookOpen className="h-4 w-4 text-primary" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">Verified Publication</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Reference</span>
                                                 </div>
-                                                <h4 className="text-lg font-black tracking-tight text-slate-800 group-hover:text-primary transition-colors leading-snug">{res.title}</h4>
+                                                <h4 className="text-lg font-bold tracking-tight text-slate-800 group-hover:text-primary transition-colors leading-snug">{res.title}</h4>
                                                 <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{res.snippet}</p>
                                             </div>
                                             <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 group-hover:bg-indigo-50 border group-hover:border-indigo-100 transition-all">

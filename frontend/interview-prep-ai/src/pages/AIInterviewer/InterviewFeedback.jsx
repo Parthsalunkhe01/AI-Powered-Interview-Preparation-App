@@ -22,24 +22,24 @@ const READINESS = {
         border: "border-emerald-500/30",
         color: "text-emerald-400",
         icon: Award,
-        label: "Operational Readiness",
-        desc: "Elite performance identified. The candidate exhibits high-level technical maturity and alignment with senior expectations.",
+        label: "Job Ready",
+        desc: "Great performance! You show a strong understanding of technical concepts and communicate effectively.",
     },
     "Improving": {
         gradient: "from-primary/20 to-blue-400/20",
         border: "border-primary/30",
         color: "text-primary",
         icon: Zap,
-        label: "Strategic Development",
-        desc: "Foundational mastery confirmed. Performance trajectory is positive with specific areas identified for surgical refinement.",
+        label: "Good Progress",
+        desc: "You have a solid foundation. With a bit more practice in specific areas, you'll be ready for top-tier interviews.",
     },
     "Needs Practice": {
         gradient: "from-rose-500/20 to-pink-500/20",
         border: "border-rose-500/30",
         color: "text-rose-400",
         icon: Timer,
-        label: "Foundational Focus",
-        desc: "Core concepts established. Immediate focus required on deep-technical reasoning to bridge current performance gaps.",
+        label: "Needs Practice",
+        desc: "You've got the basics down. Focus on explaining your technical reasoning more clearly to improve your score.",
     },
 };
 
@@ -78,7 +78,7 @@ const InterviewFeedback = () => {
                 }
             } catch (error) {
                 console.error("Feedback error:", error);
-                toast.error("Feedback generation failed.");
+                toast.error("Failed to generate feedback.");
                 navigate(-1);
             } finally {
                 setLoading(false);
@@ -96,8 +96,8 @@ const InterviewFeedback = () => {
                     </div>
                 </div>
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-black tracking-tighter uppercase tracking-[0.2em]">Analyzing Signal</h2>
-                    <p className="text-muted-foreground font-medium animate-pulse">Synthesizing technical performance and communication metrics...</p>
+                    <h2 className="text-2xl font-bold tracking-tight uppercase tracking-[0.2em]">Analyzing Interview</h2>
+                    <p className="text-muted-foreground font-medium animate-pulse">Our AI is reviewing your answers and preparing feedback...</p>
                 </div>
             </div>
         );
@@ -113,9 +113,9 @@ const InterviewFeedback = () => {
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
                         <ClipboardCheck className="h-4 w-4 text-primary" />
-                        <Badge variant="info">Intelligence Report</Badge>
+                        <Badge variant="info">Interview Report</Badge>
                     </div>
-                    <h1 className="text-4xl font-black tracking-tighter">Performance Analysis</h1>
+                    <h1 className="text-4xl font-black tracking-tighter">Performance Feedback</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
@@ -138,7 +138,7 @@ const InterviewFeedback = () => {
                     </div>
                     <div className="text-center md:text-left space-y-4 flex-1">
                         <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                            <Badge variant="outline" className="bg-black/20 border-white/10">Signal Confidence: 98%</Badge>
+                            <Badge variant="outline" className="bg-black/20 border-white/10">AI Accuracy: 98%</Badge>
                             <Badge variant="purple" className="bg-black/20 border-white/10">AI Performance Grade</Badge>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black tracking-tighter">{readinessCfg.label}</h2>
@@ -156,7 +156,7 @@ const InterviewFeedback = () => {
                         <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
                             <MessageSquare className="h-6 w-6 text-blue-400" />
                         </div>
-                        <h3 className="text-2xl font-black tracking-tight">Communication Flow</h3>
+                        <h3 className="text-2xl font-bold tracking-tight">Communication Skills</h3>
                     </div>
                     <p className="text-muted-foreground leading-relaxed font-medium text-lg">
                         {feedback?.qualitativeAnalysis?.communication}
@@ -168,7 +168,7 @@ const InterviewFeedback = () => {
                         <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">
                             <Sparkles className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-2xl font-black tracking-tight">Technical Reasoning</h3>
+                        <h3 className="text-2xl font-bold tracking-tight">Technical Knowledge</h3>
                     </div>
                     <p className="text-muted-foreground leading-relaxed font-medium text-lg">
                         {feedback?.qualitativeAnalysis?.technicalReasoning}
@@ -181,7 +181,7 @@ const InterviewFeedback = () => {
                 <div className="space-y-8">
                     <div className="flex items-center gap-3 px-1">
                         <Target className="h-6 w-6 text-emerald-400" />
-                        <h3 className="text-base font-black uppercase tracking-[0.2em] text-muted-foreground">High-Value Strengths</h3>
+                        <h3 className="text-base font-bold uppercase tracking-[0.2em] text-muted-foreground">Your Strengths</h3>
                     </div>
                     <div className="space-y-4">
                         {feedback?.strengths?.map((s, i) => (
@@ -204,7 +204,7 @@ const InterviewFeedback = () => {
                 <div className="space-y-8">
                     <div className="flex items-center gap-3 px-1">
                         <TrendingUp className="h-6 w-6 text-primary" />
-                        <h3 className="text-base font-black uppercase tracking-[0.2em] text-muted-foreground">Growth Trajectories</h3>
+                        <h3 className="text-base font-bold uppercase tracking-[0.2em] text-muted-foreground">Areas to Improve</h3>
                     </div>
                     <div className="space-y-4">
                         {feedback?.improvementAreas?.map((item, i) => (
@@ -236,16 +236,16 @@ const InterviewFeedback = () => {
                             <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shadow-xl shadow-purple-500/10">
                                 <BarChart3 className="h-7 w-7 text-purple-400" />
                             </div>
-                            <h3 className="text-3xl font-black tracking-tight leading-tight">Strategic Alignment</h3>
+                            <h3 className="text-3xl font-bold tracking-tight leading-tight">Industry Standards</h3>
                             <p className="text-muted-foreground font-medium text-lg leading-relaxed italic">
-                                Domain-specific benchmarks identified based on elite organizational standards.
+                                How you match up against expectations from top tech companies.
                             </p>
                         </div>
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {feedback.companyExpectations.map((exp, idx) => (
                                 <div key={idx} className="p-6 rounded-2xl bg-white/3 border border-white/5 flex items-center gap-4 hover:bg-white/5 transition-colors">
                                     <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_rgba(59,130,246,0.8)] shrink-0" />
-                                    <span className="text-base font-black tracking-tight opacity-90">{exp}</span>
+                                    <span className="text-base font-bold tracking-tight opacity-90">{exp}</span>
                                 </div>
                             ))}
                         </div>
@@ -256,16 +256,16 @@ const InterviewFeedback = () => {
             {/* ── Conclusion CTA ── */}
             <div className="flex flex-col items-center pt-8 text-center space-y-10">
                 <div className="space-y-3">
-                    <p className="text-xs font-black uppercase tracking-[0.4em] text-primary">Mission Complete</p>
-                    <h3 className="text-3xl md:text-4xl font-black tracking-tighter">Ready for the next operational phase?</h3>
-                    <p className="text-muted-foreground text-lg max-w-xl mx-auto">Your performance data is now synced. Utilize the mastery materials to bridge identified gaps before your next simulation.</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.4em] text-primary">Well Done!</p>
+                    <h3 className="text-3xl md:text-4xl font-black tracking-tighter">Ready for more practice?</h3>
+                    <p className="text-muted-foreground text-lg max-w-xl mx-auto">Your performance data is now saved. Use our learning resources to improve in the areas we've identified.</p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-6">
                     <Button variant="saas" size="lg" onClick={() => navigate("/dashboard")} className="px-12 h-16 rounded-2xl shadow-2xl shadow-primary/30 text-lg">
-                        Return to Command <ChevronRight className="ml-2 h-6 w-6" />
+                        Back to Dashboard <ChevronRight className="ml-2 h-6 w-6" />
                     </Button>
                     <Button variant="outline" size="lg" onClick={() => navigate("/resources")} className="px-12 h-16 rounded-2xl text-lg hover:bg-white/5">
-                        Access Learning Vault <ArrowRight className="ml-2 h-6 w-6" />
+                        View Resources <ArrowRight className="ml-2 h-6 w-6" />
                     </Button>
                 </div>
             </div>
