@@ -7,6 +7,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import { UserContext } from "../../context/userContext";
 import { toast } from "react-hot-toast";
+import GoogleAuthButton from "../../components/Auth/GoogleAuthButton";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -58,6 +59,12 @@ const Login = () => {
         }
       }
     } catch (err) {
+      if (err.response?.status === 403 && err.response?.data?.isVerified === false) {
+        const emailToVerify = err.response.data.email;
+        toast.error("Email not verified. Redirecting to verification...");
+        navigate(`/verify-email?email=${encodeURIComponent(emailToVerify)}`);
+        return;
+      }
       const message = err.response?.data?.message || "Authentication failed. Check your credentials.";
       setError(message);
       toast.error(message);
@@ -108,7 +115,7 @@ const Login = () => {
             <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
                     <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Password</label>
-                    <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary transition-colors">Forgot Password?</a>
+                    <Link to="/forgot-password" className="text-[10px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary transition-colors">Forgot Password?</Link>
                 </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -132,7 +139,6 @@ const Login = () => {
                 {error}
               </motion.div>
             )}
-
             <button 
               type="submit"
               disabled={loading}
@@ -145,6 +151,19 @@ const Login = () => {
               )}
             </button>
           </form>
+
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-100"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground font-bold tracking-widest">Or</span>
+              </div>
+            </div>
+            
+            <GoogleAuthButton />
+          </div>
 
           <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <p className="text-sm font-medium text-muted-foreground">

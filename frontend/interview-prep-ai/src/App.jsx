@@ -7,6 +7,9 @@ import DashboardLayout from "./components/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import VerifyEmail from "./pages/Auth/VerifyEmail";
 import Dashboard from "./pages/Home/DashBoard";
 import InterviewPrep from "./pages/InterviewPre/InterviewPrep";
 import InterviewBlueprintPage from "./pages/Home/InterviewBlueprintPage";
@@ -53,6 +56,9 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected SaaS Workspace */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

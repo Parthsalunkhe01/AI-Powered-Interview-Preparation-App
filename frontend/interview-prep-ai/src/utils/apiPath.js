@@ -2,9 +2,14 @@ export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export const API_PATHS = {
   AUTH: {
-    REGISTER: "/api/auth/register", // Signup
-    LOGIN: "/api/auth/login", // Authenticate user & return JWT token
-    GET_PROFILE: "/api/auth/profile", // Get logged-in user details
+    REGISTER: "/api/auth/register",       // Signup
+    LOGIN: "/api/auth/login",             // Authenticate user & return JWT token
+    GOOGLE: "/api/auth/google",           // Google OAuth token verification
+    VERIFY_EMAIL: "/api/auth/verify-email", // Verify email with OTP
+    RESEND_OTP: "/api/auth/resend-otp",   // Resend verification OTP
+    GET_PROFILE: "/api/auth/profile",     // Get logged-in user details
+    FORGOT_PASSWORD: "/api/auth/forgot-password", // Send password reset email
+    RESET_PASSWORD: "/api/auth/reset-password",   // Reset password using token
   },
 
   IMAGE: {

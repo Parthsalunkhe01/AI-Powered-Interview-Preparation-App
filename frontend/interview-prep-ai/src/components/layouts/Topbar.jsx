@@ -49,8 +49,8 @@ const Topbar = ({ collapsed, setCollapsed }) => {
                         <span className="text-slate-500 mt-1 font-medium">{user?.email || "No email"}</span>
                     </div>
                     <button className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center hover:shadow-sm transition-all p-1.5 group">
-                        {user?.profilePicture ? (
-                            <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-lg" />
+                        {user?.profileImageUrl ? (
+                            <img src={user.profileImageUrl} alt="Profile" className="w-full h-full object-cover rounded-lg" />
                         ) : (
                             <User className="h-5 w-5 text-slate-400 group-hover:scale-110 group-hover:text-indigo-600 transition-all" />
                         )}

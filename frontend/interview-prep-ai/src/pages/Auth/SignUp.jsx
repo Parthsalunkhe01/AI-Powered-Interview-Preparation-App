@@ -9,6 +9,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import UploadImage from "../../utils/UploadImage";
 import { toast } from "react-hot-toast";
+import GoogleAuthButton from "../../components/Auth/GoogleAuthButton";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -62,12 +63,9 @@ const SignUp = () => {
         profileImageUrl,
       });
 
-      const { token } = response.data;
-      if (token) {
-        localStorage.setItem("token", token);
-        updateUser(response.data);
-        toast.success("Identity Created! Initializing blueprint...");
-        navigate("/blueprint"); 
+      if (response.status === 201) {
+        toast.success("Account created! Verifying your email...");
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } catch (err) {
       const message = err.response?.data?.message || "Registration failed. Try again later.";
@@ -161,7 +159,6 @@ const SignUp = () => {
                 {error}
               </motion.div>
             )}
-
             <button 
               type="submit"
               disabled={loading}
@@ -174,6 +171,19 @@ const SignUp = () => {
               )}
             </button>
           </form>
+
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-100"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground font-bold tracking-widest">Or</span>
+              </div>
+            </div>
+            
+            <GoogleAuthButton />
+          </div>
 
           <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <p className="text-sm font-medium text-muted-foreground">
