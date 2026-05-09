@@ -11,6 +11,18 @@ const answerSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        code: {
+            type: String,
+            default: "",
+        },
+        language: {
+            type: String,
+            default: "javascript",
+        },
+        image: {
+            type: String, // URL or base64
+            default: "",
+        },
     },
     { _id: false }
 );

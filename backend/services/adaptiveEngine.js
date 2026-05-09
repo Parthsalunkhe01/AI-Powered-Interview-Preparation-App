@@ -192,7 +192,7 @@ async function selectNextQuestion({
   }
 
   // Default: Pick from question bank for the given focus
-  const localQuestions = getQuestionsForFocus(focus, difficultyLevel, 5, usedQuestionIds);
+  const localQuestions = getQuestionsForFocus(focus, difficultyLevel, 5, usedQuestionIds, role);
   const localQ = localQuestions[0];
 
   if (!localQ) {

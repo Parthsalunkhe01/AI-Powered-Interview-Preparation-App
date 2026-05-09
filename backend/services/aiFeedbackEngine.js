@@ -28,13 +28,13 @@ CRITICAL EVALUATION RULES:
 - Evaluate UNDERSTANDING and EXPLANATION QUALITY, not just answer length
 - Be honest and precise — this platform's credibility depends on accurate scores
 
-Per-question scoring (questionScore field, 0-100 each):
-- Skipped/empty: 0
-- Single word or meaningless: 5-15
-- Very brief with partial concept: 20-35
-- Adequate but shallow: 40-60
-- Good with reasoning: 65-80
-- Excellent with examples/depth: 82-100
+Per-question scoring (questionScore field, 0-100 each, status field):
+- Skipped/empty: 0, status: "Skipped"
+- Meaningless/Wrong: 5-15, status: "Incorrect"
+- Very brief/Weak: 20-35, status: "Weak"
+- Adequate but shallow: 40-60, status: "Average"
+- Good with reasoning: 65-80, status: "Good"
+- Excellent depth: 82-100, status: "Excellent"
 
 Return ONLY a valid JSON object (no markdown, no extra text):
 {
@@ -48,7 +48,7 @@ Return ONLY a valid JSON object (no markdown, no extra text):
   "hiringReadiness": "<NotReady|Progressing|Ready|Excellent>",
   "oneLiner": "<honest one-sentence summary>",
   "questionFeedback": [
-    { "index": 0, "questionScore": <0-100>, "note": "<specific honest feedback>" }
+    { "index": 0, "questionScore": <0-100>, "status": "<Excellent|Good|Average|Weak|Incorrect|Skipped>", "note": "<specific honest feedback>" }
   ],
   "performanceCategory": "<Garbage|Weak|Average|Good|Excellent>"
 }`;
@@ -75,15 +75,25 @@ function computeRuleBasedScores(history) {
   else if (avg >= 60) hiringReadiness = "Ready";
   else if (avg >= 35) hiringReadiness = "Progressing";
 
-  const questionFeedback = history.map((h, i) => ({
-    index: i,
-    questionScore: scores[i],
-    note: scores[i] === 0 ? "Question was skipped"
-      : scores[i] < 20 ? "Answer too brief — no concepts demonstrated"
-      : scores[i] < 45 ? "Weak answer — missing key concepts and reasoning"
-      : scores[i] < 65 ? "Average answer — some understanding shown but lacks depth"
-      : "Adequate answer with reasonable detail",
-  }));
+  const questionFeedback = history.map((h, i) => {
+    const s = scores[i];
+    const status = s === 0 ? "Skipped" 
+                 : s < 20 ? "Incorrect" 
+                 : s < 45 ? "Weak" 
+                 : s < 65 ? "Average" 
+                 : s < 85 ? "Good" 
+                 : "Excellent";
+    return {
+      index: i,
+      questionScore: s,
+      status,
+      note: s === 0 ? "Question was skipped"
+        : s < 20 ? "Answer too brief — no concepts demonstrated"
+        : s < 45 ? "Weak answer — missing key concepts and reasoning"
+        : s < 65 ? "Average answer — some understanding shown but lacks depth"
+        : "Adequate answer with reasonable detail",
+    };
+  });
 
   return {
     technicalScore: avg,

@@ -13,6 +13,9 @@ import { API_PATHS } from "../../utils/apiPath";
 import InterviewTimer from "../../components/InterviewTimer";
 import { Badge } from "../../components/ui/Badge";
 import { Skeleton } from "../../components/ui/Skeleton";
+import TaskAwareInput from "./TaskAwareInput";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 // ── Mode config ─────────────────────────────────────────────────────────────
 const MODE_CFG = {
@@ -83,10 +86,33 @@ const ConversationBubble = ({ item, index }) => (
             </div>
         </div>
         {/* Answer */}
-        {item.answer && (
+        {(item.answer || item.code || item.image) && (
             <div className="flex items-start gap-2 justify-end">
-                <div className="bg-indigo-600 rounded-2xl rounded-tr-sm px-3 py-2 max-w-[85%]">
-                    <p className="text-xs text-white/90 leading-relaxed">{item.answer}</p>
+                <div className="flex flex-col items-end gap-1.5 max-w-[85%]">
+                    {item.answer && (
+                        <div className="bg-indigo-600 rounded-2xl rounded-tr-sm px-3 py-2">
+                            <p className="text-xs text-white/90 leading-relaxed">{item.answer}</p>
+                        </div>
+                    )}
+                    {item.code && (
+                        <div className="w-full rounded-xl overflow-hidden border border-slate-700 shadow-lg max-w-md">
+                            <div className="bg-slate-800 px-3 py-1 flex justify-between">
+                                <span className="text-[8px] font-black text-slate-400 uppercase">{item.language || "code"}</span>
+                            </div>
+                            <SyntaxHighlighter 
+                                language={item.language || "javascript"} 
+                                style={vscDarkPlus}
+                                customStyle={{ margin: 0, fontSize: '10px', padding: '12px' }}
+                            >
+                                {item.code}
+                            </SyntaxHighlighter>
+                        </div>
+                    )}
+                    {item.image && (
+                        <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm max-w-[200px]">
+                            <img src={item.image} alt="Diagram" className="w-full h-auto" />
+                        </div>
+                    )}
                 </div>
                 <div className="h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
                     <User className="h-2.5 w-2.5 text-indigo-600" />
@@ -96,70 +122,7 @@ const ConversationBubble = ({ item, index }) => (
     </div>
 );
 
-// ── Answer Input ─────────────────────────────────────────────────────────────
-const AnswerBox = ({ onSubmit, loading, placeholder, mode }) => {
-    const [value, setValue] = useState("");
-    const textareaRef = useRef(null);
 
-    useEffect(() => {
-        if (!loading && textareaRef.current) {
-            textareaRef.current.focus();
-        }
-    }, [loading]);
-
-    const handleSubmit = () => {
-        if (!value.trim()) {
-            toast.error("Please type an answer before submitting.");
-            return;
-        }
-        onSubmit(value.trim());
-        setValue("");
-    };
-
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-            handleSubmit();
-        }
-    };
-
-    const charCount = value.length;
-    const charColor = charCount < 40 ? "text-amber-500" : charCount > 200 ? "text-emerald-600" : "text-slate-400";
-
-    return (
-        <div className="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm focus-within:border-indigo-400 transition-colors duration-200">
-            <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={e => setValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-                rows={4}
-                placeholder={placeholder}
-                className="w-full px-4 pt-3 pb-2 text-sm text-slate-800 placeholder:text-slate-400 bg-transparent resize-none outline-none font-medium leading-relaxed"
-            />
-            <div className="flex items-center justify-between px-4 py-2 border-t border-slate-100 bg-slate-50">
-                <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-bold ${charColor}`}>{charCount} chars</span>
-                    {charCount < 40 && charCount > 0 && (
-                        <span className="text-[10px] text-amber-500 font-medium">Add more detail for a better score</span>
-                    )}
-                    {charCount > 200 && (
-                        <span className="text-[10px] text-emerald-600 font-medium">Detailed answer ✓</span>
-                    )}
-                    <span className="text-[10px] text-slate-400 hidden sm:block">Ctrl+Enter to submit</span>
-                </div>
-                <button
-                    onClick={handleSubmit}
-                    disabled={loading || !value.trim()}
-                    className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-xs font-bold px-4 py-1.5 rounded-xl transition-colors"
-                >
-                    <Send className="h-3 w-3" />
-                    Submit
-                </button>
-            </div>
-        </div>
-    );
-};
 
 // ── Main Component ──────────────────────────────────────────────────────────
 const InterviewSession = () => {
@@ -175,6 +138,7 @@ const InterviewSession = () => {
     const [currentQuestion, setCurrentQuestion] = useState(firstQuestion || "");
     const [currentCategory, setCurrentCategory] = useState(firstCategory || "General");
     const [currentTags, setCurrentTags] = useState(firstTags || []);
+    const [currentType, setCurrentType] = useState(location.state?.firstType || "conceptual");
     const [isFollowUp, setIsFollowUp] = useState(false);
     const [activeQuestionId, setActiveQuestionId] = useState(firstQuestionId || null);
     const [loading, setLoading] = useState(false);
@@ -211,6 +175,11 @@ const InterviewSession = () => {
                         setCurrentQuestion(lastQ.question);
                         setActiveQuestionId(lastQ._id);
                         setQuestionCount(session.question.length);
+                        if (session.questionMeta?.[session.question.length - 1]) {
+                            setCurrentType(session.questionMeta[session.question.length - 1].type || "conceptual");
+                            setCurrentCategory(session.questionMeta[session.question.length - 1].category || "General");
+                            setCurrentTags(session.questionMeta[session.question.length - 1].tags || []);
+                        }
                         if (session.feedback) setIsComplete(true);
                     }
                 } catch {
@@ -229,13 +198,18 @@ const InterviewSession = () => {
         historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [conversationHistory]);
 
-    const handleSubmitAnswer = useCallback(async (answerText) => {
+    const handleSubmitAnswer = useCallback(async (answerData) => {
         if (loading || isComplete) return;
+
+        const { answer: answerText, code, language, image } = answerData;
 
         // Add current Q+A to history
         const currentEntry = {
             question: currentQuestion,
             answer: answerText,
+            code,
+            language,
+            image,
             category: currentCategory,
         };
         setConversationHistory(prev => [...prev, currentEntry]);
@@ -244,10 +218,16 @@ const InterviewSession = () => {
         try {
             const response = await axiosInstance.post(
                 API_PATHS.INTERVIEW_SESSION.SUBMIT_ANSWER(sessionId),
-                { questionId: activeQuestionId, answer: answerText }
+                { 
+                    questionId: activeQuestionId, 
+                    answer: answerText,
+                    code,
+                    language,
+                    image
+                }
             );
 
-            const { nextQuestion, questionId, isComplete: complete, category, tags, isFollowUp: followUp } = response.data;
+            const { nextQuestion, questionId, isComplete: complete, category, tags, type: nextType, isFollowUp: followUp } = response.data;
 
             if (complete) {
                 setIsComplete(true);
@@ -257,6 +237,7 @@ const InterviewSession = () => {
                 setActiveQuestionId(questionId);
                 setCurrentCategory(category || "General");
                 setCurrentTags(tags || []);
+                setCurrentType(nextType || "conceptual");
                 setIsFollowUp(followUp || false);
                 setQuestionCount(prev => prev + 1);
             }
@@ -409,20 +390,37 @@ const InterviewSession = () => {
 
                                 {/* ── Answer Input ── */}
                                 <div className="space-y-2">
-                                    <div className="flex items-center gap-1.5 px-1">
-                                        <MessageSquare className="h-3 w-3 text-slate-400" />
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your Answer</span>
+                                    <div className="flex items-center justify-between px-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <MessageSquare className="h-3 w-3 text-slate-400" />
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                {currentType === 'coding' ? 'Implementation Task' : 
+                                                 currentType === 'debug' ? 'Debugging Task' : 
+                                                 currentType === 'system_design' ? 'System Design Task' : 
+                                                 'Technical Answer'}
+                                            </span>
+                                        </div>
+                                        <Badge variant="secondary" className="text-[9px] font-black px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-600 border-indigo-100 uppercase">
+                                            {currentType}
+                                        </Badge>
                                     </div>
-                                    <AnswerBox
+                                    
+                                    <TaskAwareInput
+                                        type={currentType}
                                         onSubmit={handleSubmitAnswer}
                                         loading={loading}
-                                        placeholder={`Answer here — be specific and explain your reasoning...`}
-                                        mode={sessionInfo.mode}
+                                        placeholder={
+                                            currentType === 'coding' ? "Implement the solution below..." :
+                                            currentType === 'debug' ? "Identify and fix the bug..." :
+                                            currentType === 'system_design' ? "Explain the architecture and attach a diagram if needed..." :
+                                            "Type your detailed explanation here..."
+                                        }
                                     />
+
                                     <div className="flex items-center justify-between px-1">
                                         <div className="flex items-center gap-1.5">
                                             <Layers className="h-3 w-3 text-slate-400" />
-                                            <span className="text-[10px] font-semibold text-slate-400">Answers are auto-saved and analyzed</span>
+                                            <span className="text-[10px] font-semibold text-slate-400">Task-aware engine activated</span>
                                         </div>
                                         <button
                                             onClick={handleEndInterview}

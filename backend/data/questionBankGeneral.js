@@ -1,0 +1,30 @@
+/** General/Warmup Question Bank — Strict Domain Isolation */
+const GENERAL_QUESTIONS = [
+  { id:"gen-01", category:"General", difficulty:1, type:"behavioral",
+    text:"Walk me through your background and key projects you've worked on.",
+    expectedConcepts:["self intro","experience","communication"],
+    followUpHints:["What project are you most proud of?","What technologies excite you most?"],
+    tags:["Warmup","Communication"], companyPattern:"all" },
+  { id:"gen-02", category:"General", difficulty:1, type:"behavioral",
+    text:"Why are you interested in this role and what do you hope to learn?",
+    expectedConcepts:["motivation","career goals","role alignment"],
+    followUpHints:["What specific skills do you want to develop?"],
+    tags:["Warmup","Behavioral"], companyPattern:"amazon" },
+  { id:"gen-03", category:"General", difficulty:2, type:"behavioral",
+    text:"Describe a technically challenging problem you faced and how you solved it.",
+    expectedConcepts:["problem solving","debugging","critical thinking","impact"],
+    followUpHints:["What would you do differently now?","How did you measure success?"],
+    tags:["Problem Solving","Behavioral"], companyPattern:"google" },
+  { id:"gen-04", category:"General", difficulty:2, type:"behavioral",
+    text:"Tell me about a time you disagreed with a teammate and how you handled it.",
+    expectedConcepts:["conflict resolution","communication","collaboration","ownership"],
+    followUpHints:["What was the final outcome?"],
+    tags:["Behavioral","HR"], companyPattern:"amazon" },
+  { id:"gen-05", category:"General", difficulty:1, type:"behavioral",
+    text:"What is your biggest technical weakness and what are you doing to improve it?",
+    expectedConcepts:["self-awareness","growth mindset","honesty"],
+    followUpHints:["How long have you been working on this?"],
+    tags:["HR","Behavioral"], companyPattern:"microsoft" },
+];
+
+module.exports = { GENERAL_QUESTIONS };

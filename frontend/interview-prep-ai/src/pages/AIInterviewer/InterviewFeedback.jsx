@@ -122,21 +122,34 @@ const ScoreBar = ({ label, score, icon: Icon, color = "bg-indigo-500", delay = 0
 
 // ── Question Feedback Row ───────────────────────────────────────────────────
 const QuestionFeedbackRow = ({ item, index }) => {
-    const scoreColors = ["bg-rose-100 text-rose-700", "bg-amber-100 text-amber-700", "bg-blue-100 text-blue-700", "bg-emerald-100 text-emerald-700"];
-    const scoreLabels = ["Skipped", "Needs Work", "Adequate", "Strong"];
-    const score = Math.min(3, Math.max(0, item.score || 0));
+    const status = item.status || "Analyzed";
+    const statusColors = {
+        "Excellent": "bg-violet-100 text-violet-700 border-violet-200",
+        "Good": "bg-emerald-100 text-emerald-700 border-emerald-200",
+        "Average": "bg-amber-100 text-amber-700 border-amber-200",
+        "Weak": "bg-orange-100 text-orange-700 border-orange-200",
+        "Incorrect": "bg-rose-100 text-rose-700 border-rose-200",
+        "Skipped": "bg-slate-100 text-slate-700 border-slate-200"
+    };
 
     return (
         <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.08 }}
-            className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-colors"
+            className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-colors group"
         >
-            <div className={`text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 mt-0.5 ${scoreColors[score]}`}>
-                {scoreLabels[score]}
+            <div className="flex flex-col items-center gap-1 shrink-0 mt-0.5">
+                <div className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${statusColors[status] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                    {status}
+                </div>
+                {item.questionScore !== undefined && (
+                    <span className="text-[8px] font-bold text-slate-400 group-hover:text-indigo-500 transition-colors">
+                        {item.questionScore}/100
+                    </span>
+                )}
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed font-medium flex-1">{item.note || "Analyzed"}</p>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium flex-1">{item.note || "Analysis complete"}</p>
         </motion.div>
     );
 };

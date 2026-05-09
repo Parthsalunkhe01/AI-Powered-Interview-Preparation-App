@@ -94,7 +94,7 @@ exports.saveAnswers = async (req, res) => {
 // @access Private
 exports.submitAnswer = async (req, res) => {
     try {
-        const { questionId, answer } = req.body;
+        const { questionId, answer, code, language, image } = req.body;
 
         const session = await InterviewSession.findOne({
             _id: req.params.id,
@@ -112,8 +112,17 @@ exports.submitAnswer = async (req, res) => {
             );
             if (existingIdx >= 0) {
                 session.answers[existingIdx].answerText = answer || "";
+                session.answers[existingIdx].code = code || "";
+                session.answers[existingIdx].language = language || "javascript";
+                session.answers[existingIdx].image = image || "";
             } else {
-                session.answers.push({ questionId, answerText: answer || "" });
+                session.answers.push({ 
+                    questionId, 
+                    answerText: answer || "",
+                    code: code || "",
+                    language: language || "javascript",
+                    image: image || "",
+                });
             }
         }
 
