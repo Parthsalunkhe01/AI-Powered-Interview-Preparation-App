@@ -3,38 +3,46 @@ const { estimateConfidence } = require("./adaptiveEngine");
 
 const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// ── LAYERED SCORING RUBRIC ────────────────────────────────────────────────────
-// Garbage: 0-15 | Weak: 20-40 | Average: 45-65 | Good: 70-85 | Excellent: 85-100
+// -- LAYERED SCORING RUBRIC ----------------------------------------------------
+// Garbage: 0-15 | Weak: 15-40 | Average: 40-65 | Good: 65-85 | Excellent: 85-100
 
 const buildAssessmentPrompt = ({ role, experience, mode, history }) => {
   const historyText = history
-    .map((h, i) => `Q${i + 1} [${h.category || "General"}]: ${h.question}\nA${i + 1}: ${h.answer || "(skipped/no answer)"}`)
+    .map((h, i) => {
+        let entry = `Q${i + 1} [${h.category || "General"}]: ${h.question}\n`;
+        if (h.answer) entry += `A${i + 1} (Text): ${h.answer}\n`;
+        if (h.code) entry += `A${i + 1} (Code [${h.language || 'javascript'}]): \n${h.code}\n`;
+        if (h.image) entry += `A${i + 1} (Diagram): [Attached Image Path: ${h.image}]\n`;
+        if (!h.answer && !h.code && !h.image) entry += `A${i + 1}: (skipped/no answer)\n`;
+        return entry;
+    })
     .join("\n\n");
 
-  return `You are a STRICT senior technical interviewer evaluating a ${experience || "entry-level"} ${role || "Software Engineer"} candidate in ${mode || "standard"} mode.
+  return `You are a professional senior technical interviewer evaluating a ${experience || "entry-level"} ${role || "Software Engineer"} candidate in ${mode || "standard"} mode.
 
 Interview transcript:
 ${historyText}
 
 CRITICAL EVALUATION RULES:
-- Garbage/nonsense answers: score 0-15 ONLY
-- Vague/weak answers with no concepts: score 20-40
-- Average student answers (some concepts, poor depth): score 45-65
-- Good answers (correct concepts, decent reasoning): score 70-85
-- Excellent industry-level answers (deep understanding, examples, edge cases): score 86-100
-- Do NOT give strengths for bad answers — set strengths to [] if overall performance is poor
-- Strengths ONLY appear when: concepts are explained correctly, reasoning exists, examples are relevant
-- Copied/keyword-stuffed answers with no real understanding should score 25-45 MAX
-- Evaluate UNDERSTANDING and EXPLANATION QUALITY, not just answer length
-- Be honest and precise — this platform's credibility depends on accurate scores
+- Evaluate based on TECHNICAL ACCURACY, DEPTH OF EXPLANATION, CODE QUALITY (if applicable), and ARCHITECTURAL REASONING (for diagrams).
+- Weak answer (too brief, missing core concepts): 0-40
+- Average answer (shows basic understanding, lacks depth): 40-60
+- Good interview-level answer (correct concepts, clear reasoning): 60-80
+- Strong detailed answer (demonstrates mastery, explains why, mentions trade-offs): 80-90
+- Excellent industry-level answer (deep technical mastery, edge cases, scalability, clear examples): 90-100
+
+IMPORTANT: 
+- Do NOT artificially cap scores at 60 or 70. 
+- If the candidate provides a high-quality, industry-level response with solid code/diagram references, give them 90+.
+- Evaluate UNDERSTANDING and EXPLANATION QUALITY.
 
 Per-question scoring (questionScore field, 0-100 each, status field):
 - Skipped/empty: 0, status: "Skipped"
-- Meaningless/Wrong: 5-15, status: "Incorrect"
-- Very brief/Weak: 20-35, status: "Weak"
-- Adequate but shallow: 40-60, status: "Average"
-- Good with reasoning: 65-80, status: "Good"
-- Excellent depth: 82-100, status: "Excellent"
+- Meaningless/Wrong: 5-25, status: "Incorrect"
+- Very brief/Weak: 25-45, status: "Weak"
+- Adequate but shallow: 45-65, status: "Average"
+- Good with reasoning: 65-85, status: "Good"
+- Excellent depth & expertise: 86-100, status: "Excellent"
 
 Return ONLY a valid JSON object (no markdown, no extra text):
 {
@@ -50,71 +58,74 @@ Return ONLY a valid JSON object (no markdown, no extra text):
   "questionFeedback": [
     { "index": 0, "questionScore": <0-100>, "status": "<Excellent|Good|Average|Weak|Incorrect|Skipped>", "note": "<specific honest feedback>" }
   ],
-  "performanceCategory": "<Garbage|Weak|Average|Good|Excellent>"
+  "performanceCategory": "<Weak|Average|Good|Excellent>"
 }`;
 };
 
-// ── RULE-BASED FALLBACK ───────────────────────────────────────────────────────
+// -- RULE-BASED FALLBACK -------------------------------------------------------
 function computeRuleBasedScores(history) {
   const scores = history.map(h => {
     const txt = (h.answer || "").trim();
-    if (!txt) return 0;
-    if (txt.length < 20) return 10;
-    if (txt.length < 60) return 25;
-    if (txt.length < 150) return 42;
-    if (txt.length < 300) return 58;
-    return 65;
+    const code = (h.code || "").trim();
+    if (!txt && !code) return 0;
+    const len = txt.length + (code.length * 1.5); // Code counts more
+    if (len < 20) return 20;
+    if (len < 100) return 45;
+    if (len < 300) return 65;
+    if (len < 600) return 82;
+    return 92;
   });
 
   const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  const answered = history.filter(h => h.answer && h.answer.trim().length > 0).length;
+  const answered = history.filter(h => (h.answer && h.answer.trim().length > 0) || (h.code && h.code.trim().length > 0)).length;
   const skipped = history.length - answered;
 
   let hiringReadiness = "NotReady";
-  if (avg >= 80) hiringReadiness = "Excellent";
-  else if (avg >= 60) hiringReadiness = "Ready";
-  else if (avg >= 35) hiringReadiness = "Progressing";
+  if (avg >= 85) hiringReadiness = "Excellent";
+  else if (avg >= 70) hiringReadiness = "Ready";
+  else if (avg >= 45) hiringReadiness = "Progressing";
 
   const questionFeedback = history.map((h, i) => {
     const s = scores[i];
     const status = s === 0 ? "Skipped" 
-                 : s < 20 ? "Incorrect" 
-                 : s < 45 ? "Weak" 
-                 : s < 65 ? "Average" 
-                 : s < 85 ? "Good" 
+                 : s < 30 ? "Incorrect" 
+                 : s < 50 ? "Weak" 
+                 : s < 70 ? "Average" 
+                 : s < 88 ? "Good" 
                  : "Excellent";
     return {
       index: i,
       questionScore: s,
       status,
       note: s === 0 ? "Question was skipped"
-        : s < 20 ? "Answer too brief — no concepts demonstrated"
-        : s < 45 ? "Weak answer — missing key concepts and reasoning"
-        : s < 65 ? "Average answer — some understanding shown but lacks depth"
-        : "Adequate answer with reasonable detail",
+        : s < 30 ? "Answer too brief"
+        : s < 50 ? "Weak answer - missing depth"
+        : s < 70 ? "Average answer"
+        : s < 88 ? "Good answer with reasonable detail"
+        : "Strong and detailed answer",
     };
   });
 
   return {
     technicalScore: avg,
-    communicationScore: Math.max(0, avg - (skipped * 8)),
+    communicationScore: Math.max(0, avg - (skipped * 5)),
     problemSolvingScore: avg,
     conceptCoverageScore: avg,
-    strengths: avg >= 55 && answered > 0 ? ["Completed the session"] : [],
+    strengths: avg >= 50 && answered > 0 ? ["Attempted questions"] : [],
     weakAreas: [
-      ...(skipped > 0 ? [`${skipped} question(s) skipped — answer all questions`] : []),
-      ...(avg < 50 ? ["Needs deeper understanding of core concepts", "Practice explaining concepts clearly"] : ["Expand answers with concrete examples"]),
+      ...(skipped > 0 ? [`${skipped} question(s) skipped`] : []),
+      ...(avg < 60 ? ["Provide more detailed explanations"] : ["Focus on edge cases"]),
     ],
-    suggestedTopics: ["Core technical fundamentals", "Structured answer delivery", "Concept depth practice"],
+    suggestedTopics: ["Technical Fundamentals", "Industry Best Practices"],
     hiringReadiness,
     oneLiner: `Candidate answered ${answered}/${history.length} questions. Rule-based score: ${avg}/100.`,
     questionFeedback,
-    performanceCategory: avg < 20 ? "Garbage" : avg < 45 ? "Weak" : avg < 65 ? "Average" : avg < 85 ? "Good" : "Excellent",
+    performanceCategory: avg < 30 ? "Weak" : avg < 60 ? "Average" : avg < 85 ? "Good" : "Excellent",
     _usedFallback: true,
   };
 }
 
-// ── MAIN FEEDBACK GENERATOR ───────────────────────────────────────────────────
+// -- MAIN FEEDBACK GENERATOR ---------------------------------------------------
 const generateStructuredFeedback = async ({ role, experience, history, mode, answers }) => {
   if (!history || history.length === 0) {
     throw new Error("No interview history available for analysis.");
@@ -129,7 +140,7 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
     const result = await ai.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "You are a strict technical interviewer. Return ONLY valid JSON. No markdown. No explanation. Be honest — do not inflate scores." },
+        { role: "system", content: "You are a strict technical interviewer. Return ONLY valid JSON. No markdown. No explanation. Be honest - do not inflate scores." },
         { role: "user", content: prompt },
       ],
       temperature: 0.2,
@@ -151,7 +162,6 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
 
     if (typeof parsed.technicalScore !== "number") throw new Error("Invalid AI response structure");
 
-    // Enforce score sanity — no inflation
     const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(v)));
     const techScore = clamp(parsed.technicalScore, 0, 100);
     const commScore = clamp(parsed.communicationScore, 0, 100);
@@ -163,10 +173,8 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
       0, 100
     );
 
-    // Enforce honest strengths — empty array for poor performance
     const strengths = overallScore < 45 ? [] : (parsed.strengths || []).slice(0, 3);
 
-    // Per-question scores clamped
     const questionFeedback = (parsed.questionFeedback || ruleScores.questionFeedback).map(qf => ({
       ...qf,
       questionScore: clamp(qf.questionScore ?? (qf.score != null ? qf.score * 25 : 0), 0, 100),
@@ -187,7 +195,7 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
       questionFeedback,
       performanceCategory: parsed.performanceCategory || ruleScores.performanceCategory,
       score: overallScore,
-      correctAnswers: history.filter(h => h.answer && h.answer.trim().length > 50).length,
+      correctAnswers: history.filter(h => (h.answer && h.answer.trim().length > 50) || (h.code && h.code.trim().length > 20)).length,
       topics: parsed.suggestedTopics || [],
       _usedFallback: false,
     };
@@ -206,7 +214,7 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
       overallScore,
       confidence,
       score: overallScore,
-      correctAnswers: history.filter(h => h.answer && h.answer.trim().length > 50).length,
+      correctAnswers: history.filter(h => (h.answer && h.answer.trim().length > 50) || (h.code && h.code.trim().length > 20)).length,
       topics: ruleScores.suggestedTopics,
     };
   }

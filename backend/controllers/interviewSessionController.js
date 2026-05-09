@@ -89,12 +89,14 @@ exports.saveAnswers = async (req, res) => {
     }
 };
 
+const { saveBase64Image } = require("../utils/imageHandler");
+
 // @desc   Submit an answer and receive the next adaptive question
 // @route  POST /api/interview-sessions/:id/answer
 // @access Private
 exports.submitAnswer = async (req, res) => {
     try {
-        const { questionId, answer, code, language, image } = req.body;
+        const { questionId, answer, code, language, image: base64Image } = req.body;
 
         const session = await InterviewSession.findOne({
             _id: req.params.id,
@@ -103,6 +105,14 @@ exports.submitAnswer = async (req, res) => {
 
         if (!session) {
             return res.status(404).json({ success: false, message: "Interview session not found." });
+        }
+
+        // Process image if provided (convert base64 to URL)
+        let imageUrl = "";
+        if (base64Image && base64Image.startsWith("data:image/")) {
+            imageUrl = await saveBase64Image(base64Image);
+        } else if (base64Image) {
+            imageUrl = base64Image; // Already a URL
         }
 
         // Save this answer
@@ -114,25 +124,33 @@ exports.submitAnswer = async (req, res) => {
                 session.answers[existingIdx].answerText = answer || "";
                 session.answers[existingIdx].code = code || "";
                 session.answers[existingIdx].language = language || "javascript";
-                session.answers[existingIdx].image = image || "";
+                session.answers[existingIdx].image = imageUrl || "";
             } else {
                 session.answers.push({ 
                     questionId, 
                     answerText: answer || "",
                     code: code || "",
                     language: language || "javascript",
-                    image: image || "",
+                    image: imageUrl || "",
                 });
             }
         }
 
         // Build Q&A history
         const answerMap = {};
-        session.answers.forEach(a => { answerMap[a.questionId.toString()] = a.answerText; });
+        session.answers.forEach(a => { 
+            answerMap[a.questionId.toString()] = {
+                text: a.answerText,
+                code: a.code,
+                image: a.image
+            }; 
+        });
 
         const history = session.question.map((q, idx) => ({
             question: q.question,
-            answer: answerMap[q._id.toString()] || "",
+            answer: answerMap[q._id.toString()]?.text || "",
+            code: answerMap[q._id.toString()]?.code || "",
+            image: answerMap[q._id.toString()]?.image || "",
             category: session.questionMeta?.[idx]?.category || "General",
         }));
 

@@ -1,7 +1,6 @@
 /**
- * Adaptive Interview Engine — Redesigned
- * Supports Interview Focus (android/dsa/system_design/database/java/hr/mixed)
- * Company-inspired patterns (google/amazon/microsoft/startup)
+ * Adaptive Interview Engine - Optimized
+ * Supports Interview Focus, Role Isolation, and Contextual Follow-ups
  */
 
 const Groq = require("groq-sdk");
@@ -9,7 +8,7 @@ const { getQuestionsForFocus, getWarmupQuestion, getFollowUps } = require("../da
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// ─── DIFFICULTY PROGRESSION ────────────────────────────────────────────────
+// -- DIFFICULTY PROGRESSION ------------------------------------------------
 function calculateDifficulty(questionIndex, runningScore, mode = "standard") {
   const modeOffset = { beginner: -0.5, standard: 0, real: 0.6 }[mode] || 0;
   const baseCurve = [1, 1.5, 2, 2.5, 3];
@@ -22,122 +21,126 @@ function calculateDifficulty(questionIndex, runningScore, mode = "standard") {
   return Math.round(Math.max(1, Math.min(3, base)));
 }
 
-// ─── SCORING ESTIMATION (local, quick) ────────────────────────────────────
+// -- SCORING ESTIMATION (local, quick) ------------------------------------
 function estimateAnswerScore(answerText) {
   if (!answerText || answerText.trim().length === 0) return 0;
   const len = answerText.trim().length;
-  if (len < 20) return 0.3;
-  if (len < 60) return 1;
-  if (len < 150) return 2;
-  return 3;
+  // Score based on depth of explanation
+  if (len < 30) return 0.5; // Very brief
+  if (len < 100) return 1.5; // Shallow
+  if (len < 250) return 2.5; // Good
+  return 3; // Excellent depth
 }
 
 function estimateConfidence(answers) {
   if (!answers || answers.length === 0) return "Low";
-  let skipped = 0, detailed = 0;
+  let skipped = 0, detailed = 0, brief = 0;
+  
   for (const a of answers) {
-    const text = a.answerText || "";
-    if (text.trim().length === 0) skipped++;
-    else if (text.trim().length > 180) detailed++;
+    const text = (a.answerText || "").trim();
+    const len = text.length;
+    if (len === 0) skipped++;
+    else if (len > 250) detailed++;
+    else if (len < 60) brief++;
   }
-  if (skipped >= 2) return "Low";
-  if (detailed >= Math.ceil(answers.length * 0.6)) return "High";
+  
+  const total = answers.length;
+  if (skipped >= 2 || (brief / total) > 0.6) return "Low";
+  if (detailed >= Math.ceil(total * 0.4)) return "High";
   return "Moderate";
 }
 
-// ─── COMPANY PATTERN CONTEXT ───────────────────────────────────────────────
+// -- COMPANY PATTERN CONTEXT -----------------------------------------------
 function getCompanyContext(companyPattern) {
   const patterns = {
-    google: "Google-style (emphasis on problem solving, algorithmic thinking, optimization)",
-    amazon: "Amazon-style (emphasis on behavioral ownership, scalability, practical engineering)",
-    microsoft: "Microsoft-style (emphasis on system thinking, architecture, collaboration)",
-    startup: "Startup-style (emphasis on practical implementation, speed, real-world delivery)",
-    all: "general tech industry",
+    google: "Google-style (algorithmic precision, optimization, scalability)",
+    amazon: "Amazon-style (Leadership Principles, ownership, practical architecture)",
+    microsoft: "Microsoft-style (robust system design, clear abstractions, teamwork)",
+    startup: "Startup-style (speed, practical trade-offs, immediate impact)",
+    all: "general industry standards",
   };
   return patterns[companyPattern] || patterns.all;
 }
 
-// ─── AI PERSONALIZATION ────────────────────────────────────────────────────
+// -- AI PERSONALIZATION ----------------------------------------------------
 async function personalizeQuestion(localQuestion, { role, focus, company, history, mode }) {
   try {
-    const historyContext = history?.slice(-2)
+    const historyContext = history?.slice(-3)
       .map((h, i) => `Q${i+1}: ${h.question}\nA${i+1}: ${h.answer || "(no answer)"}`)
-      .join("\n\n") || "This is the first question.";
+      .join("\n\n") || "First question of the session.";
 
-    const tone = mode === "beginner" ? "supportive and educational"
-      : mode === "real" ? "strict and direct, like a real technical interview"
-      : "professional and conversational";
+    const tone = mode === "beginner" ? "encouraging and educational"
+      : mode === "real" ? "rigorous and professional, like a FAANG interviewer"
+      : "professional and insightful";
 
-    const prompt = `You are a ${tone} interviewer.
-Role being interviewed: ${role || "Software Engineer"}
-Interview focus: ${focus || "Mixed"}
-Session context (last exchanges):
+    const prompt = `You are a ${tone} technical interviewer at ${company || "a top tech firm"}.
+Candidate Role: ${role || "Software Engineer"}
+Focus Area: ${focus || "Mixed Technical"}
+
+CONVERSATION HISTORY (Last 3 rounds):
 ${historyContext}
 
-Base question: "${localQuestion.text}"
-Question type: ${localQuestion.type || "conceptual"}
+BASE QUESTION: "${localQuestion.text}"
+TYPE: ${localQuestion.type || "conceptual"}
 
-Lightly rephrase this question to feel natural and in-context. Keep the same topic, difficulty, and intent. Under 2 sentences. No fluff.
-Return ONLY the rephrased question. No explanation.`;
+TASK:
+Rephrase the base question to flow naturally from the previous conversation. 
+If the candidate mentioned a specific technology or pattern earlier, try to bridge into this new question using that context.
+Keep it under 2 sentences. No fluff. No "Sure," or "Next question is...".
+Return ONLY the question.`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: "Return ONLY plain text. One question. No markdown." },
+        { role: "system", content: "You are a senior interviewer. Return ONLY the rephrased question text." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.6,
-      max_tokens: 120,
+      temperature: 0.7,
+      max_tokens: 150,
     });
 
     const text = (completion.choices[0]?.message?.content || "").trim();
-    if (text && text.length > 10 && text.length < 400) {
-      return text.endsWith("?") ? text : text + "?";
-    }
-    return localQuestion.text;
+    return (text && text.length > 10) ? text : localQuestion.text;
   } catch (err) {
-    console.warn("[AdaptiveEngine] Personalization failed:", err.message);
     return localQuestion.text;
   }
 }
 
-// ─── FOLLOW-UP GENERATION ──────────────────────────────────────────────────
+// -- FOLLOW-UP GENERATION --------------------------------------------------
 async function generateFollowUp({ role, focus, lastQuestion, lastAnswer, localFollowUpHints, mode }) {
   try {
-    const tone = mode === "beginner" ? "supportive and guiding"
-      : mode === "real" ? "strict and probing"
-      : "professional and curious";
+    const tone = mode === "real" ? "probing and analytical" : "curious and professional";
 
     const prompt = `You are a ${tone} technical interviewer.
-Interview focus: ${focus || "General"}
-Candidate just answered this question:
-"${lastQuestion}"
-Their answer: "${lastAnswer || "(no answer given)"}"
+Interview Focus: ${focus || "General"}
+Context:
+Q: "${lastQuestion}"
+A: "${lastAnswer || "(no answer given)"}"
 
-Ask ONE sharp follow-up question that:
-1. Probes a gap in their answer OR extends the concept naturally
-2. Is direct and concise (under 2 sentences)
-3. Reveals whether they truly understand or just memorized
-
-Return ONLY the follow-up question. No explanation.`;
+INSTRUCTION:
+Ask ONE sharp follow-up question. 
+If the answer was good, push for deeper technical details or edge cases. 
+If the answer was vague, ask for a specific example or clarification.
+Reference specific keywords from their answer if possible to show you are listening.
+Under 20 words. No introduction.
+Return ONLY the question.`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: "Return ONLY one follow-up question as plain text." },
+        { role: "system", content: "Return ONLY one follow-up question text." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.7,
+      temperature: 0.8,
       max_tokens: 100,
     });
 
     const text = (completion.choices[0]?.message?.content || "").trim();
-    if (text && text.length > 10 && text.length < 300) {
-      return { question: text.endsWith("?") ? text : text + "?", isFollowUp: true, category: "Follow-up" };
+    if (text && text.length > 10) {
+      return { question: text, isFollowUp: true, category: "Follow-up" };
     }
-    throw new Error("Invalid AI follow-up response");
+    throw new Error("Invalid AI follow-up");
   } catch (err) {
-    console.warn("[AdaptiveEngine] Follow-up AI failed:", err.message);
     if (localFollowUpHints && localFollowUpHints.length > 0) {
       return { question: localFollowUpHints[0], isFollowUp: true, category: "Follow-up" };
     }
@@ -145,7 +148,7 @@ Return ONLY the follow-up question. No explanation.`;
   }
 }
 
-// ─── MAIN ENGINE API ───────────────────────────────────────────────────────
+// -- MAIN ENGINE API -------------------------------------------------------
 async function selectNextQuestion({
   role, focus = "mixed", company = "General", mode = "standard",
   history = [], usedQuestionIds = [], lastLocalQuestionId = null,

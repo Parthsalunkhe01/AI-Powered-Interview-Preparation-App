@@ -5,23 +5,55 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "./select";
 
-const FOCUS_OPTIONS = [
-    { value: "android",      label: "Android Development", description: "Activities, Fragments, RecyclerView, Room, Firebase" },
-    { value: "dsa",          label: "DSA",                  description: "Arrays, LinkedLists, Trees, Sorting, Graph algorithms" },
-    { value: "system_design",label: "System Design",        description: "Architecture, Scalability, Caching, Databases at scale" },
-    { value: "database",     label: "Database Design",      description: "SQL, NoSQL, Normalization, Query optimization" },
-    { value: "java",         label: "Java Core",            description: "OOP, Concurrency, Collections, JVM internals" },
-    { value: "hr",           label: "HR + Behavioral",      description: "STAR method, communication, leadership scenarios" },
-    { value: "mixed",        label: "Mixed Interview",       description: "Combination of technical, DSA, and behavioral" },
-];
+const ROLE_BASED_FOCUS = {
+    "ai/ml engineer": [
+        { value: "python", label: "Python Mastery", description: "Advanced Python, NumPy, Pandas, AsyncIO" },
+        { value: "machine_learning", label: "Machine Learning", description: "Supervised/Unsupervised, Scikit-learn, Feature Engineering" },
+        { value: "deep_learning", label: "Deep Learning", description: "Neural Networks, CNNs, RNNs, PyTorch/TensorFlow" },
+        { value: "nlp", label: "NLP", description: "Transformers, LLMs, Tokenization, Sentiment Analysis" },
+        { value: "data_science", label: "Data Science", description: "Statistics, Probability, Data Visualization, SQL" },
+        { value: "mlops", label: "MLOps", description: "Model deployment, monitoring, CI/CD for ML" },
+        { value: "ai_system_design", label: "AI System Design", description: "Scalable ML architectures, vector databases, inference optimization" },
+        { value: "prompt_engineering", label: "Prompt Engineering", description: "RAG, chain-of-thought, system prompting, LLM orchestration" },
+        { value: "mixed", label: "Mixed AI Interview", description: "Broad range of AI/ML concepts and coding" },
+    ],
+    "android developer": [
+        { value: "android", label: "Android SDK", description: "Activities, Fragments, Lifecycle, Intent, Services" },
+        { value: "java_kotlin", label: "Java/Kotlin Core", description: "Coroutines, Flow, Generics, Collections" },
+        { value: "jetpack_compose", label: "Jetpack Compose", description: "Declarative UI, State management, Composable lifecycle" },
+        { value: "mvvm", label: "MVVM Architecture", description: "ViewModel, LiveData, Repository pattern, Clean Architecture" },
+        { value: "mobile_system_design", label: "Mobile System Design", description: "Offline sync, caching, image loading, modularization" },
+        { value: "dsa", label: "DSA (Mobile Focused)", description: "Arrays, Lists, Maps, Algorithm complexity" },
+        { value: "mixed", label: "Mixed Android Interview", description: "Technical, architecture, and behavioral" },
+    ],
+    "backend developer": [
+        { value: "apis", label: "API Design", description: "REST, GraphQL, gRPC, Versioning, Documentation" },
+        { value: "authentication", label: "Auth & Security", description: "JWT, OAuth2, RBAC, Encryption, Hashing" },
+        { value: "database", label: "Database Design", description: "SQL vs NoSQL, Indexing, Transactions, ACID" },
+        { value: "caching", label: "Caching & Redis", description: "Cache invalidation, Distributed cache, Performance" },
+        { value: "scalability", label: "Scalability", description: "Load balancing, Microservices, Message queues" },
+        { value: "system_design", label: "System Design", description: "High-level architecture, CAP theorem, Distributed systems" },
+        { value: "mixed", label: "Mixed Backend Interview", description: "Server-side logic, DB, and system thinking" },
+    ],
+    "default": [
+        { value: "dsa", label: "DSA", description: "Data structures and algorithms" },
+        { value: "system_design", label: "System Design", description: "Architecture and scalability" },
+        { value: "database", label: "Database", description: "SQL and NoSQL" },
+        { value: "hr", label: "HR + Behavioral", description: "Soft skills and culture fit" },
+        { value: "mixed", label: "Mixed Technical", description: "General software engineering" },
+    ]
+};
 
-const SessionSettings = ({ settings, onChange }) => {
+const SessionSettings = ({ settings, onChange, blueprint }) => {
+    const role = (blueprint?.targetRole || "").toLowerCase();
+    const FOCUS_OPTIONS = ROLE_BASED_FOCUS[role] || ROLE_BASED_FOCUS["default"];
+
     return (
         <div className="bg-white rounded-[32px] border border-slate-200 ring-1 ring-slate-100 p-8 shadow-xl space-y-8">
             <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Session Settings</h3>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    Difficulty adapts automatically to your performance
+                    Tailored to your {blueprint?.targetRole || "career"} path
                 </p>
             </div>
 

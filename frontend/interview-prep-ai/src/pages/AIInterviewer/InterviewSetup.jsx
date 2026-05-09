@@ -271,7 +271,7 @@ const InterviewSetup = () => {
                     <div className="lg:col-span-2 space-y-5">
                         <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Session Settings</p>
-                            <SessionSettings settings={settings} onChange={handleSettingChange} />
+                            <SessionSettings settings={settings} onChange={handleSettingChange} blueprint={blueprint} />
                         </div>
 
                         {/* Mode summary chip */}
