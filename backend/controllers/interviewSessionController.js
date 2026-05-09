@@ -2,44 +2,33 @@ const InterviewSession = require("../models/InterviewSession");
 const Question = require("../models/Question");
 const Blueprint = require("../models/InterviewBlueprint");
 const InterviewResult = require("../models/InterviewResult");
-const { generateFirstQuestion, generateFollowUpQuestion } = require("../services/aiInterviewEngine");
-const { generateFeedback } = require("../services/aiFeedbackEngine");
 
-//@desc   Create a new interview session
-//@route  POST /api/interview-sessions
-//@access Private
+const { selectNextQuestion, estimateAnswerScore } = require("../services/adaptiveEngine");
+const { generateStructuredFeedback } = require("../services/aiFeedbackEngine");
+
+// @desc   Create a new interview session
+// @route  POST /api/interview-sessions
+// @access Private
 exports.createInterviewSession = async (req, res) => {
     try {
-        const { company, type, questions, difficulty, questionLimit } = req.body;
+        const { mode, focus, questionLimit } = req.body;
 
-        // Fetch user blueprint for context
         const blueprint = await Blueprint.findOne({ user: req.user._id });
 
         const session = await InterviewSession.create({
             user: req.user._id,
-            company: company || blueprint?.targetCompanies?.[0] || blueprint?.company || "General",
-            type: type || "technical",
-            role: req.body.role || blueprint?.targetRole || "",
-            experience: req.body.experience || blueprint?.experienceLevel || "",
-            difficulty: difficulty || "medium",
+            company: blueprint?.targetCompanies?.[0] || blueprint?.companies?.[0] || "General",
+            type: focus || "mixed",
+            role: blueprint?.targetRole || "Software Engineer",
+            experience: blueprint?.experienceLevel || "Entry",
+            mode: mode || "standard",
+            focus: focus || "mixed",
+            difficulty: "adaptive",
             questionLimit: questionLimit || 5,
             blueprint: blueprint?._id,
+            usedLocalIds: [],
+            questionMeta: [],
         });
-
-        // If questions are provided, create Question docs and link them
-        if (Array.isArray(questions) && questions.length > 0) {
-            const questionDocs = await Promise.all(
-                questions.map((q) =>
-                    Question.create({
-                        session: session._id,
-                        question: q.question,
-                        answer: q.answer,
-                    })
-                )
-            );
-            session.question = questionDocs.map((q) => q._id);
-            await session.save();
-        }
 
         res.status(201).json({ success: true, session });
     } catch (error) {
@@ -47,266 +36,241 @@ exports.createInterviewSession = async (req, res) => {
     }
 };
 
-//@desc   Get all interview sessions for logged-in user
-//@route  GET /api/interview-sessions/my-sessions
-//@access Private
+// @desc   Get all interview sessions for logged-in user
+// @route  GET /api/interview-sessions/my-sessions
+// @access Private
 exports.getMyInterviewSessions = async (req, res) => {
     try {
         const sessions = await InterviewSession.find({ user: req.user.id })
             .sort({ createdAt: -1 })
             .populate("question");
-
         res.status(200).json(sessions);
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
 
-//@desc   Get a single interview session by ID
-//@route  GET /api/interview-sessions/:id
-//@access Private
+// @desc   Get a single interview session by ID
+// @route  GET /api/interview-sessions/:id
+// @access Private
 exports.getInterviewSessionById = async (req, res) => {
     try {
         const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id })
-            .populate({
-                path: "question",
-                options: { sort: { isPinned: -1, createdAt: 1 } },
-            })
+            .populate({ path: "question", options: { sort: { createdAt: 1 } } })
             .exec();
 
         if (!session) {
             return res.status(404).json({ success: false, message: "Interview session not found." });
         }
-
         res.status(200).json({ success: true, session });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
 
-//@desc   Save answers for an interview session
-//@route  PUT /api/interview-sessions/:id/answers
-//@access Private
+// @desc   Save answers for an interview session
+// @route  PUT /api/interview-sessions/:id/answers
+// @access Private
 exports.saveAnswers = async (req, res) => {
     try {
         const { answers } = req.body;
-
         if (!Array.isArray(answers)) {
             return res.status(400).json({ message: "answers must be an array." });
         }
-
         const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user.id });
-
         if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
+            return res.status(404).json({ success: false, message: "Interview session not found." });
         }
-
         session.answers = answers;
         await session.save();
-
         res.status(200).json({ success: true, session });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
 
-//@desc   Save feedback for an interview session
-//@route  PUT /api/interview-sessions/:id/feedback
-//@access Private
-exports.saveFeedback = async (req, res) => {
-    try {
-        const { feedback } = req.body;
-
-        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user.id });
-
-        if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
-        }
-
-        session.feedback = feedback || "";
-        await session.save();
-
-        res.status(200).json({ success: true, session });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Server Error", error: error.message });
-    }
-};
-
-//@desc   Generate AI feedback for a completed session
-//@route  POST /api/interview-sessions/:id/generate-feedback
-//@access Private
-exports.generateAISessionFeedback = async (req, res) => {
-    try {
-        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id }).populate("question");
-        
-        if (!session) {
-            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
-        }
-
-        const answerMap = {};
-        session.answers.forEach((a) => {
-            answerMap[a.questionId.toString()] = a.answerText;
-        });
-
-        const history = session.question.map((q) => ({
-            question: q.question,
-            answer: answerMap[q._id.toString()] || "",
-        }));
-
-        const feedbackData = await generateFeedback({
-            company: session.company,
-            type: session.type,
-            role: session.role,
-            experience: session.experience,
-            history,
-        });
-
-        // Parse extracted mathematical analytics for InterviewResult
-        const score = typeof feedbackData.score === "number" ? feedbackData.score : 0;
-        const correctAnswers = typeof feedbackData.correctAnswers === "number" ? feedbackData.correctAnswers : 0;
-        const topics = Array.isArray(feedbackData.topics) ? feedbackData.topics : [];
-        const totalQuestions = history.length;
-        
-        // Time taken in seconds (from session start to now)
-        const timeTaken = Math.max(0, Math.floor((new Date() - session.createdAt) / 1000));
-
-        // Attempt securing against duplicate final saves by fetching if user recently saved one
-        const tenSecondsAgo = new Date(Date.now() - 10000);
-        const duplicateCheck = await InterviewResult.findOne({ 
-             userId: req.user._id, 
-             createdAt: { $gte: tenSecondsAgo }
-        });
-
-        if (!duplicateCheck) {
-             await InterviewResult.create({
-                 userId: req.user._id,
-                 score,
-                 totalQuestions,
-                 correctAnswers,
-                 topics,
-                 timeTaken
-             });
-             console.log(`📊 Analytics saved for User ${req.user._id} | Score: ${score}%`);
-        }
-
-        res.status(200).json({
-            success: true,
-            feedback: feedbackData,
-        });
-    } catch (error) {
-        console.error("GENERATE_FEEDBACK_ERROR:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to generate AI feedback",
-            error: error.message,
-        });
-    }
-};
-
-//@desc   Submit an answer and receive the next AI-generated interview question
-//@route  POST /api/interview-sessions/:id/answer
-//@access Private
+// @desc   Submit an answer and receive the next adaptive question
+// @route  POST /api/interview-sessions/:id/answer
+// @access Private
 exports.submitAnswer = async (req, res) => {
-    console.log("Submit Answer Request Body:", req.body);
     try {
         const { questionId, answer } = req.body;
 
-        // 1. Find the session (populate existing questions for history)
-        const session = await InterviewSession.findOne({ _id: req.params.id, user: req.user._id }).populate("question");
+        const session = await InterviewSession.findOne({
+            _id: req.params.id,
+            user: req.user._id,
+        }).populate("question");
+
         if (!session) {
-            console.error("Submit Answer: Session not found or unauthorized", req.params.id);
-            return res.status(404).json({ success: false, message: "Interview session not found or unauthorized access." });
+            return res.status(404).json({ success: false, message: "Interview session not found." });
         }
 
-        // 2. Save the candidate's answer if a questionId was supplied
+        // Save this answer
         if (questionId) {
-            session.answers.push({ questionId, answerText: answer || "" });
+            const existingIdx = session.answers.findIndex(
+                a => a.questionId.toString() === questionId.toString()
+            );
+            if (existingIdx >= 0) {
+                session.answers[existingIdx].answerText = answer || "";
+            } else {
+                session.answers.push({ questionId, answerText: answer || "" });
+            }
         }
 
-        // 4. Fetch user blueprint for AI context
-        const blueprint = await Blueprint.findOne({ user: req.user._id });
-
-        // populate role/experience if missing (first time)
-        if (!session.role && blueprint) {
-            session.role = blueprint.targetRole;
-            session.experience = blueprint.experienceLevel;
-        }
-
-        // 5. Build Q&A history for the AI prompt
+        // Build Q&A history
         const answerMap = {};
-        session.answers.forEach((a) => {
-            answerMap[a.questionId.toString()] = a.answerText;
-        });
+        session.answers.forEach(a => { answerMap[a.questionId.toString()] = a.answerText; });
 
-        const history = session.question.map((q) => ({
+        const history = session.question.map((q, idx) => ({
             question: q.question,
             answer: answerMap[q._id.toString()] || "",
+            category: session.questionMeta?.[idx]?.category || "General",
         }));
 
-        // 6. Check if we should conclude the interview
+        // Check if interview is complete
         const limit = session.questionLimit || 5;
         if (history.length >= limit) {
-            console.log(`Interview complete (${limit} questions reached).`);
+            await session.save();
             return res.status(200).json({
-                success: true,
-                isComplete: true
+                success: true, isComplete: true, totalAnswered: history.length,
             });
         }
 
-        // 7. Generate next question
-        let nextQuestionText;
-        if (history.length === 0 || !questionId) {
-            console.log("Generating first question...");
-            nextQuestionText = await generateFirstQuestion({
-                company: session.company,
-                type: session.type,
-                blueprint,
-            });
-        } else {
-            console.log("Generating follow-up question...");
-            nextQuestionText = await generateFollowUpQuestion({
-                company: session.company,
-                type: session.type,
-                blueprint,
-                history,
-            });
-        }
+        // Get focus from session (new field) or fall back to type
+        const focus = session.focus || session.type || "mixed";
+        const role = session.role || "Software Engineer";
+        const mode = session.mode || "standard";
 
-        // 7.5 Duplicate Prevention Logic
+        // Select next question
+        const nextQData = await selectNextQuestion({
+            role, focus, company: session.company || "General", mode,
+            history,
+            usedQuestionIds: session.usedLocalIds || [],
+            lastLocalQuestionId: session.lastLocalQuestionId || null,
+        });
+
+        // Duplicate prevention
         const isDuplicate = session.question.some(
-            (q) => q.question.toLowerCase().trim() === nextQuestionText.toLowerCase().trim()
+            q => q.question.toLowerCase().trim() === nextQData.question.toLowerCase().trim()
         );
 
         if (isDuplicate) {
-            console.warn("Duplicate question detected. Modifying to avoid loop.");
-            nextQuestionText += " Also, could you specifically mention any trade-offs you considered?";
+            const retry = await selectNextQuestion({
+                role, focus, company: session.company || "General", mode,
+                history,
+                usedQuestionIds: [...(session.usedLocalIds || []), nextQData.localId],
+                lastLocalQuestionId: null,
+            });
+            Object.assign(nextQData, retry);
         }
 
-        // 8. Persist the new AI question as a Question document
+        // Persist new question
         const newQuestionDoc = await Question.create({
             session: session._id,
-            question: nextQuestionText,
+            question: nextQData.question,
             answer: "",
         });
 
-        if (!Array.isArray(session.question)) {
-            session.question = [];
-        }
-
+        if (!Array.isArray(session.question)) session.question = [];
         session.question.push(newQuestionDoc._id);
+
+        // Update tracking
+        if (!Array.isArray(session.usedLocalIds)) session.usedLocalIds = [];
+        if (nextQData.localId && !nextQData.isFollowUp) {
+            session.usedLocalIds.push(nextQData.localId);
+        }
+        session.lastLocalQuestionId = nextQData.localId || session.lastLocalQuestionId;
+
+        if (!Array.isArray(session.questionMeta)) session.questionMeta = [];
+        session.questionMeta.push({
+            category: nextQData.category,
+            difficulty: nextQData.difficulty,
+            type: nextQData.type,
+            tags: nextQData.tags,
+            isFollowUp: nextQData.isFollowUp,
+        });
+
+        session.markModified("usedLocalIds");
+        session.markModified("questionMeta");
         await session.save();
 
         res.status(200).json({
             success: true,
             isComplete: false,
-            nextQuestion: nextQuestionText,
+            nextQuestion: nextQData.question,
             questionId: newQuestionDoc._id,
+            category: nextQData.category,
+            difficulty: nextQData.difficulty,
+            type: nextQData.type || "conceptual",
+            tags: nextQData.tags || [],
+            isFollowUp: nextQData.isFollowUp || false,
+            questionNumber: history.length + 1,
+            totalQuestions: limit,
         });
+
     } catch (error) {
         console.error("SUBMIT_ANSWER_ERROR:", error);
+        res.status(500).json({ message: "Failed to generate next question", error: error.message });
+    }
+};
+
+// @desc   Generate AI feedback for a completed session
+// @route  POST /api/interview-sessions/:id/generate-feedback
+// @access Private
+exports.generateAISessionFeedback = async (req, res) => {
+    try {
+        const session = await InterviewSession.findOne({
+            _id: req.params.id,
+            user: req.user._id,
+        }).populate("question");
+
+        if (!session) {
+            return res.status(404).json({ success: false, message: "Interview session not found." });
+        }
+
+        const answerMap = {};
+        session.answers.forEach(a => { answerMap[a.questionId.toString()] = a.answerText; });
+
+        const history = session.question.map((q, idx) => ({
+            question: q.question,
+            answer: answerMap[q._id.toString()] || "",
+            category: session.questionMeta?.[idx]?.category || "General",
+            type: session.questionMeta?.[idx]?.type || "conceptual",
+        }));
+
+        const feedbackData = await generateStructuredFeedback({
+            role: session.role,
+            experience: session.experience,
+            mode: session.mode,
+            focus: session.focus || session.type,
+            history,
+            answers: session.answers,
+        });
+
+        // Save analytics (de-dupe by 10s window)
+        const tenSecondsAgo = new Date(Date.now() - 10000);
+        const duplicateCheck = await InterviewResult.findOne({
+            userId: req.user._id,
+            createdAt: { $gte: tenSecondsAgo },
+        });
+
+        if (!duplicateCheck) {
+            await InterviewResult.create({
+                userId: req.user._id,
+                score: feedbackData.overallScore || 0,
+                totalQuestions: history.length,
+                correctAnswers: feedbackData.correctAnswers || 0,
+                topics: feedbackData.topics || feedbackData.suggestedTopics || [],
+                timeTaken: Math.max(0, Math.floor((new Date() - session.createdAt) / 1000)),
+            });
+        }
+
+        res.status(200).json({ success: true, feedback: feedbackData });
+
+    } catch (error) {
+        console.error("GENERATE_FEEDBACK_ERROR:", error);
         res.status(500).json({
-            message: "AI generation failed",
-            error: error.message
+            success: false, message: "Failed to generate feedback", error: error.message,
         });
     }
 };

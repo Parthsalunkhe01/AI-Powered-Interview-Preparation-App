@@ -28,31 +28,68 @@ const interviewSessionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["technical", "behavioural", "mixed"],
-            required: true,
+            default: "mixed",
         },
         role: String,
         experience: String,
+
+        // Interview focus: what topic category the session targets
+        focus: {
+            type: String,
+            enum: ["android", "dsa", "system_design", "database", "java", "hr", "mixed"],
+            default: "mixed",
+        },
+
+        // Interview mode: determines difficulty progression and AI tone
+        mode: {
+            type: String,
+            enum: ["beginner", "standard", "real"],
+            default: "standard",
+        },
+
+        // Kept for backward compat — now fully adaptive
         difficulty: {
             type: String,
-            enum: ["easy", "medium", "hard", "adaptive"],
-            default: "medium",
+            default: "adaptive",
         },
+
         questionLimit: {
             type: Number,
             default: 5,
         },
+
         blueprint: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "InterviewBlueprint",
         },
+
         question: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Question",
             },
         ],
+
         answers: [answerSchema],
+
+        // Track which local question IDs have been used (prevents repeats)
+        usedLocalIds: {
+            type: [String],
+            default: [],
+        },
+
+        // Store the last local question ID for follow-up logic
+        lastLocalQuestionId: {
+            type: String,
+            default: null,
+        },
+
+        // Question metadata (category, tags, difficulty per question)
+        questionMeta: {
+            type: [Object],
+            default: [],
+        },
+
         feedback: {
             type: Object,
             default: null,
