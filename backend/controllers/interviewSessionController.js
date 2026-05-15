@@ -5,6 +5,9 @@ const InterviewResult = require("../models/InterviewResult");
 
 const { selectNextQuestion, estimateAnswerScore } = require("../services/adaptiveEngine");
 const { generateStructuredFeedback } = require("../services/aiFeedbackEngine");
+const { generateGuideContent } = require("../utils/guideGenerator");
+const { fetchAndVerifyResources } = require("./resourceController");
+const { parallelWithLimit } = require("../utils/cachedAI");
 
 // @desc   Create a new interview session
 // @route  POST /api/interview-sessions
@@ -32,6 +35,7 @@ exports.createInterviewSession = async (req, res) => {
 
         res.status(201).json({ success: true, session });
     } catch (error) {
+        console.error("CREATE_SESSION_ERROR:", error);
         res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
@@ -336,5 +340,111 @@ exports.generateAISessionFeedback = async (req, res) => {
         res.status(500).json({
             success: false, message: "Failed to generate feedback", error: error.message,
         });
+    }
+};
+
+// @desc   Export detailed preparation guide for PDF
+// @route  GET /api/interview-sessions/:id/export-guide
+// @access Private
+exports.exportInterviewGuide = async (req, res) => {
+    try {
+        const session = await InterviewSession.findOne({
+            _id: req.params.id,
+            user: req.user._id,
+        }).populate("question");
+
+        if (!session) {
+            return res.status(404).json({ success: false, message: "Session not found." });
+        }
+
+        const result = await InterviewResult.findOne({ userId: req.user._id }).sort({ createdAt: -1 });
+        console.log(`  [PDF_EXPORT]: Found session ${session._id}, result found: ${!!result}`);
+
+        // 1. Prepare Summary Data
+        let mainFocus = "General";
+        if (result?.topicDetails && Array.isArray(result.topicDetails) && result.topicDetails.length > 0) {
+            const sorted = [...result.topicDetails].sort((a, b) => (a.score || 0) - (b.score || 0));
+            mainFocus = sorted[0]?.domain || sorted[0]?.topic || "General";
+        }
+
+        const summary = {
+            role: session.role || "Software Engineer",
+            experience: session.experience || "Entry",
+            date: new Date(session.createdAt).toLocaleDateString(),
+            score: result?.score || 0,
+            status: result?.score >= 75 ? "Ready" : result?.score >= 50 ? "Progressing" : "Needs Work",
+            strongAreas: result?.categories?.slice(0, 2) || [],
+            mainFocus,
+            oneLiner: result?.score >= 70 
+                ? "You have a solid technical foundation. Focus on polishing edge cases."
+                : "Focus on closing fundamentals gaps in your weakest domain."
+        };
+
+        // 2. Generate Detailed Content for each question
+        const seenLinks    = new Set();
+        const seenVideoIds = new Set();
+
+        console.log(`  [PDF_EXPORT]: Processing ${session.question?.length || 0} questions (parallel, max 3 concurrent)...`);
+
+        const questionTasks = (session.question || []).map((q, idx) => async () => {
+            const qText    = q?.question || (typeof q === "string" ? q : "Technical Question");
+            const qId      = q?._id?.toString();
+            const answer   = session.answers?.find(a => a.questionId?.toString() === qId);
+            const category = session.questionMeta?.[idx]?.category || "General";
+
+            try {
+                const [coaching, resources] = await Promise.all([
+                    generateGuideContent(qText, answer?.answerText || "", category),
+                    fetchAndVerifyResources(qText, seenLinks, seenVideoIds),
+                ]);
+
+                return {
+                    number:           idx + 1,
+                    question:         qText,
+                    idealAnswer:      coaching.idealAnswer,
+                    coreBreakdown:    coaching.coreBreakdown,
+                    keyInsights:      coaching.keyInsights,
+                    productionInsight: coaching.productionInsight,
+                    mistakes:         coaching.mistakes,
+                    suggestedStack:   coaching.suggestedStack,
+                    followUps:        coaching.followUps,
+                    videos:   (resources.videos   || []).slice(0, 2).map(v => ({ title: v.title, url: v.url || `https://youtube.com/watch?v=${v.videoId}` })),
+                    articles: (resources.articles || []).slice(0, 2).map(a => ({ title: a.title, url: a.url || a.link })),
+                };
+            } catch (innerErr) {
+                console.error(`  [PDF_EXPORT]: Error on question ${idx + 1}:`, innerErr.message);
+                return {
+                    number: idx + 1, question: qText,
+                    idealAnswer: "Consult industry best practices for this topic.",
+                    coreBreakdown: "", keyInsights: "", productionInsight: "",
+                    mistakes: "", suggestedStack: "", followUps: "",
+                    videos: [], articles: [],
+                };
+            }
+        });
+
+        const questions = await parallelWithLimit(questionTasks, 3);
+
+        const filename = `Interview_Guide_${(session.role || "Dev").replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
+
+        console.log(`  [PDF_EXPORT]: Export complete for ${session._id}`);
+
+        res.status(200).json({
+            success: true,
+            filename,
+            data: {
+                summary,
+                questions,
+                finalAdvice: [
+                    "Speak out loud during coding tasks to show your thought process.",
+                    "Always mention Big O complexity for your solutions.",
+                    "Review trade-offs between different architectural approaches."
+                ]
+            }
+        });
+
+    } catch (error) {
+        console.error("EXPORT_GUIDE_ERROR:", error.stack || error.message);
+        res.status(500).json({ success: false, message: "Failed to export guide.", error: error.message });
     }
 };

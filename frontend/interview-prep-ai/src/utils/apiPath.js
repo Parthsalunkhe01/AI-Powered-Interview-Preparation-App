@@ -40,12 +40,14 @@ export const API_PATHS = {
     GET: "/api/blueprint",
   },
   INTERVIEW_SESSION: {
+    BASE: "/api/interview-sessions",
     CREATE: "/api/interview-sessions",
     GET_MY: "/api/interview-sessions/my-sessions",
     GET_ONE: (id) => `/api/interview-sessions/${id}`,
     SUBMIT_ANSWER: (id) => `/api/interview-sessions/${id}/answer`,
     SAVE_FEEDBACK: (id) => `/api/interview-sessions/${id}/feedback`,
     GENERATE_FEEDBACK: (id) => `/api/interview-sessions/${id}/generate-feedback`,
+    EXPORT_GUIDE: (id) => `/api/interview-sessions/${id}/export-guide`,
   },
   ANALYTICS: {
     GET_STATS: "/api/analytics",

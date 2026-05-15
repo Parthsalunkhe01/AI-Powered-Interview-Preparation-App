@@ -48,7 +48,6 @@ const interviewSessionSchema = new mongoose.Schema(
         // Interview focus: what topic category the session targets
         focus: {
             type: String,
-            enum: ["android", "dsa", "system_design", "database", "java", "hr", "mixed"],
             default: "mixed",
         },
 

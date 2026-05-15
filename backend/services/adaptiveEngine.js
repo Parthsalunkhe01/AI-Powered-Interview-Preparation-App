@@ -5,6 +5,7 @@
 
 const Groq = require("groq-sdk");
 const { getQuestionsForFocus, getWarmupQuestion, getFollowUps } = require("../data/questionBlueprint");
+const { getCurrentTier, checkBudget, recordUsage } = require("../utils/budgetGuard");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -62,8 +63,14 @@ function getCompanyContext(companyPattern) {
   return patterns[companyPattern] || patterns.all;
 }
 
-// -- AI PERSONALIZATION ----------------------------------------------------
+// -- AI PERSONALIZATION (Budget-Aware) ------------------------------------
 async function personalizeQuestion(localQuestion, { role, focus, company, history, mode }) {
+  // Skip AI personalization when budget is REDUCED or worse — use raw question text
+  const tier = await getCurrentTier();
+  if (tier === "REDUCED" || tier === "MINIMAL" || tier === "OFFLINE") {
+    return localQuestion.text;
+  }
+
   try {
     const historyContext = history?.slice(-3)
       .map((h, i) => `Q${i+1}: ${h.question}\nA${i+1}: ${h.answer || "(no answer)"}`)
@@ -99,6 +106,7 @@ Return ONLY the question.`;
       max_tokens: 150,
     });
 
+    recordUsage("groq");
     const text = (completion.choices[0]?.message?.content || "").trim();
     return (text && text.length > 10) ? text : localQuestion.text;
   } catch (err) {

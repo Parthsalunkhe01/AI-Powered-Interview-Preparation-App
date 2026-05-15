@@ -1,170 +1,195 @@
-const { searchWithSerper } = require('../utils/serperSearch');
-const { searchWithYouTube } = require('../utils/youtubeSearch');
-const Groq = require("groq-sdk");
-const { resourceSemanticFilterPrompt } = require("../utils/prompts");
+const { searchWithSerper } = require("../utils/serperSearch");
+const { searchWithYouTube } = require("../utils/youtubeSearch");
+const { getVerifiedLink } = require("../utils/resourceMapper");
+const { buildCacheKey } = require("../utils/cachedAI");
+const { checkBudget, recordUsage } = require("../utils/budgetGuard");
+const CachedContent = require("../models/CachedContent");
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// ── Static Resource Pool ─────────────────────────────────────────────────────
+// Zero-cost fallback: curated, topic-matched resources loaded from resourceMapper.
+// Covers the most common interview topics without any API call.
+const STATIC_RESOURCE_POOL = {
+    dsa:           { videos: [{ title: "Data Structures & Algorithms Full Course", url: "https://www.youtube.com/watch?v=8hly31xKli0", videoId: "8hly31xKli0" }], articles: [{ title: "NeetCode DSA Roadmap", url: "https://neetcode.io/roadmap" }] },
+    system_design: { videos: [{ title: "System Design Fundamentals", url: "https://www.youtube.com/watch?v=Fj7X-7kNo2s", videoId: "Fj7X-7kNo2s" }], articles: [{ title: "ByteByteGo System Design", url: "https://bytebytego.com/" }] },
+    database:      { videos: [{ title: "Database Design Full Course", url: "https://www.youtube.com/watch?v=f9mXN8NndO8", videoId: "f9mXN8NndO8" }], articles: [{ title: "Use The Index, Luke", url: "https://use-the-index-luke.com/" }] },
+    java:          { videos: [{ title: "Java Complete Course", url: "https://www.youtube.com/watch?v=RRubcjpTkks", videoId: "RRubcjpTkks" }], articles: [{ title: "Oracle Java Docs", url: "https://docs.oracle.com/en/java/" }] },
+    android:       { videos: [{ title: "Android Development with Kotlin", url: "https://www.youtube.com/watch?v=BCSlZIUj18Y", videoId: "BCSlZIUj18Y" }], articles: [{ title: "Android Developer Guides", url: "https://developer.android.com/guide" }] },
+    react:         { videos: [{ title: "React JS Full Course", url: "https://www.youtube.com/watch?v=hQAHSlTtcmY", videoId: "hQAHSlTtcmY" }], articles: [{ title: "React Official Docs", url: "https://react.dev/" }] },
+    javascript:    { videos: [{ title: "JavaScript Full Course", url: "https://www.youtube.com/watch?v=W6NZfCO5SIk", videoId: "W6NZfCO5SIk" }], articles: [{ title: "MDN JavaScript Guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" }] },
+    python:        { videos: [{ title: "Python for Beginners", url: "https://www.youtube.com/watch?v=_uQrJ0TkZlc", videoId: "_uQrJ0TkZlc" }], articles: [{ title: "Python Official Docs", url: "https://docs.python.org/3/" }] },
+    algorithms:    { videos: [{ title: "Algorithms Full Course", url: "https://www.youtube.com/watch?v=8hly31xKli0", videoId: "8hly31xKli0" }], articles: [{ title: "GeeksforGeeks Algorithms", url: "https://www.geeksforgeeks.org/fundamentals-of-algorithms/" }] },
+    caching:       { videos: [{ title: "Redis Caching Explained", url: "https://www.youtube.com/watch?v=U3RkDLOx4SM", videoId: "U3RkDLOx4SM" }], articles: [{ title: "Redis Documentation", url: "https://redis.io/docs/" }] },
+    docker:        { videos: [{ title: "Docker Tutorial for Beginners", url: "https://www.youtube.com/watch?v=3c-iBn7E9dU", videoId: "3c-iBn7E9dU" }], articles: [{ title: "Docker Get Started", url: "https://docs.docker.com/get-started/" }] },
+    behavioral:    { videos: [{ title: "Behavioral Interview Questions", url: "https://www.youtube.com/watch?v=Pj0wZ7_Z79M", videoId: "Pj0wZ7_Z79M" }], articles: [{ title: "STAR Method Guide", url: "https://www.indeed.com/career-advice/interviewing/how-to-use-the-star-interview-response-technique" }] },
+};
 
-/**
- * Comprehensive list of technical "fluff" words and common interview conversational patterns.
- */
+// ── Stopwords for Keyword Extraction ────────────────────────────────────────
 const TECH_STOPWORDS = new Set([
-  "a", "an", "the", "and", "or", "but", "if", "then", "else", "when", "at", "from", "by", "for", 
-  "with", "about", "against", "between", "into", "through", "during", "before", "after", 
-  "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", 
-  "again", "further", "then", "once", "here", "there", "all", "any", "both", "each", "few", 
-  "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", 
-  "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now", "i", "me",
-  "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", 
-  "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", 
-  "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", 
-  "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", 
-  "have", "has", "had", "having", "do", "does", "did", "doing",
-  "explain", "describe", "implement", "optimize", "optimise", "how", "what", "why", "where",
-  "difference", "between", "versus", "vs", "compare", "contrast", "advantage", "disadvantage",
-  "benefit", "drawback", "use", "used", "using", "work", "works", "working", "give", "example",
-  "provide", "write", "code", "programming", "developer", "engineer", "software", "system",
-  "design", "build", "create", "make", "made", "real-world", "scenario", "based", "question",
-  "interview", "preparation", "prep", "tutorial", "guide", "concept", "deep-dive", "explained",
-  "understand", "understanding", "case", "study", "problem", "solution", "approach", "best",
-  "practice", "practices", "common", "typical", "standard", "modern", "legacy", "classic",
-  "basic", "advanced", "intermediate", "level", "senior", "junior", "mid-level", "entry",
-  "beginner", "complete", "full", "course", "video", "article", "blog", "post", "read", "watch",
-  "learn", "learning", "study", "studying", "knowledge", "skill", "skills", "set", "sets",
-  "topic", "topics"
+    "a","an","the","and","or","but","if","when","at","from","by","for","with",
+    "about","into","through","before","after","above","below","to","up","down",
+    "in","out","on","off","can","will","just","should","now","explain","describe",
+    "implement","optimize","how","what","why","where","difference","between",
+    "versus","vs","compare","advantage","disadvantage","use","used","using",
+    "work","works","write","code","programming","developer","engineer","software",
+    "system","design","build","create","make","real","world","scenario","question",
+    "interview","preparation","concept","understand","case","study","problem",
+    "solution","approach","best","practice","common","standard","modern","basic",
+    "advanced","intermediate","level","senior","junior","complete","full","course",
+    "video","article","blog","learn","study","knowledge","skill","topic",
 ]);
 
-const extractCoreKeywords = (rawQuestion) => {
-  if (!rawQuestion) return "";
-  const cleanStr = rawQuestion.toLowerCase().replace(/[^a-z0-9+# ]/g, " ");
-  const tokens = cleanStr.split(/\s+/).filter(token => token.length > 1 && !TECH_STOPWORDS.has(token));
-  return [...new Set(tokens)].slice(0, 6).join(" ");
-};
+function extractKeywords(text) {
+    if (!text) return "";
+    const clean = text.toLowerCase().replace(/[^a-z0-9+# ]/g, " ");
+    const tokens = clean.split(/\s+/).filter(t => t.length > 1 && !TECH_STOPWORDS.has(t));
+    return [...new Set(tokens)].slice(0, 5).join(" ");
+}
 
-const filterCandidatesWithAI = async (question, candidates, attempts = 0) => {
-  if (!candidates || candidates.length === 0) return [];
-  if (attempts > 2) return candidates.slice(0, 3); // Fallback
+// ── Static Pool Matcher ──────────────────────────────────────────────────────
+function matchStaticPool(keywords) {
+    const kw = keywords.toLowerCase();
+    for (const [key, resources] of Object.entries(STATIC_RESOURCE_POOL)) {
+        if (kw.includes(key)) return resources;
+    }
+    return null;
+}
 
-  try {
-    const prompt = resourceSemanticFilterPrompt(question, candidates);
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-    });
+// ── Core Resource Fetcher: Single-Pass + Cache ────────────────────────────────
+/**
+ * Fetches resources for a topic. Priority:
+ *   1. MongoDB TTL cache (14-day)
+ *   2. Static resource pool (zero API cost)
+ *   3. External APIs (YouTube + Serper) — parallel, single pass, budget-gated
+ *
+ * @param {string} topic        - Question text or topic keyword
+ * @param {Set}    seenLinks    - Deduplication set for article URLs
+ * @param {Set}    seenVideoIds - Deduplication set for video IDs
+ */
+const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoIds = new Set()) => {
+    const keywords = extractKeywords(topic);
+    const cacheKey = buildCacheKey("resource", { kw: keywords });
 
-    const response = completion.choices[0]?.message?.content || "[]";
-    const cleanedResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
-    
-    let relevantIndices;
+    // ── Layer 1: DB Cache ──────────────────────────────────────────────
     try {
-        relevantIndices = JSON.parse(cleanedResponse);
+        const cached = await CachedContent.findOneAndUpdate(
+            { cacheKey },
+            { $inc: { hitCount: 1 } },
+            { new: true }
+        );
+        if (cached) {
+            return { videos: cached.content.videos || [], articles: cached.content.articles || [], keywords: keywords.split(" ") };
+        }
     } catch (e) {
-        const { jsonrepair } = require("jsonrepair");
-        relevantIndices = JSON.parse(jsonrepair(cleanedResponse));
+        console.warn("[ResourceController] Cache read error:", e.message);
     }
-    
-    return candidates.filter((_, idx) => relevantIndices.includes(idx.toString()));
-  } catch (err) {
-    if (err.message.includes("429")) {
-        const waitTime = (attempts + 1) * 5000;
-        console.log(`    [429] Semantic Filter rate limit. Waiting ${waitTime}ms...`);
-        await new Promise(r => setTimeout(r, waitTime));
-        return filterCandidatesWithAI(question, candidates, attempts + 1);
+
+    // ── Layer 2: Static Pool (Zero API Cost) ───────────────────────────
+    const staticMatch = matchStaticPool(keywords);
+    if (staticMatch) {
+        const videos   = staticMatch.videos.filter(v => !seenVideoIds.has(v.videoId));
+        const articles = staticMatch.articles.filter(a => !seenLinks.has(a.url));
+        videos.forEach(v => seenVideoIds.add(v.videoId));
+        articles.forEach(a => seenLinks.add(a.url));
+        return { videos, articles, keywords: keywords.split(" ") };
     }
-    console.error("  [AI_FILTER_ERROR]:", err.message);
-    return candidates.slice(0, 3); 
-  }
+
+    // ── Layer 3: External APIs (parallel, budget-gated, single pass) ───
+    const ytQuery     = `${keywords} technical explained interview`.trim();
+    const serperQuery = `${keywords} technical tutorial guide`.trim();
+
+    const [ytBudget, serperBudget] = await Promise.all([
+        checkBudget("youtube"),
+        checkBudget("serper"),
+    ]);
+
+    const [rawVideos, rawArticles] = await Promise.all([
+        ytBudget.allowed     ? searchWithYouTube(ytQuery, 5).then(r => { recordUsage("youtube"); return r; }).catch(() => []) : Promise.resolve([]),
+        serperBudget.allowed ? searchWithSerper(serperQuery, 5).then(r => { recordUsage("serper"); return r; }).catch(() => []) : Promise.resolve([]),
+    ]);
+
+    // Deduplicate
+    const videos   = (rawVideos   || []).filter(v => v?.videoId && !seenVideoIds.has(v.videoId)).slice(0, 2);
+    const articles = (rawArticles || []).filter(a => a?.link  && !seenLinks.has(a.link)).slice(0, 2)
+        .map(a => ({ title: a.title, url: a.link }));
+
+    videos.forEach(v => seenVideoIds.add(v.videoId));
+    articles.forEach(a => seenLinks.add(a.url));
+
+    const result = {
+        videos:   videos.map(v => ({ title: v.title, url: `https://youtube.com/watch?v=${v.videoId}`, videoId: v.videoId })),
+        articles,
+    };
+
+    // Cache result for 14 days (fire-and-forget)
+    if (videos.length > 0 || articles.length > 0) {
+        CachedContent.create({
+            cacheKey,
+            type: "resource",
+            content: result,
+            source: "ai",
+            expiresAt: new Date(Date.now() + 14 * 86_400_000),
+        }).catch(e => console.warn("[ResourceController] Cache write error:", e.message));
+    }
+
+    return { ...result, keywords: keywords.split(" ") };
 };
 
-/**
- * Core function to fetch and filter resources for a topic
- */
-const fetchAndVerifyResources = async (topic, seenLinks, seenVideoIds, retry = false) => {
-  const coreKeywords = extractCoreKeywords(topic);
-  
-  // Use a more specific query for retry passes
-  const querySuffix = retry ? "advanced technical guide interview deep-dive" : "technical tutorial guide";
-  
-  const serperQuery = `${coreKeywords} ${querySuffix}`.trim();
-  const youtubeQuery = `${coreKeywords} technical explained interview`.trim();
+// ── Static Verified Link (topic-only fallback, no API) ─────────────────────
+function getStaticResource(topic) {
+    const kw = extractKeywords(topic);
+    const ytUrl  = getVerifiedLink(kw, "video")  || "https://www.youtube.com/results?search_query=" + encodeURIComponent(kw + " interview");
+    const artUrl = getVerifiedLink(kw, "blog")   || "https://www.geeksforgeeks.org/?s=" + encodeURIComponent(kw);
+    return {
+        videos:   [{ title: `${kw} — Video Tutorial`, url: ytUrl, videoId: null }],
+        articles: [{ title: `${kw} — Technical Guide`, url: artUrl }],
+    };
+}
 
-  // 1. Fetch Candidates
-  const [rawResources, rawVideos] = await Promise.all([
-    searchWithSerper(serperQuery, 12),
-    searchWithYouTube(youtubeQuery, 10)
-  ]);
-
-  // 2. Initial Uniqueness Pass (before AI to save tokens)
-  const uniqueResources = rawResources.filter(r => !seenLinks.has(r.link));
-  const uniqueVideos = rawVideos.filter(v => !seenVideoIds.has(v.videoId));
-
-  // 3. AI Semantic Verification (Parallel)
-  const [verifiedResources, verifiedVideos] = await Promise.all([
-    filterCandidatesWithAI(topic, uniqueResources),
-    filterCandidatesWithAI(topic, uniqueVideos)
-  ]);
-
-  // Update global trackers
-  verifiedResources.forEach(r => seenLinks.add(r.link));
-  verifiedVideos.forEach(v => seenVideoIds.add(v.videoId));
-
-  return {
-    articles: verifiedResources,
-    videos: verifiedVideos,
-    keywords: coreKeywords.split(" ")
-  };
-};
-
-/**
- * Handle POST /api/ai/resources
- */
+// ── Route Handler: POST /api/ai/resources ─────────────────────────────────────
 exports.generateResources = async (req, res) => {
-  try {
-    const inputTopics = req.body.topics || req.body.questions;
+    try {
+        const inputTopics = req.body.topics || req.body.questions;
 
-    if (!inputTopics || !Array.isArray(inputTopics) || inputTopics.length === 0) {
-      return res.status(400).json({ success: false, message: "topics array is required." });
+        if (!inputTopics || !Array.isArray(inputTopics) || inputTopics.length === 0) {
+            return res.status(400).json({ success: false, message: "topics array is required." });
+        }
+
+        const seenLinks    = new Set();
+        const seenVideoIds = new Set();
+
+        // Parallel fetch with concurrency limit of 3 (budget-friendly)
+        const BATCH_SIZE = 3;
+        const results = [];
+
+        for (let i = 0; i < inputTopics.length; i += BATCH_SIZE) {
+            const batch = inputTopics.slice(i, i + BATCH_SIZE);
+            const batchResults = await Promise.allSettled(
+                batch.map(async (topic) => {
+                    const resources = await fetchAndVerifyResources(topic, seenLinks, seenVideoIds);
+                    return {
+                        topic,
+                        keywords:  resources.keywords,
+                        resources: resources.articles.slice(0, 2),
+                        videos:    resources.videos.slice(0, 2),
+                    };
+                })
+            );
+            results.push(
+                ...batchResults.map((r, idx) =>
+                    r.status === "fulfilled"
+                        ? r.value
+                        : { topic: batch[idx], keywords: [], resources: [], videos: [] }
+                )
+            );
+        }
+
+        return res.status(200).json({ success: true, data: results });
+
+    } catch (error) {
+        console.error("❌ Resource Controller Fatal Error:", error.message);
+        return res.status(200).json({ success: true, data: [] });
     }
-
-    console.log(`📡 Initializing AI Semantic Filtering for ${inputTopics.length} topics...`);
-
-    const seenLinks = new Set();
-    const seenVideoIds = new Set();
-
-    const resourcePromises = inputTopics.map(async (topic) => {
-      // Pass 1: Standard Fetch
-      let results = await fetchAndVerifyResources(topic, seenLinks, seenVideoIds);
-
-      // Pass 2: Regeneration (if low relevance found)
-      if (results.articles.length < 2 || results.videos.length < 1) {
-        console.log(`  🔄 Low relevance pool for "${topic.substring(0, 30)}...". Triggering regeneration...`);
-        const retryResults = await fetchAndVerifyResources(topic, seenLinks, seenVideoIds, true);
-        
-        // Merge results
-        results.articles = [...results.articles, ...retryResults.articles].slice(0, 3);
-        results.videos = [...results.videos, ...retryResults.videos].slice(0, 2);
-      }
-
-      return {
-        topic: topic,
-        keywords: results.keywords,
-        resources: results.articles.slice(0, 3),
-        videos: results.videos.slice(0, 2)
-      };
-    });
-
-    const results = await Promise.all(resourcePromises);
-
-    return res.status(200).json({
-      success: true,
-      data: results
-    });
-
-  } catch (error) {
-    console.error("❌ Resource Controller Fatal Error:", error);
-    return res.status(200).json({ success: true, data: [] });
-  }
 };
+
+exports.fetchAndVerifyResources = fetchAndVerifyResources;
+exports.getStaticResource = getStaticResource;

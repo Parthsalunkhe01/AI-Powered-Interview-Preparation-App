@@ -1,151 +1,133 @@
 const InterviewResult = require("../models/InterviewResult");
 
-/**
- * Handle GET /api/analytics
- * Extracts all interview results for the authenticated user and computes
- * comprehensive mathematical aggregations for the React frontend dashboards.
- */
+// ── Decision Helpers ─────────────────────────────────────────────────────────
+
+const BENCHMARK = { dsa: 65, android: 60, system_design: 55, database: 62, java: 60, hr: 70, behavioral: 65, arrays: 58 };
+
+function getStatus(score, benchmark) {
+    const delta = score - benchmark;
+    if (delta <= -15) return { label: "CRITICAL", color: "rose" };
+    if (delta < 0) return { label: "NEEDS WORK", color: "amber" };
+    return { label: "READY", color: "emerald" };
+}
+
+// ── Action Generator (Strict Quality Rules) ──────────────────────────────────
+
+function generateSpecificAction(topic, severity, isDomainTask = false) {
+    if (isDomainTask) {
+        return `Revise ${topic} core lifecycle and architectural patterns (20 mins)`;
+    }
+    if (severity === "high") {
+        return `Solve 2 Easy and 1 Medium problem on "${topic}" (45 mins)`;
+    }
+    if (severity === "medium") {
+        return `Attempt 2 Medium problems on "${topic}" using the two-pointer or sliding window technique (30 mins)`;
+    }
+    return `Quickly review 3 common interview questions on "${topic}" (15 mins)`;
+}
+
+// ── Main Logic ───────────────────────────────────────────────────────────────
+
 exports.getUserAnalytics = async (req, res) => {
     try {
         const userId = req.user._id;
-
-        // Fetch user history securely sorted ascending by created date for historical graphs
         const results = await InterviewResult.find({ userId }).sort({ createdAt: 1 });
 
         if (!results || results.length === 0) {
-            return res.status(200).json({
-                success: true,
-                data: {
-                    totalInterviews: 0,
-                    avgScore: 0,
-                    totalTime: 0,
-                    topicPerformance: [],
-                    weakTopics: [],
-                    strongTopics: [],
-                    history: [],
-                    insight: "Start your first interview to see your analytics!"
-                }
-            });
+            return res.status(200).json({ success: true, data: { totalInterviews: 0 } });
         }
 
-        const totalInterviews = results.length;
+        const scores = results.map(r => r.score);
+        const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         
-        let totalScore = 0;
-        let totalTime = 0;
-        let highestScore = 0;
-        let lowestScore = 100;
-        
-        const domainMap = {}; // { domainName: { total: 0, count: 0 } }
-        const topicMap = {}; // { topicName: { totalScore: 0, count: 0, domain: "" } }
-        const history = [];
-
-        results.forEach(result => {
-            totalScore += result.score;
-            totalTime += result.timeTaken;
-            if (result.score > highestScore) highestScore = result.score;
-            if (result.score < lowestScore) lowestScore = result.score;
-            
-            history.push({
-                date: result.createdAt,
-                score: result.score
-            });
-
-            // 1. Process Domains
-            if (result.domainScores) {
-                for (const [domain, score] of result.domainScores.entries()) {
-                    if (!domainMap[domain]) domainMap[domain] = { total: 0, count: 0 };
-                    domainMap[domain].total += score;
-                    domainMap[domain].count += 1;
+        // 1. Domain Map
+        const domainMap = {};
+        const topicMap = {};
+        results.forEach(r => {
+            if (r.domainScores) {
+                for (const [d, s] of r.domainScores.entries()) {
+                    if (!domainMap[d]) domainMap[d] = { total: 0, count: 0 };
+                    domainMap[d].total += s;
+                    domainMap[d].count += 1;
                 }
-            } else if (result.categories && result.categories.length > 0) {
-                result.categories.forEach(cat => {
-                    const c = cat.toLowerCase();
-                    if (!domainMap[c]) domainMap[c] = { total: 0, count: 0 };
-                    domainMap[c].total += result.score;
-                    domainMap[c].count += 1;
-                });
             }
-
-            // 2. Process Topic Details
-            if (result.topicDetails && result.topicDetails.length > 0) {
-                result.topicDetails.forEach(td => {
-                    if (!topicMap[td.topic]) topicMap[td.topic] = { totalScore: 0, count: 0, domain: td.domain };
-                    topicMap[td.topic].totalScore += td.score;
+            if (r.topicDetails) {
+                r.topicDetails.forEach(td => {
+                    if (!topicMap[td.topic]) topicMap[td.topic] = { total: 0, count: 0, domain: td.domain };
+                    topicMap[td.topic].total += td.score;
                     topicMap[td.topic].count += 1;
-                });
-            } else if (result.topics && Array.isArray(result.topics)) {
-                // Fallback for legacy
-                result.topics.forEach(topic => {
-                    const t = topic.trim();
-                    if (!t) return;
-                    if (!topicMap[t]) topicMap[t] = { totalScore: 0, count: 0, domain: "General" };
-                    topicMap[t].totalScore += result.score;
-                    topicMap[t].count += 1;
                 });
             }
         });
 
-        const avgScore = Math.round(totalScore / totalInterviews);
+        // 2. Domain Performance + Weakest Find
+        const domainPerformance = Object.entries(domainMap).map(([d, stats]) => {
+            const score = Math.round(stats.total / stats.count);
+            const benchmark = BENCHMARK[d.toLowerCase()] || 60;
+            return { domain: d.toUpperCase(), score, benchmark, delta: score - benchmark };
+        }).sort((a, b) => a.delta - b.delta);
 
-        const topicPerformance = [];
-        const groupedStrengths = {}; // { domain: [topics] }
-        const groupedWeaknesses = {};
+        const weakest = domainPerformance[0];
 
-        for (const [topic, stats] of Object.entries(topicMap)) {
-            const avgTopicScore = Math.round(stats.totalScore / stats.count);
-            const domain = stats.domain || "General";
-            
-            topicPerformance.push({ topic, avgScore: avgTopicScore, domain });
+        // 3. Improvement Areas (Capped at 5)
+        const flatWeak = Object.entries(topicMap)
+            .map(([topic, stats]) => ({
+                topic,
+                avgScore: Math.round(stats.total / stats.count),
+                domain: stats.domain
+            }))
+            .filter(t => t.avgScore < 60)
+            .map(t => ({
+                ...t,
+                severity: t.avgScore < 35 ? "high" : t.avgScore < 50 ? "medium" : "low"
+            }))
+            .sort((a, b) => (a.severity === "high" ? -1 : 1) || a.avgScore - b.avgScore)
+            .slice(0, 5);
 
-            if (avgTopicScore < 60) {
-                if (!groupedWeaknesses[domain]) groupedWeaknesses[domain] = [];
-                groupedWeaknesses[domain].push(topic);
-            } else if (avgTopicScore >= 75) {
-                if (!groupedStrengths[domain]) groupedStrengths[domain] = [];
-                groupedStrengths[domain].push(topic);
-            }
-        }
+        // 4. MAIN FOCUS CARD logic
+        const mainFocus = weakest ? {
+            domain: weakest.domain,
+            score: weakest.score,
+            status: getStatus(weakest.score, weakest.benchmark),
+            gap: Math.abs(weakest.delta),
+            impact: `Your ${weakest.domain} performance is currently the primary drag on your overall readiness.`,
+            actions: [
+                generateSpecificAction(`${weakest.domain} Fundamentals`, "high", true),
+                generateSpecificAction(flatWeak.find(w => w.domain === weakest.domain)?.topic || "Core Concepts", "high"),
+                `Attempt 1 Medium-difficulty Mock Interview focused on ${weakest.domain}`
+            ],
+            expectedImprovement: `Focusing here will likely boost your aggregate score by +${Math.round(Math.abs(weakest.delta) * 0.3)}%`
+        } : null;
 
-        const domainPerformance = [];
-        for (const [domain, stats] of Object.entries(domainMap)) {
-            domainPerformance.push({
-                domain: domain.toUpperCase(),
-                score: Math.round(stats.total / stats.count)
-            });
-        }
-
-        const summary = {
-            strong: Object.values(groupedStrengths).flat().slice(0, 3),
-            weak: Object.values(groupedWeaknesses).flat().slice(0, 3),
-            recommendation: Object.values(groupedWeaknesses).flat().length > 0 
-                ? `Focus your next practice sessions on ${Object.values(groupedWeaknesses).flat().slice(0, 2).join(" and ")}.`
-                : "Mastery achieved! Try 'Real' difficulty for advanced simulation."
-        };
+        // 5. DAILY ACTION PLAN (Capped at 3)
+        // Deduplicate from Main Focus actions if possible
+        const actionPlan = flatWeak
+            .filter(w => !mainFocus.actions.some(a => a.includes(w.topic)))
+            .slice(0, 3)
+            .map(w => ({
+                task: generateSpecificAction(w.topic, w.severity),
+                topic: w.topic,
+                time: w.severity === "high" ? "45m" : "20m"
+            }));
 
         res.status(200).json({
             success: true,
             data: {
-                totalInterviews,
                 avgScore,
-                highestScore,
-                lowestScore: lowestScore === 100 ? 0 : lowestScore,
-                totalTime,
-                topicPerformance: topicPerformance.sort((a,b) => b.avgScore - a.avgScore),
-                domainPerformance: domainPerformance.sort((a,b) => b.score - a.score),
-                groupedStrengths,
-                groupedWeaknesses,
-                history,
-                summary,
-                insight: `Strong showing in ${Object.values(groupedStrengths).flat().slice(0, 2).join(", ") || "core areas"}.`
+                status: getStatus(avgScore, 65), // Global readiness benchmark
+                history: results.map((r, i) => ({ index: i + 1, score: r.score })),
+                mainFocus,
+                weaknesses: flatWeak,
+                strengths: Object.entries(topicMap)
+                    .map(([topic, stats]) => ({ topic, score: Math.round(stats.total / stats.count) }))
+                    .filter(t => t.score >= 75)
+                    .slice(0, 4),
+                actionPlan,
+                recruiterSummary: `Candidate shows ${avgScore >= 70 ? "strong" : "developing"} potential. Primary technical gap identified in ${weakest?.domain || "core domains"}.`
             }
         });
 
     } catch (error) {
-        console.error("ANALYTICS_ERROR:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to generate user analytics.",
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };

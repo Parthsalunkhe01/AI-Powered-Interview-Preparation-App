@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import { useNavigate } from "react-router-dom";
+import { generatePdfHtml } from "../utils/pdfTemplate";
 import SummaryCard from "../components/Cards/SummaryCard";
 import { CARD_BG } from "../utils/data";
 import moment from "moment";
@@ -17,7 +19,9 @@ import {
   Globe,
   ExternalLink,
   ChevronRight,
-  Library
+  Library,
+  Download,
+  FileText
 } from "lucide-react";
 import SaaSCard from "../components/ui/SaaSCard";
 import { Badge } from "../components/ui/Badge";
@@ -119,6 +123,45 @@ export default function Resources() {
     }
   }, [questions, blueprint]);
 
+  const exportGuide = async () => {
+    try {
+      const stored = localStorage.getItem("interviewData");
+      const data = stored ? JSON.parse(stored) : null;
+      
+      // Attempt to get ID from questions if available, or fetch latest
+      const simulationRes = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_MY);
+      const latestSession = simulationRes.data?.[0];
+      
+      if (!latestSession) {
+        toast.error("No recent session found to export.");
+        return;
+      }
+
+      toast.loading("Preparing your professional guide...");
+      const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.EXPORT_GUIDE(latestSession._id));
+      
+      if (res.data.success) {
+        const htmlContent = generatePdfHtml(res.data.data);
+        
+        // Open in a new window and trigger print
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+        // Wait for styles/fonts to load then print
+        printWindow.onload = () => {
+          printWindow.print();
+          toast.dismiss();
+          toast.success("Guide generated! Use 'Save as PDF' in your browser.");
+        };
+      }
+    } catch (err) {
+      console.error("Export Guide Error:", err);
+      toast.dismiss();
+      toast.error("Failed to export guide.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-10">
@@ -171,6 +214,9 @@ export default function Resources() {
               <p className="text-muted-foreground font-medium text-lg italic">Resources selected based on your recent interview performance.</p>
           </div>
           <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={exportGuide} className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                  <Download className="mr-2 h-4 w-4" /> Export PDF Guide
+              </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
                   View Study Plan <ArrowRight className="ml-1 h-3.5 w-3.5" />
               </Button>

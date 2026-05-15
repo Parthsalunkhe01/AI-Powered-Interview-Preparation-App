@@ -18,6 +18,8 @@ const blueprintRoutes = require("./routes/blueprintRoutes");
 const interviewSessionRoutes = require("./routes/interviewSessionRoutes");
 const suggestionRoutes = require("./routes/suggestionRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const { startScheduler } = require("./jobs/scheduler");
+const ApiUsage = require("./models/ApiUsage");
 
 const app = express();
 
@@ -29,7 +31,10 @@ app.use(
     })
 );
 
-connectDB()
+connectDB().then(() => {
+    // Start background cron jobs after DB is connected
+    startScheduler();
+});
 
 //Middleware
 app.use(express.json({ limit: "20mb" }));
@@ -49,6 +54,27 @@ app.use("/api/blueprint", blueprintRoutes);
 app.use("/api/interview-sessions", interviewSessionRoutes);
 app.use("/api/suggestions", suggestionRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+// Budget Status Route — monitor daily API usage
+app.get("/api/budget/status", protect, async (req, res) => {
+    try {
+        const today = new Date().toISOString().split("T")[0];
+        const usage = await ApiUsage.findOne({ date: today }) || { groqCalls: 0, youtubeCalls: 0, serperCalls: 0 };
+        const { DAILY_LIMITS } = require("./utils/budgetGuard");
+        const groqPct   = Math.round((usage.groqCalls   / DAILY_LIMITS.groqCalls)    * 100);
+        const ytPct     = Math.round((usage.youtubeCalls / DAILY_LIMITS.youtubeCalls) * 100);
+        const serperPct = Math.round((usage.serperCalls  / DAILY_LIMITS.serperCalls)  * 100);
+        const tier = groqPct >= 95 ? "OFFLINE" : groqPct >= 85 ? "MINIMAL" : groqPct >= 60 ? "REDUCED" : "FULL";
+        res.json({
+            date: today, tier,
+            groq:    { used: usage.groqCalls,    limit: DAILY_LIMITS.groqCalls,    pct: groqPct },
+            youtube: { used: usage.youtubeCalls, limit: DAILY_LIMITS.youtubeCalls, pct: ytPct },
+            serper:  { used: usage.serperCalls,  limit: DAILY_LIMITS.serperCalls,  pct: serperPct },
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 //Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {}));

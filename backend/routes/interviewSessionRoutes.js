@@ -10,6 +10,7 @@ const {
     saveAnswers,
     submitAnswer,
     generateAISessionFeedback,
+    exportInterviewGuide,
 } = require("../controllers/interviewSessionController");
 
 router.post("/", protect, createInterviewSession);
@@ -18,5 +19,6 @@ router.get("/:id", protect, getInterviewSessionById);
 router.put("/:id/answers", protect, saveAnswers);
 router.post("/:id/answer", protect, submitAnswer);
 router.post("/:id/generate-feedback", protect, generateAISessionFeedback);
+router.get("/:id/export-guide", protect, exportInterviewGuide);
 
 module.exports = router;
