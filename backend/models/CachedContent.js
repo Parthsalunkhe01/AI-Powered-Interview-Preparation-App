@@ -10,7 +10,7 @@ const CachedContentSchema = new mongoose.Schema(
         type:      { type: String, enum: ["question", "feedback", "guide", "resource"], default: "guide" },
         content:   { type: mongoose.Schema.Types.Mixed },
         hitCount:  { type: Number, default: 0 },
-        source:    { type: String, enum: ["ai", "precomputed", "fallback"], default: "ai" },
+        source:    { type: String, enum: ["ai", "cache", "fallback", "static", "static_pool"], default: "ai" },
         expiresAt: { type: Date },
     },
     { timestamps: true }

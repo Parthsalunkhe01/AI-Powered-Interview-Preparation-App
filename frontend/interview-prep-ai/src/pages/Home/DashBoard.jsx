@@ -38,6 +38,33 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
 
+  // ── Computed Metrics ──────────────────────────────────────────────────
+  // Converts avgScore into a percentile rank.
+  // Formula: higher score = better rank (lower percentile number = top X%).
+  // Based on a simulated normal distribution centered at 52 (typical interview avg).
+  function computeGlobalRank(avgScore) {
+    if (!avgScore) return null;
+    // Map score to top-N% using an inverse bell curve approximation
+    // score 90+ → top 5%, score 75 → top 15%, score 60 → top 35%, score ≤40 → top 60%+
+    if (avgScore >= 90) return "Top 5%";
+    if (avgScore >= 80) return "Top 10%";
+    if (avgScore >= 70) return "Top 20%";
+    if (avgScore >= 60) return "Top 35%";
+    if (avgScore >= 50) return "Top 50%";
+    if (avgScore >= 40) return "Top 65%";
+    return "Top 80%";
+  }
+
+  // Computes score trend between last two sessions.
+  function computeScoreTrend(history) {
+    if (!history || history.length < 2) return null;
+    const last  = history[history.length - 1]?.score ?? 0;
+    const prev  = history[history.length - 2]?.score ?? 0;
+    const delta = last - prev;
+    if (delta === 0) return null;
+    return { value: Math.abs(delta).toFixed(1), direction: delta > 0 ? "+" : "-" };
+  }
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -173,7 +200,15 @@ const Dashboard = () => {
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5">Avg. Score</p>
                 <div className="flex items-baseline gap-2 mt-1">
                     <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats?.avgScore || 0}%</h3>
-                    <span className="text-[11px] text-emerald-600 font-black">+2.4%</span>
+                    {(() => {
+                      const trend = computeScoreTrend(stats?.history);
+                      if (!trend) return null;
+                      return (
+                        <span className={`text-[11px] font-black ${trend.direction === '+' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                          {trend.direction}{trend.value}%
+                        </span>
+                      );
+                    })()}
                 </div>
             </SaaSCard>
 
@@ -185,7 +220,13 @@ const Dashboard = () => {
                 </div>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5">Global Rank</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                    <h3 className="text-4xl font-black text-slate-900 tracking-tighter">Top 12%</h3>
+                    {stats?.avgScore ? (
+                        <h3 className="text-4xl font-black text-slate-900 tracking-tighter">
+                            {computeGlobalRank(stats.avgScore)}
+                        </h3>
+                    ) : (
+                        <span className="text-sm font-bold text-slate-400 italic">Complete a session</span>
+                    )}
                 </div>
             </SaaSCard>
 
@@ -206,7 +247,7 @@ const Dashboard = () => {
           {/* ── Main Work Area ── */}
           {/* ── Main Work Area (Symmetrical 2-Column Grid) ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <TodaysMissionCard sessionLabel={`Session ${stats?.totalInterviews + 1 || 1}`} />
+            <TodaysMissionCard sessionLabel={`Next: Session ${(stats?.totalInterviews ?? 0) + 1}`} />
             <SkillSignals blueprint={blueprint} />
           </div>
         </>

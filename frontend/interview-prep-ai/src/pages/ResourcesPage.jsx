@@ -32,13 +32,12 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function Resources() {
   const navigate = useNavigate();
   
-  const [resources, setResources] = useState({
-    sections: []
-  });
+  const [resources, setResources] = useState({ sections: [] });
   const [blueprint, setBlueprint] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
+  const [resourceError, setResourceError] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -96,69 +95,98 @@ export default function Resources() {
     loadData();
   }, []);
 
-  useEffect(() => {
-    const getResourcesFromAI = async () => {
-      if (!questions || questions.length === 0) return;
+  const getResourcesFromAI = async (questionList) => {
+    const qs = (questionList || questions);
+    if (!qs || qs.length === 0) return;
 
-      try {
-        setAiLoading(true);
-        const qTexts = questions.map(q => q.question || q);
-        const response = await axiosInstance.post(API_PATHS.AI.GET_RESOURCES, {
-          questions: qTexts,
-          blueprint: blueprint
-        });
+    try {
+      setAiLoading(true);
+      setResourceError(false);
 
-        if (response.data && response.data.data) {
-          setResources({ sections: response.data.data });
-        }
-      } catch (err) {
-        console.error("Error fetching AI resources:", err);
-      } finally {
-        setAiLoading(false);
+      // Limit to 6 questions max to keep backend response under 10s
+      const qTexts = qs
+        .map(q => q.question || q)
+        .filter(Boolean)
+        .slice(0, 6);
+
+      const response = await axiosInstance.post(
+        API_PATHS.AI.GET_RESOURCES,
+        { questions: qTexts, blueprint },
+        { timeout: 25000 } // 25-second hard timeout
+      );
+
+      if (response.data?.data) {
+        setResources({ sections: response.data.data });
+      } else {
+        setResourceError(true);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching AI resources:", err.message);
+      setResourceError(true);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (questions.length > 0) {
-      getResourcesFromAI();
+      getResourcesFromAI(questions);
     }
   }, [questions, blueprint]);
 
   const exportGuide = async () => {
+    // Open the window BEFORE any await — must be inside synchronous click handler
+    // to avoid popup blockers blocking window.open()
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error("Pop-up blocked. Please allow pop-ups for this site and try again.");
+      return;
+    }
+
     try {
-      const stored = localStorage.getItem("interviewData");
-      const data = stored ? JSON.parse(stored) : null;
-      
-      // Attempt to get ID from questions if available, or fetch latest
       const simulationRes = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_MY);
       const latestSession = simulationRes.data?.[0];
-      
+
       if (!latestSession) {
-        toast.error("No recent session found to export.");
+        printWindow.close();
+        toast.error("No completed interview session found to export.");
         return;
       }
 
       toast.loading("Preparing your professional guide...");
       const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.EXPORT_GUIDE(latestSession._id));
-      
-      if (res.data.success) {
+
+      if (res.data?.success && res.data?.data) {
         const htmlContent = generatePdfHtml(res.data.data);
-        
-        // Open in a new window and trigger print
-        const printWindow = window.open('', '_blank');
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        
-        // Wait for styles/fonts to load then print
         printWindow.onload = () => {
+          printWindow.focus();
           printWindow.print();
           toast.dismiss();
           toast.success("Guide generated! Use 'Save as PDF' in your browser.");
         };
+        // Fallback: if onload already fired (cached resources), trigger print directly
+        if (printWindow.document.readyState === 'complete') {
+          printWindow.focus();
+          printWindow.print();
+          toast.dismiss();
+          toast.success("Guide generated! Use 'Save as PDF' in your browser.");
+        }
+      } else {
+        printWindow.close();
+        toast.dismiss();
+        toast.error("Guide data not available. Complete an interview session first.");
       }
     } catch (err) {
       console.error("Export Guide Error:", err);
+      printWindow.close();
       toast.dismiss();
-      toast.error("Failed to export guide.");
+      if (err?.response?.status === 404) {
+        toast.error("Session not found. Please complete an interview session first.");
+      } else {
+        toast.error("Failed to export guide. Please try again.");
+      }
     }
   };
 
@@ -214,8 +242,15 @@ export default function Resources() {
               <p className="text-muted-foreground font-medium text-lg italic">Resources selected based on your recent interview performance.</p>
           </div>
           <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={exportGuide} className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
-                  <Download className="mr-2 h-4 w-4" /> Export PDF Guide
+              <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportGuide}
+                  disabled={aiLoading || resourceError || resources.sections.length === 0}
+                  className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                  <Download className="mr-2 h-4 w-4" />
+                  {aiLoading ? "Loading..." : "Export PDF Guide"}
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
                   View Study Plan <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -241,16 +276,48 @@ export default function Resources() {
       {/* ── Resource Library ── */}
       <div className="space-y-24">
         {aiLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
-                  <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
-                  <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] animate-pulse">Checking performance...</p>
-              </SaaSCard>
-              <SaaSCard className="h-[400px] flex flex-col items-center justify-center bg-transparent border-slate-200 border-dashed hover:bg-slate-50 transition-colors">
-                  <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-6" />
-                  <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] animate-pulse">Finding resources...</p>
-              </SaaSCard>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center min-h-[340px] gap-6 text-center"
+          >
+            <div className="relative">
+              <div className="h-16 w-16 rounded-[22px] bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-sm">
+                <RefreshCw className="h-7 w-7 text-indigo-500 animate-spin" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-base font-semibold text-slate-700">Curating your learning resources…</p>
+              <p className="text-sm text-slate-400 max-w-xs">Matching resources to your interview questions. This takes up to 10 seconds.</p>
+            </div>
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map(i => (
+                <span key={i} className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: `${i * 0.18}s` }} />
+              ))}
+            </div>
+          </motion.div>
+        ) : resourceError ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center min-h-[340px] gap-6 text-center"
+          >
+            <div className="h-16 w-16 rounded-[22px] bg-red-50 border border-red-100 flex items-center justify-center shadow-sm">
+              <RefreshCw className="h-7 w-7 text-red-400" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-base font-semibold text-slate-700">Resource fetch timed out</p>
+              <p className="text-sm text-slate-400 max-w-xs">The server took too long to respond. Your resources may be generating for the first time — please retry.</p>
+            </div>
+            <Button
+              variant="saas"
+              size="sm"
+              onClick={() => getResourcesFromAI(questions)}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" /> Retry
+            </Button>
+          </motion.div>
         ) : (
           <AnimatePresence>
             {resources.sections && resources.sections.map((section, idx) => {
@@ -280,8 +347,24 @@ export default function Resources() {
                   </div>
 
                   {!hasResources && !hasVideos ? (
-                    <SaaSCard className="p-10 border-dashed border-slate-200 bg-transparent text-center">
-                       <p className="text-slate-500 italic font-medium">No resources found for this specific topic. Try updating your interview profile for better results.</p>
+                    <SaaSCard className="p-8 border-dashed border-slate-200 bg-slate-50/50 text-center space-y-5">
+                      <p className="text-slate-500 font-medium text-sm">No cached resources yet for this question. Search directly:</p>
+                      <div className="flex flex-wrap justify-center gap-3">
+                        <a
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent((section.keywords || []).join(" ") + " interview explanation")}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                        >
+                          <Youtube className="h-4 w-4" /> Search YouTube
+                        </a>
+                        <a
+                          href={`https://www.geeksforgeeks.org/?s=${encodeURIComponent((section.keywords || []).join(" "))}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-100 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+                        >
+                          <BookOpen className="h-4 w-4" /> Search GeeksforGeeks
+                        </a>
+                      </div>
                     </SaaSCard>
                   ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -293,21 +376,32 @@ export default function Resources() {
                             <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Video Tutorials</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {section.videos?.slice(0, 4).map((vid, vidx) => (
+                            {section.videos?.slice(0, 2).map((vid, vidx) => {
+                                // Use pre-built url from backend; fallback to videoId pattern
+                                const videoUrl = vid.url || (vid.videoId ? `https://www.youtube.com/watch?v=${vid.videoId}` : null);
+                                // Use injected thumbnail; fallback to YouTube pattern
+                                const thumbSrc = vid.thumbnail || (vid.videoId ? `https://img.youtube.com/vi/${vid.videoId}/hqdefault.jpg` : null);
+                                if (!videoUrl) return null;
+                                return (
                                 <a 
                                     key={vidx} 
-                                    href={`https://www.youtube.com/watch?v=${vid.videoId}`}
+                                    href={videoUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group block"
                                 >
                                     <SaaSCard className="!p-0 border border-slate-200 bg-white overflow-hidden ring-1 ring-transparent hover:ring-red-500/30 hover:shadow-md transition-all duration-500 h-full">
-                                        <div className="relative aspect-video overflow-hidden">
-                                            {vid.thumbnail ? (
-                                                <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                        <div className="relative aspect-video overflow-hidden bg-slate-100">
+                                            {thumbSrc ? (
+                                                <img 
+                                                    src={thumbSrc} 
+                                                    alt={vid.title} 
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-muted">
-                                                    <PlayCircle className="h-8 w-8 text-muted-foreground/40" />
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <PlayCircle className="h-10 w-10 text-slate-300" />
                                                 </div>
                                             )}
                                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 duration-500">
@@ -321,7 +415,8 @@ export default function Resources() {
                                         </div>
                                     </SaaSCard>
                                 </a>
-                            ))}
+                                );
+                            })}
                         </div>
                       </div>
 
@@ -332,10 +427,10 @@ export default function Resources() {
                             <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Reading Materials</h3>
                         </div>
                         <div className="space-y-6">
-                            {section.resources?.slice(0, 3).map((res, ridx) => (
+                            {section.resources?.filter(res => res.url || res.link).slice(0, 3).map((res, ridx) => (
                                 <a 
                                     key={ridx}
-                                    href={res.link}
+                                    href={res.url || res.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group block"

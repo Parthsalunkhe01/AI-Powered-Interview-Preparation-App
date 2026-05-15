@@ -1,6 +1,26 @@
 const InterviewResult = require("../models/InterviewResult");
 
-// ── Decision Helpers ─────────────────────────────────────────────────────────
+// ── Topic Sanitizer ───────────────────────────────────────────────────────────
+// Filters out junk topic names: difficulty labels, single words that are
+// clearly not domain topics (e.g. "Easy", "Medium", "Two Sum", "1", "null").
+const JUNK_TOPICS = new Set([
+    "easy", "medium", "hard", "beginner", "intermediate", "advanced",
+    "true", "false", "null", "undefined", "none", "n/a", "na",
+    "question", "answer", "topic", "general", "other", "misc",
+    "two sum", "three sum", "fizzbuzz", "hello world",
+]);
+
+function isValidTopic(topic) {
+    if (!topic || typeof topic !== "string") return false;
+    const t = topic.trim().toLowerCase();
+    if (t.length < 3) return false;             // too short
+    if (/^\d+$/.test(t)) return false;          // pure number
+    if (JUNK_TOPICS.has(t)) return false;        // known junk
+    if (/^(easy|medium|hard)\s/i.test(t)) return false; // "Easy Arrays" etc.
+    return true;
+}
+
+// ── Decision Helpers ──────────────────────────────────────────────────────────
 
 const BENCHMARK = { dsa: 65, android: 60, system_design: 55, database: 62, java: 60, hr: 70, behavioral: 65, arrays: 58 };
 
@@ -53,9 +73,11 @@ exports.getUserAnalytics = async (req, res) => {
             }
             if (r.topicDetails) {
                 r.topicDetails.forEach(td => {
-                    if (!topicMap[td.topic]) topicMap[td.topic] = { total: 0, count: 0, domain: td.domain };
-                    topicMap[td.topic].total += td.score;
-                    topicMap[td.topic].count += 1;
+                    if (!isValidTopic(td.topic)) return; // skip junk topics
+                    const key = td.topic.trim();
+                    if (!topicMap[key]) topicMap[key] = { total: 0, count: 0, domain: td.domain };
+                    topicMap[key].total += (td.score ?? 0);
+                    topicMap[key].count += 1;
                 });
             }
         });
@@ -110,12 +132,22 @@ exports.getUserAnalytics = async (req, res) => {
                 time: w.severity === "high" ? "45m" : "20m"
             }));
 
+        // 6. Insight text (used by Dashboard AI Strategic Insight card)
+        const topWeakTopic = flatWeak[0]?.topic;
+        const insight = topWeakTopic
+            ? `You're currently falling behind on "${topWeakTopic}". Prioritize it in your next 2 sessions to see a measurable score jump.`
+            : avgScore >= 70
+            ? `Solid foundation across all domains. Push for harder problems and system design depth to move into the top 10%.`
+            : `Complete more interview sessions to unlock a personalized AI breakdown of your strengths and gaps.`;
+
         res.status(200).json({
             success: true,
             data: {
                 avgScore,
-                status: getStatus(avgScore, 65), // Global readiness benchmark
+                totalInterviews: results.length,
+                status: getStatus(avgScore, 65),
                 history: results.map((r, i) => ({ index: i + 1, score: r.score })),
+                insight,
                 mainFocus,
                 weaknesses: flatWeak,
                 strengths: Object.entries(topicMap)
