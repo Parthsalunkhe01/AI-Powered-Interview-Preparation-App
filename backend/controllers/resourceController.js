@@ -43,27 +43,39 @@ const extractCoreKeywords = (rawQuestion) => {
   return [...new Set(tokens)].slice(0, 6).join(" ");
 };
 
-/**
- * Call AI to verify relevance of candidates
- */
-const filterCandidatesWithAI = async (question, candidates) => {
+const filterCandidatesWithAI = async (question, candidates, attempts = 0) => {
   if (!candidates || candidates.length === 0) return [];
+  if (attempts > 2) return candidates.slice(0, 3); // Fallback
 
   try {
     const prompt = resourceSemanticFilterPrompt(question, candidates);
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.1, // low temp for objective truth
+      temperature: 0.1,
     });
 
     const response = completion.choices[0]?.message?.content || "[]";
-    const relevantIndices = JSON.parse(response.replace(/```json/g, "").replace(/```/g, ""));
+    const cleanedResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    let relevantIndices;
+    try {
+        relevantIndices = JSON.parse(cleanedResponse);
+    } catch (e) {
+        const { jsonrepair } = require("jsonrepair");
+        relevantIndices = JSON.parse(jsonrepair(cleanedResponse));
+    }
     
     return candidates.filter((_, idx) => relevantIndices.includes(idx.toString()));
   } catch (err) {
+    if (err.message.includes("429")) {
+        const waitTime = (attempts + 1) * 5000;
+        console.log(`    [429] Semantic Filter rate limit. Waiting ${waitTime}ms...`);
+        await new Promise(r => setTimeout(r, waitTime));
+        return filterCandidatesWithAI(question, candidates, attempts + 1);
+    }
     console.error("  [AI_FILTER_ERROR]:", err.message);
-    return candidates.slice(0, 3); // Fallback to top mapping on AI fail
+    return candidates.slice(0, 3); 
   }
 };
 

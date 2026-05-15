@@ -146,21 +146,46 @@ Return ONLY a valid JSON object:
 }
 `;
 
-const detailedAnswerBatchPrompt = (questions, role, topics) => `
-You are an expert technical interviewer. Return ONLY valid JSON. No text. No explanation outside JSON.
-Role: ${role} | Topics: ${topics}
+const detailedAnswerBatchPrompt = (questions, role, topics, performanceLevel = "average") => `
+You are a world-class technical interviewer and mentor from a top product company (e.g., Google, Netflix, Uber).
+Generate a deep, structured, and visual learning resource for each question below.
 
-Questions:
+Context:
+- Role: ${role}
+- Focus: ${topics}
+- User's Current Performance Level: ${performanceLevel} (Adjust explanation depth accordingly: if weak, use analogies and step-by-step; if strong, focus on advanced optimizations and tradeoffs).
+
+Questions to Answer:
 ${questions.map((q, i) => `${i + 1}. ${typeof q === 'string' ? q : q.question}`).join("\n")}
 
-Format:
+STRICT JSON FORMAT (Return only a JSON array):
 [
   {
     "question": "Exact original question text",
-    "explanation": "2 paragraphs of interview-ready detail",
-    "keyInsights": ["Point 1", "Point 2", "Point 3"],
-    "interviewerTip": "Strategic advice",
-    "codeExample": "Implementation code or null"
+    "importance": "High/Medium/Low",
+    "duration": "Estimated answer time in mins (e.g., 3-5 mins)",
+    "companyTags": ["Google", "Amazon", "etc"],
+    "idealInterviewAnswer": "A concise, 1-2 sentence 'recruiter-style' summary for quick revision.",
+    "explanation": "Problem definition + Core Idea (structured with simple analogies if performanceLevel is weak).",
+    "architectureDiagram": "A valid Mermaid.js diagram (graph TD, sequenceDiagram, etc.) ONLY if applicable (system design/complex flows). If not applicable, return null.",
+    "howToDrawStepByStep": ["Step 1...", "Step 2..."],
+    "detailedSections": [
+       {"title": "Architecture/Algorithm", "content": "Detailed implementation details"},
+       {"title": "Optimizations", "content": "Scalability and performance improvements"},
+       {"title": "Tradeoffs", "content": "Pros and cons of this approach"}
+    ],
+    "productionConcerns": ["Caching", "Fault Tolerance", "Monitoring", "etc"],
+    "realWorldExample": "How Netflix/Uber/WhatsApp handles this.",
+    "interviewerTip": "What the interviewer specifically looks for.",
+    "commonMistakes": ["Mistake 1", "Mistake 2"],
+    "possibleFollowUps": ["Follow-up 1", "Follow-up 2"],
+    "suggestedTechStack": "Recommended tools (e.g., Frontend: React, Cache: Redis)",
+    "codeExample": "Clean, commented implementation snippet or null",
+    "keyInsights": {
+       "coreConcepts": ["Keyword1", "Keyword2"],
+       "scalabilityConcepts": ["Keyword3", "Keyword4"],
+       "interviewKeywords": ["Keyword5", "Keyword6"]
+    }
   }
 ]
 `;

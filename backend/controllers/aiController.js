@@ -22,7 +22,7 @@ const generateInterviewQuestions = async (req, res) => {
     );
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
@@ -76,7 +76,7 @@ const generateConceptExplanation = async (req, res) => {
     const prompt = conceptExplainPrompt(question);
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
@@ -135,8 +135,15 @@ const parseBatchResponse = (rawText) => {
   try {
     parsed = JSON.parse(cleaned);
   } catch (e) {
-    console.error("  [BATCH_PARSE_ERROR] JSON parse failed:", e.message);
-    return null;
+    console.warn("  [BATCH_PARSE_ERROR] standard JSON.parse failed, attempting repair...");
+    try {
+        const { jsonrepair } = require("jsonrepair");
+        parsed = JSON.parse(jsonrepair(cleaned));
+        console.log("    ✅ JSON successfully repaired.");
+    } catch (repairErr) {
+        console.error("    ❌ Repair failed:", repairErr.message);
+        return null;
+    }
   }
 
   // Handle various JSON response structures commonly returned by models
@@ -158,33 +165,29 @@ const parseBatchResponse = (rawText) => {
  * Call Groq API for a single batch of questions.
  * Returns the raw text response or throws on API failure.
  */
-const callGroqForBatch = async (batch, role, topics) => {
+const callGroqForBatch = async (batch, role, topics, performanceLevel = "average") => {
   const { detailedAnswerBatchPrompt } = require("../utils/prompts");
-  const prompt = detailedAnswerBatchPrompt(batch, role, topics);
+  const prompt = detailedAnswerBatchPrompt(batch, role, topics, performanceLevel);
 
-  console.log(`  [AI_REQ] Outgoing prompt for ${batch.length} questions...`);
+  console.log(`  [AI_REQ] Outgoing prompt for ${batch.length} questions (User Level: ${performanceLevel})...`);
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "llama-3.3-70b-versatile", // Upgraded model for higher limits and better JSON
     messages: [
       {
         role: "system",
-        content: "Return ONLY a valid JSON array. No text before or after the JSON. No markdown code blocks.",
+        content: "Return ONLY a valid JSON array. No markdown. No conversational filler.",
       },
       {
         role: "user",
         content: prompt,
       },
     ],
-    temperature: 0.6,
-    max_tokens: 3000,
+    temperature: 0.1, // Lower temperature for more stable JSON
+    max_tokens: 6000, 
   });
 
-  const responseText = completion.choices[0]?.message?.content || null;
-  if (responseText) {
-    console.log(`  [AI_RES] Received ${responseText.length} characters.`);
-  }
-  return responseText;
+  return completion.choices[0]?.message?.content || null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +195,7 @@ const callGroqForBatch = async (batch, role, topics) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const generateDetailedAnswers = async (req, res) => {
   try {
-    const { questions, role, topics } = req.body;
+    const { questions, role, topics, performanceLevel } = req.body;
 
     // Validate input
     if (!questions || !Array.isArray(questions) || questions.length === 0) {
@@ -201,17 +204,17 @@ const generateDetailedAnswers = async (req, res) => {
 
     const resolvedRole = role || "Software Engineer";
     const resolvedTopics = topics || "General Software Engineering";
-    const BATCH_SIZE = 3;
+    const resolvedLevel = performanceLevel || "average";
+    const BATCH_SIZE = 1; // Process one by one to avoid TPM limits with large prompts
 
-    // Split into batches of 3
+    // Split into batches
     const batches = [];
     for (let i = 0; i < questions.length; i += BATCH_SIZE) {
       batches.push(questions.slice(i, i + BATCH_SIZE));
     }
 
-    console.log(`\n📦 generate-answers: ${questions.length} question(s) → ${batches.length} batch(es) of max ${BATCH_SIZE}`);
+    console.log(`\n📦 generate-answers: ${questions.length} topics (Level: ${resolvedLevel})`);
 
-    // Process each batch sequentially
     const allRawAnswers = [];
 
     for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
@@ -222,85 +225,66 @@ const generateDetailedAnswers = async (req, res) => {
 
       while (!batchSuccess && attempts < MAX_ATTEMPTS) {
         attempts++;
-        console.log(`  → Batch ${batchIdx + 1}/${batches.length} (Attempt ${attempts}/${MAX_ATTEMPTS}): sending ${batch.length} question(s)...`);
-
         try {
-          const rawText = await callGroqForBatch(batch, resolvedRole, resolvedTopics);
-          
-          if (!rawText) {
-            console.warn(`    [Attempt ${attempts}] Empty response.`);
-          } else {
-            const parsed = parseBatchResponse(rawText);
-            if (!parsed || parsed.length === 0) {
-              console.warn(`    [Attempt ${attempts}] Invalid JSON or zero usable results.`);
-            } else {
-              console.log(`    ✅ Batch ${batchIdx + 1} Success! Got ${parsed.length} answer(s).`);
-              allRawAnswers.push(...parsed);
-              batchSuccess = true;
-            }
+          const rawText = await callGroqForBatch(batch, resolvedRole, resolvedTopics, resolvedLevel);
+          const parsed = parseBatchResponse(rawText);
+          if (parsed && parsed.length > 0) {
+            allRawAnswers.push(...parsed);
+            batchSuccess = true;
           }
         } catch (err) {
           console.error(`    [Attempt ${attempts}] API Error:`, err.message);
-        }
-
-        if (!batchSuccess && attempts < MAX_ATTEMPTS) {
-          const backoff = attempts * 500;
-          console.log(`    [RETRY] Cooling down for ${backoff}ms before next attempt...`);
-          await new Promise(r => setTimeout(r, backoff));
+          if (err.message.includes("429")) {
+            console.warn("    [RATE_LIMIT] 429 hit. Waiting 15s...");
+            await new Promise(r => setTimeout(r, 15000));
+          }
         }
       }
 
-      if (!batchSuccess) {
-          console.error(`  ❌ [CRITICAL] Batch ${batchIdx + 1} failed after ${MAX_ATTEMPTS} attempts.`);
-      }
-
-      // Small delay between successful batches to avoid rate limits
+      // Refill delay
       if (batchIdx < batches.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise(r => setTimeout(r, 1500));
       }
     }
 
-    console.log(`\n✅ Total raw answers collected: ${allRawAnswers.length} for ${questions.length} question(s).`);
-
-    // Map AI answers back to original questions using fuzzy match + index fallback
+    // Map AI answers back to original questions
     const detailedQuestions = questions.map((qObj, idx) => {
       const qText = typeof qObj === "string" ? qObj : qObj.question;
 
-      // 1) Try fuzzy text match
       let aiAns = allRawAnswers.find((r) => {
         if (!r || !r.question) return false;
         const aiQ = String(r.question).toLowerCase();
         const userQ = String(qText).toLowerCase();
-        return (
-          aiQ.includes(userQ.substring(0, 30)) ||
-          userQ.includes(aiQ.substring(0, 30))
-        );
+        return aiQ.includes(userQ.substring(0, 20)) || userQ.includes(aiQ.substring(0, 20));
       });
 
-      // 2) Positional fallback
-      if (!aiAns && allRawAnswers[idx]) {
-        aiAns = allRawAnswers[idx];
-      }
+      if (!aiAns && allRawAnswers[idx]) aiAns = allRawAnswers[idx];
 
       return {
         question: qText,
         type: qObj.type || "concept",
         difficulty: qObj.difficulty || "medium",
+        importance: aiAns?.importance || "Medium",
+        duration: aiAns?.duration || "3-5 mins",
+        companyTags: aiAns?.companyTags || [],
         detailedAnswer: {
-          explanation:
-            aiAns?.explanation ||
-            aiAns?.answer ||
-            "AI explanation could not be generated for this question.",
-          keyInsights: Array.isArray(aiAns?.keyInsights)
-            ? aiAns.keyInsights
-            : Array.isArray(aiAns?.keyPoints)
-            ? aiAns.keyPoints
-            : [],
-          interviewerTip:
-            aiAns?.interviewerTip ||
-            aiAns?.tip ||
-            "Focus on explaining the concept clearly with real-world examples.",
-          codeExample: aiAns?.codeExample || aiAns?.code || aiAns?.example || null,
+          idealInterviewAnswer: aiAns?.idealInterviewAnswer || "A concise industry-standard summary.",
+          explanation: aiAns?.explanation || "Detailed conceptual breakdown.",
+          architectureDiagram: aiAns?.architectureDiagram || null,
+          howToDrawStepByStep: aiAns?.howToDrawStepByStep || [],
+          detailedSections: aiAns?.detailedSections || [],
+          productionConcerns: aiAns?.productionConcerns || [],
+          realWorldExample: aiAns?.realWorldExample || "General industry implementation.",
+          interviewerTip: aiAns?.interviewerTip || "Focus on trade-offs.",
+          commonMistakes: aiAns?.commonMistakes || [],
+          possibleFollowUps: aiAns?.possibleFollowUps || [],
+          suggestedTechStack: aiAns?.suggestedTechStack || "Standard enterprise stack.",
+          codeExample: aiAns?.codeExample || null,
+          keyInsights: aiAns?.keyInsights || {
+             coreConcepts: [],
+             scalabilityConcepts: [],
+             interviewKeywords: []
+          }
         },
       };
     });

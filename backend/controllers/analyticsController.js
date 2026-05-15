@@ -32,25 +32,53 @@ exports.getUserAnalytics = async (req, res) => {
         
         let totalScore = 0;
         let totalTime = 0;
-        const topicMap = {}; // { topicName: { totalScore: 0, count: 0 } }
+        let highestScore = 0;
+        let lowestScore = 100;
+        
+        const domainMap = {}; // { domainName: { total: 0, count: 0 } }
+        const topicMap = {}; // { topicName: { totalScore: 0, count: 0, domain: "" } }
         const history = [];
 
         results.forEach(result => {
             totalScore += result.score;
             totalTime += result.timeTaken;
+            if (result.score > highestScore) highestScore = result.score;
+            if (result.score < lowestScore) lowestScore = result.score;
             
             history.push({
                 date: result.createdAt,
                 score: result.score
             });
 
-            if (result.topics && Array.isArray(result.topics)) {
+            // 1. Process Domains
+            if (result.domainScores) {
+                for (const [domain, score] of result.domainScores.entries()) {
+                    if (!domainMap[domain]) domainMap[domain] = { total: 0, count: 0 };
+                    domainMap[domain].total += score;
+                    domainMap[domain].count += 1;
+                }
+            } else if (result.categories && result.categories.length > 0) {
+                result.categories.forEach(cat => {
+                    const c = cat.toLowerCase();
+                    if (!domainMap[c]) domainMap[c] = { total: 0, count: 0 };
+                    domainMap[c].total += result.score;
+                    domainMap[c].count += 1;
+                });
+            }
+
+            // 2. Process Topic Details
+            if (result.topicDetails && result.topicDetails.length > 0) {
+                result.topicDetails.forEach(td => {
+                    if (!topicMap[td.topic]) topicMap[td.topic] = { totalScore: 0, count: 0, domain: td.domain };
+                    topicMap[td.topic].totalScore += td.score;
+                    topicMap[td.topic].count += 1;
+                });
+            } else if (result.topics && Array.isArray(result.topics)) {
+                // Fallback for legacy
                 result.topics.forEach(topic => {
                     const t = topic.trim();
                     if (!t) return;
-                    if (!topicMap[t]) {
-                        topicMap[t] = { totalScore: 0, count: 0 };
-                    }
+                    if (!topicMap[t]) topicMap[t] = { totalScore: 0, count: 0, domain: "General" };
                     topicMap[t].totalScore += result.score;
                     topicMap[t].count += 1;
                 });
@@ -59,44 +87,56 @@ exports.getUserAnalytics = async (req, res) => {
 
         const avgScore = Math.round(totalScore / totalInterviews);
 
-        // Map topicPerformance & isolate strong vs weak boundaries
         const topicPerformance = [];
-        const weakTopics = [];
-        const strongTopics = [];
+        const groupedStrengths = {}; // { domain: [topics] }
+        const groupedWeaknesses = {};
 
         for (const [topic, stats] of Object.entries(topicMap)) {
             const avgTopicScore = Math.round(stats.totalScore / stats.count);
-            topicPerformance.push({ topic, avgScore: avgTopicScore });
+            const domain = stats.domain || "General";
+            
+            topicPerformance.push({ topic, avgScore: avgTopicScore, domain });
 
-            if (avgTopicScore < 50) {
-                weakTopics.push(topic);
-            } else if (avgTopicScore >= 70) {
-                strongTopics.push(topic);
+            if (avgTopicScore < 60) {
+                if (!groupedWeaknesses[domain]) groupedWeaknesses[domain] = [];
+                groupedWeaknesses[domain].push(topic);
+            } else if (avgTopicScore >= 75) {
+                if (!groupedStrengths[domain]) groupedStrengths[domain] = [];
+                groupedStrengths[domain].push(topic);
             }
         }
 
-        // Auto-generate AI insight string locally mapping array structures natively
-        let insight = "Keep up the consistent interview practice!";
-        
-        if (weakTopics.length > 0 && strongTopics.length > 0) {
-            insight = `You are performing strongly in ${strongTopics.slice(0, 2).join(" & ")}. However, you are struggling in ${weakTopics.slice(0, 2).join(" & ")}. Focus your next revision there!`;
-        } else if (weakTopics.length > 0) {
-            insight = `You are currently struggling in ${weakTopics.join(", ")}. Dedicate some time entirely to foundational concepts here.`;
-        } else if (strongTopics.length > 0) {
-            insight = `Incredible! You are highly proficient in ${strongTopics.join(", ")}. Keep tackling harder difficulty stages.`;
+        const domainPerformance = [];
+        for (const [domain, stats] of Object.entries(domainMap)) {
+            domainPerformance.push({
+                domain: domain.toUpperCase(),
+                score: Math.round(stats.total / stats.count)
+            });
         }
+
+        const summary = {
+            strong: Object.values(groupedStrengths).flat().slice(0, 3),
+            weak: Object.values(groupedWeaknesses).flat().slice(0, 3),
+            recommendation: Object.values(groupedWeaknesses).flat().length > 0 
+                ? `Focus your next practice sessions on ${Object.values(groupedWeaknesses).flat().slice(0, 2).join(" and ")}.`
+                : "Mastery achieved! Try 'Real' difficulty for advanced simulation."
+        };
 
         res.status(200).json({
             success: true,
             data: {
                 totalInterviews,
                 avgScore,
+                highestScore,
+                lowestScore: lowestScore === 100 ? 0 : lowestScore,
                 totalTime,
-                topicPerformance,
-                weakTopics,
-                strongTopics,
+                topicPerformance: topicPerformance.sort((a,b) => b.avgScore - a.avgScore),
+                domainPerformance: domainPerformance.sort((a,b) => b.score - a.score),
+                groupedStrengths,
+                groupedWeaknesses,
                 history,
-                insight
+                summary,
+                insight: `Strong showing in ${Object.values(groupedStrengths).flat().slice(0, 2).join(", ") || "core areas"}.`
             }
         });
 

@@ -282,12 +282,49 @@ exports.generateAISessionFeedback = async (req, res) => {
         });
 
         if (!duplicateCheck) {
+            // Calculate domain scores for this session
+            const domainTotals = {};
+            const domainCounts = {};
+            
+            feedbackData.questionFeedback?.forEach(qf => {
+                const meta = session.questionMeta?.[qf.index];
+                const domain = (meta?.category || "General").toLowerCase();
+                
+                if (!domainTotals[domain]) {
+                    domainTotals[domain] = 0;
+                    domainCounts[domain] = 0;
+                }
+                domainTotals[domain] += (qf.questionScore || 0);
+                domainCounts[domain] += 1;
+            });
+
+            const domainScores = {};
+            for (const domain in domainTotals) {
+                domainScores[domain] = Math.round(domainTotals[domain] / domainCounts[domain]);
+            }
+
+            const uniqueCategories = [...new Set(session.questionMeta?.map(m => m.category).filter(Boolean))];
+
+            const topicDetails = [];
+            feedbackData.questionFeedback?.forEach(qf => {
+                const meta = session.questionMeta?.[qf.index];
+                const domain = meta?.category || "General";
+                const score = qf.questionScore || 0;
+                
+                meta?.tags?.forEach(tag => {
+                    topicDetails.push({ topic: tag, domain, score });
+                });
+            });
+
             await InterviewResult.create({
                 userId: req.user._id,
                 score: feedbackData.overallScore || 0,
                 totalQuestions: history.length,
                 correctAnswers: feedbackData.correctAnswers || 0,
                 topics: feedbackData.topics || feedbackData.suggestedTopics || [],
+                topicDetails: topicDetails,
+                categories: uniqueCategories,
+                domainScores: domainScores,
                 timeTaken: Math.max(0, Math.floor((new Date() - session.createdAt) / 1000)),
             });
         }

@@ -29,7 +29,6 @@ const AnalyticsPage = () => {
             if (!user) return;
             try {
                 setLoading(true);
-                setData(null); // Reset before fetch
                 const response = await axiosInstance.get(API_PATHS.ANALYTICS.GET_STATS);
                 if (response.data.success) {
                     setData(response.data.data);
@@ -50,7 +49,7 @@ const AnalyticsPage = () => {
                 <div className="h-16 w-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center animate-spin">
                     <Activity className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs animate-pulse">Loading your performance data...</p>
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs animate-pulse">Loading intelligence...</p>
             </div>
         );
     }
@@ -81,9 +80,9 @@ const AnalyticsPage = () => {
     }
 
     const stats = [
-        { label: "Total Sessions", value: data.totalInterviews, icon: Zap, color: "text-blue-600", bg: "bg-blue-50 hover:bg-blue-100/50" },
-        { label: "Average Score", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100/50" },
-        { label: "Practice Time", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100/50" },
+        { label: "Total Sessions", value: data.totalInterviews, icon: Zap, color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Average Score", value: `${data.avgScore}%`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Practice Time", value: `${Math.floor(data.totalTime / 60)}m`, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
     ];
 
     const containerVariants = {
@@ -120,16 +119,23 @@ const AnalyticsPage = () => {
             </div>
 
             {/* ── Analytics Engine ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Score Velocity */}
-                <SaaSCard className="lg:col-span-8 p-10">
+                <SaaSCard className="lg:col-span-8 p-10 self-start">
                     <div className="flex items-center justify-between mb-10">
                         <div className="space-y-1">
                             <h3 className="text-2xl font-bold tracking-tight text-slate-900">Score Progress</h3>
                             <p className="text-sm text-slate-500 font-medium italic">How your scores have changed over time</p>
                         </div>
-                        <div className="flex gap-2">
-                           <Badge variant="outline">Performance</Badge>
+                        <div className="flex gap-4">
+                            <div className="text-right">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Highest</p>
+                                <p className="text-sm font-black text-emerald-600">{data.highestScore}%</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lowest</p>
+                                <p className="text-sm font-black text-rose-500">{data.lowestScore}%</p>
+                            </div>
                         </div>
                     </div>
                     
@@ -179,46 +185,94 @@ const AnalyticsPage = () => {
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                </SaaSCard>
 
-                {/* Radar: Topic Mastery */}
-                <div className="lg:col-span-4 space-y-8">
-                    <SaaSCard className="h-full p-8 flex flex-col items-center justify-center text-center">
-                        <div className="p-4 rounded-[24px] bg-indigo-50 border border-indigo-100 mb-6 shadow-sm">
-            
-                            <h2 className="text-xl font-bold mb-1 text-indigo-700">AI Feedback</h2>
+                    {/* Domain Performance Row */}
+                    <div className="mt-10 pt-10 border-t border-slate-100">
+                        <div className="flex items-center gap-3 mb-6">
+                            <LayoutDashboard className="h-4 w-4 text-slate-400" />
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Domain Performance</h3>
                         </div>
-                        
-                        <p className="text-sm font-medium text-slate-600 leading-relaxed italic">
-                            "{data.insight}"
-                        </p>
-                        <div className="mt-8 pt-8 border-t border-slate-100 w-full">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Top Skills</p>
-                            <div className="space-y-4 text-left">
-                                {data.topicPerformance.slice(0, 3).map((tp, i) => (
-                                    <div key={i} className="flex flex-col gap-2">
-                                        <div className="flex justify-between items-center text-[11px] font-bold">
-                                            <span>{tp.topic}</span>
-                                            <span className="text-primary">{tp.avgScore}%</span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {data.domainPerformance?.length > 0 ? (
+                                data.domainPerformance.slice(0, 4).map((dp, i) => (
+                                    <div key={i} className="space-y-2">
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                            <span className="text-slate-400">{dp.domain}</span>
+                                            <span className="text-primary">{dp.score}%</span>
                                         </div>
                                         <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                                             <motion.div 
                                                 initial={{ width: 0 }}
-                                                animate={{ width: `${tp.avgScore}%` }}
+                                                animate={{ width: `${dp.score}%` }}
                                                 className="h-full bg-primary rounded-full transition-all duration-1000" 
                                             />
                                         </div>
                                     </div>
-                                ))}
+                                ))
+                            ) : (
+                                <p className="text-xs text-slate-400 italic">No domain data yet.</p>
+                            )}
+                        </div>
+                    </div>
+                </SaaSCard>
+
+                {/* Sidebar: Performance Summary */}
+                <div className="lg:col-span-4 space-y-8 self-start">
+                    <SaaSCard className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <Brain className="h-5 w-5 text-indigo-600" />
+                            <h3 className="text-lg font-bold text-slate-900">Performance Summary</h3>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            <div>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Strong Areas</p>
+                                <ul className="space-y-2">
+                                    {data.summary?.strong?.map((s, i) => (
+                                        <li key={i} className="text-xs font-bold text-slate-600 flex items-start gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                                            {s}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div>
+                                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-3">Needs Improvement</p>
+                                <ul className="space-y-2">
+                                    {data.summary?.weak?.map((w, i) => (
+                                        <li key={i} className="text-xs font-bold text-slate-600 flex items-start gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                                            {w}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-100">
+                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Next Recommendation</p>
+                                <p className="text-xs font-bold text-slate-700 leading-relaxed italic">
+                                    {data.summary?.recommendation}
+                                </p>
                             </div>
                         </div>
+                    </SaaSCard>
+
+                    <SaaSCard className="p-8">
+                         <div className="flex items-center gap-3 mb-4">
+                            <Sparkles className="h-4 w-4 text-amber-500" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recruiter Insight</h3>
+                        </div>
+                        <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
+                            "{data.insight}"
+                        </p>
                     </SaaSCard>
                 </div>
             </div>
 
             {/* ── Strategy Board ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <SaaSCard className="p-10 border-rose-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <SaaSCard className="p-10 border-rose-100 self-start">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-10 w-10 rounded-2xl bg-rose-50 flex items-center justify-center">
                             <AlertCircle className="h-5 w-5 text-rose-600" />
@@ -228,10 +282,20 @@ const AnalyticsPage = () => {
                              <p className="text-xs text-muted-foreground mt-1 font-medium italic">High-impact growth areas</p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
-                        {data.weakTopics && data.weakTopics.length > 0 ? (
-                            data.weakTopics.map((topic, i) => (
-                                <Badge key={i} variant="destructive" className="px-4 py-1.5 rounded-xl normal-case font-bold">{topic}</Badge>
+                    <div className="space-y-8 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                        {Object.keys(data.groupedWeaknesses || {}).length > 0 ? (
+                            Object.entries(data.groupedWeaknesses).map(([domain, topics], i) => (
+                                <div key={i} className="space-y-3">
+                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{domain}</h4>
+                                    <ul className="space-y-2">
+                                        {topics.map((t, idx) => (
+                                            <li key={idx} className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                                <div className="h-1 w-1 rounded-full bg-rose-500" />
+                                                {t}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             ))
                         ) : (
                             <p className="text-sm text-muted-foreground italic">Great performance across all areas.</p>
@@ -239,7 +303,7 @@ const AnalyticsPage = () => {
                     </div>
                 </SaaSCard>
 
-                <SaaSCard className="p-10 border-emerald-100">
+                <SaaSCard className="p-10 border-emerald-100 self-start">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
                             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -249,10 +313,20 @@ const AnalyticsPage = () => {
                              <p className="text-xs text-muted-foreground mt-1 font-medium italic">Topics you have mastered</p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
-                        {data.strongTopics && data.strongTopics.length > 0 ? (
-                            data.strongTopics.map((topic, i) => (
-                                <Badge key={i} variant="success" className="px-4 py-1.5 rounded-xl normal-case font-bold">{topic}</Badge>
+                    <div className="space-y-8 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                        {Object.keys(data.groupedStrengths || {}).length > 0 ? (
+                            Object.entries(data.groupedStrengths).map(([domain, topics], i) => (
+                                <div key={i} className="space-y-3">
+                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{domain}</h4>
+                                    <ul className="space-y-2">
+                                        {topics.map((t, idx) => (
+                                            <li key={idx} className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                                {t}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             ))
                         ) : (
                             <p className="text-sm text-muted-foreground italic">Start interviews to see your strengths.</p>

@@ -140,24 +140,23 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
     const result = await ai.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "You are a strict technical interviewer. Return ONLY valid JSON. No markdown. No explanation. Be honest - do not inflate scores." },
+        { role: "system", content: "You are a highly accurate technical evaluator. Return ONLY valid JSON." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.2,
+      temperature: 0.1,
       max_tokens: 1400,
     });
 
-    const text = (result?.choices?.[0]?.message?.content || "").trim()
-      .replace(/```json/g, "").replace(/```/g, "").trim();
+    let rawText = result.choices[0]?.message?.content || "{}";
+    const cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    if (!cleaned) throw new Error("Empty AI response");
 
-    if (!text) throw new Error("Empty AI response");
-
-    let parsed;
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(cleaned);
     } catch {
       const { jsonrepair } = require("jsonrepair");
-      parsed = JSON.parse(jsonrepair(text));
+      parsed = JSON.parse(jsonrepair(cleaned));
     }
 
     if (typeof parsed.technicalScore !== "number") throw new Error("Invalid AI response structure");

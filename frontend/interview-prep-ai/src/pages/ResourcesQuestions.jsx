@@ -31,6 +31,19 @@ import { Button } from "../components/ui/Button";
 import { UserContext } from "../context/userContext";
 
 
+import Mermaid from "../components/ui/Mermaid";
+import { 
+  History, 
+  Map, 
+  AlertTriangle, 
+  Clock, 
+  Building2, 
+  ArrowRight,
+  ShieldCheck,
+  Layers,
+  Repeat
+} from "lucide-react";
+
 export default function ResourcesQuestions() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,7 +51,8 @@ export default function ResourcesQuestions() {
 
   const [data, setData] = useState({
     blueprint: null,
-    questions: []
+    questions: [],
+    performanceLevel: "average" // Default
   });
   const [expandedId, setExpandedId] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -46,7 +60,7 @@ export default function ResourcesQuestions() {
 
   useEffect(() => {
     if (!user) {
-        setData({ blueprint: null, questions: [] });
+        setData({ blueprint: null, questions: [], performanceLevel: "average" });
         hasFetched.current = false;
         return;
     }
@@ -66,14 +80,18 @@ export default function ResourcesQuestions() {
 
     if (!currentData || !currentData.questions || currentData.questions.length === 0) return;
 
-    setData(currentData);
+    // Detect performance level from assessment if available
+    const avgScore = currentData.assessment?.overallScore || 50;
+    const performanceLevel = avgScore < 45 ? "weak" : avgScore > 80 ? "strong" : "average";
+    
+    setData({ ...currentData, performanceLevel });
 
     const firstQ = currentData.questions[0];
-    const needsGeneration = !firstQ?.detailedAnswer || typeof firstQ?.detailedAnswer === 'string';
+    const needsGeneration = !firstQ?.detailedAnswer || !firstQ?.detailedAnswer.idealInterviewAnswer;
 
     if (needsGeneration) {
       hasFetched.current = true;
-      generateAllAnswers(currentData);
+      generateAllAnswers({ ...currentData, performanceLevel });
     } else {
       hasFetched.current = true;
     }
@@ -85,7 +103,8 @@ export default function ResourcesQuestions() {
       const response = await axiosInstance.post(API_PATHS.AI.GENERATE_ANSWERS, {
         questions: targetData.questions,
         role: targetData.blueprint?.targetRole || targetData.blueprint?.role || "Software Engineer",
-        topics: targetData.blueprint?.skills?.join(", ") || targetData.blueprint?.topicsToFocus || "General Concepts"
+        topics: targetData.blueprint?.skills?.join(", ") || targetData.blueprint?.topicsToFocus || "General Concepts",
+        performanceLevel: targetData.performanceLevel
       });
 
       if (response.data && response.data.answers) {
@@ -98,50 +117,7 @@ export default function ResourcesQuestions() {
       }
     } catch (err) {
       console.error("Error generating detailed answers:", err);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleSingleRetry = async (unresolvedQuestions) => {
-    try {
-      setGenerating(true);
-      const response = await axiosInstance.post(API_PATHS.AI.GENERATE_ANSWERS, {
-        questions: unresolvedQuestions,
-        role: blueprint?.targetRole || blueprint?.role || "Software Engineer",
-        topics: blueprint?.skills?.join(", ") || blueprint?.topicsToFocus || "General Concepts"
-      });
-
-      if (response.data && response.data.answers) {
-        // Merge the new successful answers back into the main data
-        const newAnswersMap = {};
-        response.data.answers.forEach(a => {
-            newAnswersMap[a.question.toLowerCase()] = a.detailedAnswer;
-        });
-
-        const updatedQuestions = questions.map(q => {
-            const qText = q.question || q;
-            const match = newAnswersMap[qText.toLowerCase()];
-            if (match && !match.explanation.includes("could not be generated")) {
-                return {
-                    ...q,
-                    detailedAnswer: match
-                };
-            }
-            return q;
-        });
-
-        const updatedData = {
-          ...data,
-          questions: updatedQuestions
-        };
-        setData(updatedData);
-        localStorage.setItem("interviewData", JSON.stringify(updatedData));
-        toast.success("Explanation generated successfully!");
-      }
-    } catch (err) {
-      console.error("Single retry failed:", err);
-      toast.error("Could not generate explanation. Please try again.");
+      toast.error("Failed to generate some content. Please retry.");
     } finally {
       setGenerating(false);
     }
@@ -170,11 +146,10 @@ export default function ResourcesQuestions() {
     );
   }
 
-  const { blueprint, questions } = data;
+  const { blueprint, questions, performanceLevel } = data;
 
   return (
     <div className="space-y-12 pb-24">
-      {/* Loading Overlay */}
       <AnimatePresence>
         {generating && (
           <motion.div 
@@ -192,17 +167,15 @@ export default function ResourcesQuestions() {
               </div>
             </div>
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold tracking-tight uppercase tracking-[0.2em] text-slate-900">Generating Study Guide</h2>
-              <p className="text-slate-500 font-medium italic">Creating detailed explanations for {questions.length} topics...</p>
+              <h2 className="text-3xl font-bold tracking-tight uppercase tracking-[0.2em] text-slate-900">Structuring Learning Paths</h2>
+              <p className="text-slate-500 font-medium italic">Generating architecture diagrams and production guides...</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="max-w-5xl mx-auto px-1 space-y-12">
-        
-        {/* Navigation & Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-in fade-in duration-700">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-6">
             <button
               onClick={() => navigate("/resources")}
@@ -213,22 +186,21 @@ export default function ResourcesQuestions() {
             </button>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Badge variant="purple">AI Analysis</Badge>
-                <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)] animate-pulse" />
+                <Badge variant="purple">Personalized Path</Badge>
+                <Badge variant="outline" className="capitalize text-[10px] font-black">{performanceLevel} Performance detected</Badge>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none">
                 {blueprint?.targetRole || blueprint?.role || "Software Engineer"}
               </h1>
               <div className="flex flex-wrap items-center gap-3 pt-3">
-                <Badge variant="outline" className="px-4 py-1.5 bg-white/5">Exp: {blueprint?.experienceLevel || blueprint?.experience || "Any"}</Badge>
-                <Badge variant="info" className="px-4 py-1.5">{questions.length} Topics</Badge>
+                <Badge variant="info" className="px-4 py-1.5">{questions.length} Concepts</Badge>
+                <Badge variant="outline" className="px-4 py-1.5 bg-white/5">Level: {blueprint?.experienceLevel || "Professional"}</Badge>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Accordion List */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {questions.map((item, idx) => {
             const isExpanded = expandedId === idx;
             const qText = item.question || item;
@@ -242,7 +214,7 @@ export default function ResourcesQuestions() {
                 transition={{ delay: idx * 0.05 }}
               >
                 <SaaSCard className={`overflow-hidden transition-all duration-500 !p-0 ${
-                  isExpanded ? 'ring-2 ring-indigo-200 shadow-xl shadow-indigo-100/50 border-transparent' : 'hover:border-slate-300 hover:shadow-md'
+                  isExpanded ? 'ring-2 ring-indigo-200 shadow-2xl border-transparent' : 'hover:border-slate-300'
                 }`}>
                   <button
                     onClick={() => toggleAccordion(idx)}
@@ -250,22 +222,25 @@ export default function ResourcesQuestions() {
                   >
                     <div className="flex items-center gap-6">
                       <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border ${
-                        isExpanded ? 'bg-primary border-primary text-white rotate-12 scale-110 shadow-lg shadow-indigo-500/30' : 'bg-slate-50 border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200'
+                        isExpanded ? 'bg-indigo-600 border-indigo-600 text-white rotate-12 scale-110 shadow-lg' : 'bg-slate-50 border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200'
                       }`}>
-                        <span className="text-base font-bold italic">Q{idx + 1}</span>
+                        <span className="text-base font-bold italic">{idx + 1}</span>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
+                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg border ${
                             item.difficulty === 'hard' ? 'bg-rose-50 border-rose-200 text-rose-600' :
                             item.difficulty === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-600' :
                             'bg-emerald-50 border-emerald-200 text-emerald-600'
                           }`}>
                             {item.difficulty || "medium"}
                           </span>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
-                            • {item.type || "concept"}
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                            <Clock className="h-3 w-3" /> {item.duration || "4 mins"}
                           </span>
+                          {item.importance === "High" && (
+                            <Badge variant="destructive" className="text-[8px] h-5">High Importance</Badge>
+                          )}
                         </div>
                         <h3 className={`text-xl font-bold tracking-tight leading-snug transition-colors duration-500 ${
                           isExpanded ? 'text-slate-900' : 'text-slate-700 group-hover:text-slate-900'
@@ -274,9 +249,7 @@ export default function ResourcesQuestions() {
                         </h3>
                       </div>
                     </div>
-                    <div className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 transition-all duration-500 ${isExpanded ? 'rotate-180 border-indigo-200 bg-indigo-50' : 'group-hover:border-indigo-100 group-hover:bg-indigo-50/50'}`}>
-                      <ChevronDown className={`h-5 w-5 transition-colors ${isExpanded ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'}`} />
-                    </div>
+                    <ChevronDown className={`h-6 w-6 transition-transform duration-500 text-slate-300 ${isExpanded ? 'rotate-180 text-indigo-600' : ''}`} />
                   </button>
 
                   <AnimatePresence>
@@ -285,99 +258,196 @@ export default function ResourcesQuestions() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.5 }}
                       >
-                        <div className="px-10 pb-10 pt-2 space-y-10 animate-in fade-in slide-in-from-top-2 duration-500">
-                          <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent w-full" />
+                        <div className="px-10 pb-12 pt-2 space-y-12">
+                          <div className="h-px bg-slate-100 w-full" />
                           
-                          <div className="space-y-12">
-                            {/* Master Explanation */}
-                            <div className="space-y-6">
-                              <div className="flex items-center gap-3 px-1">
-                                <BookOpen className="h-4 w-4 text-indigo-600" />
-                                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.3em]">Detailed Explanation</span>
-                              </div>
-                              <div className="text-slate-700 leading-relaxed text-lg font-medium space-y-5 italic border-l-2 border-indigo-200 pl-8">
-                                {detailed.explanation.includes("could not be generated") ? (
-                                  <div className="space-y-6 pt-2 not-italic">
-                                    <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-4">
-                                        <AlertCircle className="h-6 w-6 text-rose-600 shrink-0 mt-0.5" />
-                                        <div className="space-y-2">
-                                            <p className="text-rose-700 font-bold">Generation Failed</p>
-                                            <p className="text-sm text-rose-600/80 leading-relaxed">
-                                                We couldn't generate a detailed explanation for this topic right now. This can happen during peak times.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Button 
-                                        variant="outline" 
-                                        size="lg" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSingleRetry([questions[idx]]);
-                                        }}
-                                        className="w-full bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-600 font-bold uppercase tracking-widest"
-                                    >
-                                        <RefreshCw className={`mr-2 h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
-                                        Try Again
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  detailed.explanation.split('\n').map((paragraph, pIdx) => (
-                                    <p key={pIdx}>{paragraph}</p>
-                                  ))
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Practical Insights Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 outline-none">
-                                <div className="p-8 rounded-[32px] bg-emerald-50 border border-emerald-100 space-y-5 hover:bg-emerald-100/50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Key Insights</span>
-                                    </div>
-                                    <ul className="space-y-4">
-                                        {detailed.keyInsights?.map((insight, kit) => (
-                                          <li key={kit} className="flex items-start gap-3 group/li">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 group-hover/li:bg-emerald-500 transition-colors" />
-                                            <span className="text-sm text-slate-700 font-medium leading-relaxed">{insight}</span>
-                                          </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className="p-8 rounded-[32px] bg-amber-50 border border-amber-100 space-y-5 hover:bg-amber-100/50 transition-colors">
-                                    <div className="flex items-center gap-3 text-amber-600">
-                                        <Lightbulb className="h-5 w-5" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Interviewer Tip</span>
-                                    </div>
-                                    <p className="text-lg text-amber-700/90 font-bold italic leading-relaxed">
-                                        "{detailed.interviewerTip || "Focus on the strategic trade-offs of this approach."}"
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Code Implementation */}
-                            {detailed.codeExample && (
-                              <div className="space-y-6">
-                                  <div className="flex items-center gap-3 px-1">
-                                      <Terminal className="h-5 w-5 text-primary" />
-                                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Code Example</span>
-                                  </div>
-                                  <div className="relative group/code mt-2">
-                                    <div className="absolute -inset-[1px] bg-slate-200 rounded-[32px] blur-sm opacity-0 group-hover/code:opacity-100 transition duration-700" />
-                                    <div className="relative bg-slate-900 border border-slate-700 rounded-[32px] p-8 font-mono text-sm leading-relaxed overflow-x-auto shadow-inner">
-                                        <code className="text-[13px] text-blue-300">{detailed.codeExample}</code>
-                                        <div className="absolute top-4 right-6 flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-rose-500/40" />
-                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500/40" />
-                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/40" />
-                                        </div>
-                                    </div>
-                                  </div>
-                              </div>
-                            )}
+                          {/* Ideal Answer Section */}
+                          <div className="p-8 rounded-[32px] bg-indigo-50 border border-indigo-100 space-y-4 relative overflow-hidden group/ideal">
+                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover/ideal:opacity-20 transition-opacity">
+                                <Sparkles className="h-24 w-24 text-indigo-600" />
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
+                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Ideal Interview Answer</span>
+                             </div>
+                             <p className="text-xl font-bold text-slate-800 leading-relaxed italic">
+                                "{detailed.idealInterviewAnswer}"
+                             </p>
+                             <div className="flex flex-wrap gap-2 pt-2">
+                                {item.companyTags?.map(tag => (
+                                  <span key={tag} className="text-[9px] font-bold text-indigo-500 bg-white border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <Building2 className="h-3 w-3" /> {tag}
+                                  </span>
+                                ))}
+                             </div>
                           </div>
+
+                          {/* Architecture Section */}
+                          {detailed.architectureDiagram && (
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                   <Layers className="h-5 w-5 text-indigo-600" />
+                                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Visual Architecture</span>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                   <div className="lg:col-span-2">
+                                      <Mermaid chart={detailed.architectureDiagram} />
+                                   </div>
+                                   <div className="space-y-6">
+                                      <div className="flex items-center gap-2">
+                                         <Map className="h-4 w-4 text-emerald-600" />
+                                         <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">How to Draw This</span>
+                                      </div>
+                                      <div className="space-y-4">
+                                         {detailed.howToDrawStepByStep?.map((step, si) => (
+                                            <div key={si} className="flex gap-4 group/step">
+                                               <span className="text-xs font-black text-slate-300 group-hover/step:text-emerald-500 transition-colors">{si+1}</span>
+                                               <p className="text-sm text-slate-600 font-medium leading-relaxed">{step}</p>
+                                            </div>
+                                         ))}
+                                      </div>
+                                   </div>
+                                </div>
+                            </div>
+                          )}
+
+                          {/* Explanation Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                             <div className="space-y-8">
+                                <div className="space-y-4">
+                                   <div className="flex items-center gap-2">
+                                      <Target className="h-4 w-4 text-indigo-600" />
+                                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Breakdown</span>
+                                   </div>
+                                   <div className="prose prose-slate max-w-none">
+                                      <p className="text-slate-700 leading-relaxed font-medium">
+                                         {detailed.explanation}
+                                      </p>
+                                   </div>
+                                </div>
+
+                                {detailed.detailedSections?.map((section, si) => (
+                                   <div key={si} className="space-y-3">
+                                      <h4 className="text-sm font-black text-slate-900 border-l-2 border-indigo-500 pl-4">{section.title}</h4>
+                                      <p className="text-sm text-slate-600 leading-relaxed pl-4">{section.content}</p>
+                                   </div>
+                                ))}
+                             </div>
+
+                             <div className="space-y-8">
+                                {/* Insights Panel */}
+                                <div className="p-8 rounded-[40px] bg-slate-50 border border-slate-100 space-y-8">
+                                   <div className="space-y-4">
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Key Insights</span>
+                                      <div className="space-y-6">
+                                         <div>
+                                            <p className="text-[10px] font-bold text-indigo-600 mb-2">Scalability</p>
+                                            <div className="flex flex-wrap gap-2">
+                                               {detailed.keyInsights?.scalabilityConcepts?.map(c => <Badge key={c} variant="outline" className="bg-white">{c}</Badge>)}
+                                            </div>
+                                         </div>
+                                         <div>
+                                            <p className="text-[10px] font-bold text-emerald-600 mb-2">Production Concerns</p>
+                                            <div className="flex flex-wrap gap-2">
+                                               {detailed.productionConcerns?.map(c => <Badge key={c} variant="saas" className="h-6">{c}</Badge>)}
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+
+                                   <div className="pt-6 border-t border-slate-200">
+                                      <div className="flex items-center gap-2 mb-4">
+                                         <AlertTriangle className="h-4 w-4 text-rose-500" />
+                                         <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Mistakes to Avoid</span>
+                                      </div>
+                                      <ul className="space-y-3">
+                                         {detailed.commonMistakes?.map((m, mi) => (
+                                            <li key={mi} className="text-xs text-slate-500 font-medium flex items-start gap-2">
+                                               <span className="h-1 w-1 rounded-full bg-rose-400 mt-1.5 shrink-0" />
+                                               {m}
+                                            </li>
+                                         ))}
+                                      </ul>
+                                   </div>
+                                </div>
+
+                                {/* Tech Stack */}
+                                <div className="p-6 rounded-3xl bg-amber-50/50 border border-amber-100/50 flex items-center justify-between">
+                                   <div className="flex items-center gap-3">
+                                      <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                                         <Zap className="h-5 w-5 text-amber-600" />
+                                      </div>
+                                      <div>
+                                         <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Suggested Stack</p>
+                                         <p className="text-sm font-bold text-slate-700">{detailed.suggestedTechStack}</p>
+                                      </div>
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+
+                          {/* Bottom Interaction Area */}
+                          <div className="flex flex-col md:flex-row gap-8 pt-6">
+                             <div className="flex-1 p-8 rounded-[32px] bg-slate-900 text-white space-y-6">
+                                <div className="flex items-center justify-between">
+                                   <div className="flex items-center gap-2">
+                                      <Repeat className="h-4 w-4 text-indigo-400" />
+                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Follow-Up Questions</span>
+                                   </div>
+                                   <Badge variant="purple" className="h-5">Deep Dive</Badge>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                   {detailed.possibleFollowUps?.map((f, fi) => (
+                                      <div key={fi} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-between group/fu cursor-pointer">
+                                         <p className="text-sm font-medium text-slate-200">{f}</p>
+                                         <ArrowRight className="h-4 w-4 text-indigo-400 opacity-0 group-hover/fu:opacity-100 transition-opacity" />
+                                      </div>
+                                   ))}
+                                </div>
+                             </div>
+
+                             <div className="w-full md:w-80 p-8 rounded-[32px] bg-emerald-50 border border-emerald-100 flex flex-col justify-between">
+                                <div className="space-y-4">
+                                   <div className="flex items-center gap-2">
+                                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                                      <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Production Ready</span>
+                                   </div>
+                                   <p className="text-sm font-bold text-slate-800 leading-relaxed">
+                                      Real-world: {detailed.realWorldExample}
+                                   </p>
+                                </div>
+                                <div className="pt-8 flex items-center gap-3">
+                                   <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-xs">
+                                      TIP
+                                   </div>
+                                   <p className="text-[11px] font-bold text-emerald-700 italic leading-snug">
+                                      {detailed.interviewerTip}
+                                   </p>
+                                </div>
+                             </div>
+                          </div>
+
+                          {/* Code Example */}
+                          {detailed.codeExample && (
+                             <div className="space-y-6 pt-6">
+                                <div className="flex items-center gap-3">
+                                   <Code className="h-5 w-5 text-indigo-600" />
+                                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Implementation Code</span>
+                                </div>
+                                <div className="bg-slate-900 rounded-[40px] p-10 overflow-hidden shadow-2xl relative">
+                                   <div className="absolute top-0 right-0 p-6 flex gap-2">
+                                      <div className="h-2 w-2 rounded-full bg-rose-500/30" />
+                                      <div className="h-2 w-2 rounded-full bg-amber-500/30" />
+                                      <div className="h-2 w-2 rounded-full bg-emerald-500/30" />
+                                   </div>
+                                   <pre className="text-indigo-300/90 font-mono text-sm leading-relaxed scrollbar-hide overflow-x-auto">
+                                      <code>{detailed.codeExample}</code>
+                                   </pre>
+                                </div>
+                             </div>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -387,7 +457,6 @@ export default function ResourcesQuestions() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

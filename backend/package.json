@@ -23,7 +23,7 @@
     "google-auth-library": "^10.6.2",
     "groq-sdk": "^1.1.2",
     "json5": "^2.2.3",
-    "jsonrepair": "^3.13.2",
+    "jsonrepair": "^3.14.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.539.0",
     "marked": "^16.1.1",

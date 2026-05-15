@@ -90,7 +90,7 @@ Keep it under 2 sentences. No fluff. No "Sure," or "Next question is...".
 Return ONLY the question.`;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: "You are a senior interviewer. Return ONLY the rephrased question text." },
         { role: "user", content: prompt },
@@ -126,7 +126,7 @@ Under 20 words. No introduction.
 Return ONLY the question.`;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: "Return ONLY one follow-up question text." },
         { role: "user", content: prompt },

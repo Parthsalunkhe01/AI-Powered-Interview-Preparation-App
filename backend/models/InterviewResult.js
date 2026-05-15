@@ -27,6 +27,20 @@ const interviewResultSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    topicDetails: [{
+      topic: String,
+      domain: String,
+      score: Number
+    }],
+    categories: {
+      type: [String],
+      default: [],
+    },
+    domainScores: {
+      type: Map,
+      of: Number,
+      default: {}, // e.g. { "dsa": 85, "system_design": 60 }
+    },
     timeTaken: {
       type: Number, // Stored in seconds
       required: true,
