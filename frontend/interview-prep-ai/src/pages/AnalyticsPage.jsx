@@ -16,16 +16,27 @@ import { UserContext } from "../context/userContext";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getMasteryLevel(score) {
-    if (!score) return "0%";
+    if (score == null) return "0%";
     return `${Math.min(100, Math.round(score))}%`;
 }
 
 function getPrepIntensity(history) {
     if (!history || history.length === 0) return "0m";
-    // Estimate: each session ≈ 20-45 mins. Use history length as proxy.
-    const mins = history.length * 22;
-    if (mins >= 60) return `${Math.round(mins / 60)}h`;
-    return `${mins}m`;
+
+    // Sum actual timeTaken (stored in seconds from InterviewResult)
+    const totalSeconds = history.reduce((sum, h) => sum + (h.timeTaken || 0), 0);
+
+    if (totalSeconds === 0) return "<1m"; // No time data yet
+
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+
+    const totalMins = Math.round(totalSeconds / 60);
+    if (totalMins >= 60) {
+        const h = Math.floor(totalMins / 60);
+        const m = totalMins % 60;
+        return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+    return `${totalMins}m`;
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────

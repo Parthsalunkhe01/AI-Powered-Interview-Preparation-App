@@ -37,7 +37,7 @@ const BlueprintSummaryCard = ({
                     : `${blueprint.experienceLevel.toUpperCase()} EXPERIENCE`}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 border border-slate-200 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                   {blueprint.questions?.length || 0} Questions Found
+                   {blueprint.skills?.length || 0} Skills Mapped
                 </span>
               </div>
             </div>

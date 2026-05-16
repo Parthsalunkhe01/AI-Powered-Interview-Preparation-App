@@ -77,12 +77,22 @@ exports.getUserAnalytics = async (req, res) => {
                     domainMap[d].count += 1;
                 }
             }
-            if (r.topicDetails) {
+            if (r.topicDetails && r.topicDetails.length > 0) {
                 r.topicDetails.forEach(td => {
                     if (!isValidTopic(td.topic)) return; // skip junk topics
                     const key = td.topic.trim();
                     if (!topicMap[key]) topicMap[key] = { total: 0, count: 0, domain: td.domain };
                     topicMap[key].total += (td.score ?? 0);
+                    topicMap[key].count += 1;
+                });
+            } else if (r.topics && r.topics.length > 0) {
+                // Fallback: no granular tag data — seed topicMap from AI-suggested topics
+                // using session's overall score so Signal Areas have real data
+                r.topics.forEach(topic => {
+                    if (!isValidTopic(topic)) return;
+                    const key = topic.trim();
+                    if (!topicMap[key]) topicMap[key] = { total: 0, count: 0, domain: "General" };
+                    topicMap[key].total += (r.score || 0);
                     topicMap[key].count += 1;
                 });
             }
@@ -158,7 +168,7 @@ exports.getUserAnalytics = async (req, res) => {
                 avgScore,
                 totalInterviews: results.length,
                 status: getStatus(avgScore, 65),
-                history: results.map((r, i) => ({ index: i + 1, score: r.score })),
+                history: results.map((r, i) => ({ index: i + 1, score: r.score, timeTaken: r.timeTaken || 0 })),
                 insight,
                 mainFocus,
                 weaknesses: flatWeak,

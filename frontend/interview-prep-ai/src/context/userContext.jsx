@@ -35,13 +35,16 @@ const UserProvider = ({ children }) => {
 
     const updateUser = (userData) => {
         setUser(userData);
-        localStorage.setItem("token",userData.token);
-        setLoading(false);  
+        localStorage.setItem("token", userData.token);
+        // Wipe any stale interviewData from a previous user's session
+        localStorage.removeItem("interviewData");
+        setLoading(false);
     };
 
     const clearUser = () => {
         setUser(null);
-        localStorage.removeItem("token"); // Only remove auth token, not all storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("interviewData"); // Clear cached session data so next user starts fresh
     };
 
     return (

@@ -45,64 +45,83 @@ export default function Resources() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const stored = localStorage.getItem("interviewData");
-        let data = stored ? JSON.parse(stored) : null;
-        
-        // If sessionId is provided in URL, prioritize that specific session
+
+        // If sessionId is provided in URL, always prioritize that specific session
         if (sessionId) {
           const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_ONE(sessionId));
           const session = res.data.session;
           if (session) {
             const bpRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
-            // Safely extract question text — questions may be objects or strings
             const rawQs = session.question || [];
             const qTexts = rawQs
               .map(q => (q && typeof q === 'object' ? q.question : q))
               .filter(Boolean);
-            data = {
+            const data = {
               blueprint: bpRes.data || { role: session.role, experience: session.experience },
               questions: qTexts
             };
             localStorage.setItem("interviewData", JSON.stringify(data));
+            setQuestions(qTexts);
+            if (data.blueprint) setBlueprint(data.blueprint);
           }
-        } else if (!data || !data.questions || data.questions.length === 0) {
-          const blueprintRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
-          const bp = blueprintRes.data;
-
-          const [staticRes, simulationRes] = await Promise.all([
-            axiosInstance.get(API_PATHS.SESSION.GET_ALL),
-            axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_MY)
-          ]);
-
-          const latestStatic = staticRes.data?.[0];
-          const latestSimulation = simulationRes.data?.[0];
-
-          let bestSession = null;
-          if (latestStatic && latestSimulation) {
-            bestSession = new Date(latestStatic.createdAt) > new Date(latestSimulation.createdAt) 
-              ? latestStatic : latestSimulation;
-          } else {
-            bestSession = latestStatic || latestSimulation;
-          }
-
-          if (bestSession) {
-            const questionsRaw = bestSession.question || bestSession.questions || [];
-            data = {
-              blueprint: bp || { 
-                role: bestSession.role || "Software Engineer", 
-                experience: bestSession.experience || "Entry" 
-              },
-              questions: questionsRaw
-            };
-            localStorage.setItem("interviewData", JSON.stringify(data));
-          }
+          return;
         }
 
-        if (data && data.questions && Array.isArray(data.questions)) {
+        // 1. Check if user has a blueprint — if not, don't load anything (empty state)
+        let bp = null;
+        try {
+          const bpRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
+          if (bpRes.data?.targetRole) bp = bpRes.data;
+        } catch { /* no blueprint */ }
+
+        if (!bp) {
+          // Fresh user with no blueprint — show the "Set Up Blueprint" empty state
+          setLoading(false);
+          return;
+        }
+
+        // 2. Check localStorage (already cleared on login, so this is always current user's data)
+        const stored = localStorage.getItem("interviewData");
+        let data = null;
+        if (stored) {
+          try { data = JSON.parse(stored); } catch { /* ignore corrupt data */ }
+        }
+
+        if (data?.questions?.length > 0) {
           setQuestions(data.questions);
-          if (data.blueprint) {
-            setBlueprint(data.blueprint);
-          }
+          setBlueprint(data.blueprint || bp);
+          return;
+        }
+
+        // 3. No cached data — try to load from the user's most recent session
+        const [staticRes, simulationRes] = await Promise.all([
+          axiosInstance.get(API_PATHS.SESSION.GET_ALL).catch(() => ({ data: [] })),
+          axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_MY).catch(() => ({ data: [] }))
+        ]);
+
+        const latestStatic = staticRes.data?.[0];
+        const latestSimulation = simulationRes.data?.[0];
+
+        let bestSession = null;
+        if (latestStatic && latestSimulation) {
+          bestSession = new Date(latestStatic.createdAt) > new Date(latestSimulation.createdAt)
+            ? latestStatic : latestSimulation;
+        } else {
+          bestSession = latestStatic || latestSimulation;
+        }
+
+        if (bestSession) {
+          const questionsRaw = bestSession.question || bestSession.questions || [];
+          const qTexts = questionsRaw
+            .map(q => (q && typeof q === 'object' ? q.question : q))
+            .filter(Boolean);
+          data = { blueprint: bp, questions: qTexts };
+          localStorage.setItem("interviewData", JSON.stringify(data));
+          setQuestions(qTexts);
+          setBlueprint(bp);
+        } else {
+          // Has blueprint but no sessions yet — show the "Start Interview" nudge
+          setBlueprint(bp);
         }
       } catch (err) {
         console.error("Resources data load error:", err);
@@ -112,7 +131,8 @@ export default function Resources() {
     };
 
     loadData();
-  }, []);
+  }, [sessionId]);
+
 
   const getResourcesFromAI = async (questionList) => {
     const qs = (questionList || questions);
@@ -238,30 +258,57 @@ export default function Resources() {
     );
   }
 
+
+  // ── No Blueprint: fresh user who hasn't set up their profile yet ─────────
   if (!questions || questions.length === 0) {
+    const hasBlueprint = !!blueprint;
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
           <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-8"
+              className="space-y-8 max-w-md"
           >
               <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
                   <Library className="h-10 w-10 text-indigo-600" />
               </div>
               <div className="space-y-3">
-                  <h1 className="text-4xl font-bold tracking-tight">Your Resource Library is Empty</h1>
-                  <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
-                      Complete a mock interview first to see personalized study materials tailored to your performance.
-                  </p>
+                  {hasBlueprint ? (
+                    <>
+                      <h1 className="text-4xl font-bold tracking-tight">No Sessions Yet</h1>
+                      <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                        Complete your first mock interview and your personalized study materials will appear here automatically.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h1 className="text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
+                      <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                        Create your Career Blueprint to get interview questions and resources tailored to your target role and skills.
+                      </p>
+                    </>
+                  )}
               </div>
-              <Button size="lg" variant="saas" onClick={() => navigate("/dashboard")}>
-                  Start Your First Session <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                {hasBlueprint ? (
+                  <Button size="lg" variant="saas" onClick={() => navigate("/ai-interview/setup")}>
+                    Start Your First Interview <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="saas" onClick={() => navigate("/blueprint")}>
+                    Create My Blueprint <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+                <Button size="lg" variant="outline" onClick={() => navigate("/dashboard")}>
+                  Go to Dashboard
+                </Button>
+              </div>
           </motion.div>
       </div>
     );
   }
+
+
 
   return (
     <div className="space-y-12 pb-20">

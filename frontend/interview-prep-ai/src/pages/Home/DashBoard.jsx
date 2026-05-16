@@ -199,7 +199,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5">Avg. Score</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                    <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats?.avgScore || 0}%</h3>
+                    <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats?.avgScore ?? 0}%</h3>
                     {(() => {
                       const trend = computeScoreTrend(stats?.history);
                       if (!trend) return null;
@@ -220,7 +220,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5">Global Rank</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                    {stats?.avgScore ? (
+                    {stats?.avgScore !== undefined && stats?.avgScore !== null ? (
                         <h3 className="text-4xl font-black text-slate-900 tracking-tighter">
                             {computeGlobalRank(stats.avgScore)}
                         </h3>

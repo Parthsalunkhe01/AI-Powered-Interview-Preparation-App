@@ -80,17 +80,27 @@ export default function ResourcesQuestions() {
         questions: qTexts,
       };
     } else {
+      // Only read localStorage if user has navigated here organically
+      // (localStorage is cleared on login so this data always belongs to current user)
       const storedData = localStorage.getItem("interviewData");
-      if (!storedData) return;
+      if (!storedData) {
+        // No data at all — mark as fetched so we show the empty state
+        hasFetched.current = true;
+        return;
+      }
       try {
         currentData = JSON.parse(storedData);
       } catch (e) {
         console.error("Failed to parse interviewData from localStorage", e);
+        hasFetched.current = true;
         return;
       }
     }
 
-    if (!currentData || !currentData.questions || currentData.questions.length === 0) return;
+    if (!currentData || !currentData.questions || currentData.questions.length === 0) {
+      hasFetched.current = true;
+      return;
+    }
 
     // Detect performance level from assessment if available
     const avgScore = currentData.assessment?.overallScore || 50;
