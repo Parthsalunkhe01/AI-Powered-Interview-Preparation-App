@@ -138,7 +138,7 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
     const prompt = buildAssessmentPrompt({ role, experience, mode, history });
 
     const result = await ai.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: "You are a highly accurate technical evaluator. Return ONLY valid JSON." },
         { role: "user", content: prompt },
@@ -152,6 +152,8 @@ const generateStructuredFeedback = async ({ role, experience, history, mode, ans
     
     if (!cleaned) throw new Error("Empty AI response");
 
+    // 'parsed' MUST be declared here — it's used after the try/catch block.
+    let parsed;
     try {
       parsed = JSON.parse(cleaned);
     } catch {

@@ -448,7 +448,7 @@ const InterviewSession = () => {
                                 </div>
                                 <h3 className="text-xl font-black tracking-tight mb-2">Interview Complete!</h3>
                                 <p className="text-sm text-slate-500 mb-6 max-w-xs mx-auto leading-relaxed">
-                                    {conversationHistory.length + 1} questions answered. Your AI feedback is being prepared.
+                                    {questionCount} questions answered. Your AI feedback is being prepared.
                                 </p>
                                 <button
                                     onClick={handleEndInterview}

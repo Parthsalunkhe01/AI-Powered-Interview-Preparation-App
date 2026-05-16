@@ -100,7 +100,8 @@ const ScoreRing = ({ score, size = 88, stroke = 7 }) => {
 };
 
 // ── Score Bar ───────────────────────────────────────────────────────────────
-const ScoreBar = ({ label, score, icon: Icon, color = "bg-indigo-500", delay = 0 }) => (
+// color = hex value (e.g. "#6366f1") — using inline style to bypass Tailwind purging
+const ScoreBar = ({ label, score, icon: Icon, color = "#6366f1", delay = 0 }) => (
     <div className="space-y-1.5">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -111,7 +112,8 @@ const ScoreBar = ({ label, score, icon: Icon, color = "bg-indigo-500", delay = 0
         </div>
         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <motion.div
-                className={`h-full ${color} rounded-full`}
+                className="h-full rounded-full"
+                style={{ backgroundColor: color }}
                 initial={{ width: 0 }}
                 animate={{ width: `${score}%` }}
                 transition={{ duration: 0.9, ease: "easeOut", delay }}
@@ -119,6 +121,7 @@ const ScoreBar = ({ label, score, icon: Icon, color = "bg-indigo-500", delay = 0
         </div>
     </div>
 );
+
 
 // ── Question Feedback Row ───────────────────────────────────────────────────
 const QuestionFeedbackRow = ({ item, index }) => {
@@ -174,15 +177,24 @@ const InterviewFeedback = () => {
                     const sessionRes = await axiosInstance.get(
                         API_PATHS.INTERVIEW_SESSION.GET_ONE(sessionId)
                     );
-                    if (sessionRes.data?.session) {
-                        const session = sessionRes.data.session;
-                        const qTexts = session.question.map(q => q.question || q);
+                    const session = sessionRes.data?.session;
+                    if (session && Array.isArray(session.question)) {
+                        // Safely extract question text whether q is an object or string
+                        const qTexts = session.question
+                            .map(q => (q && typeof q === 'object' ? q.question : q))
+                            .filter(Boolean);
                         localStorage.setItem("interviewData", JSON.stringify({
-                            blueprint: { targetRole: session.role, experience: session.experience, topicsToFocus: session.type },
+                            blueprint: {
+                                targetRole: session.role || "Software Engineer",
+                                experience: session.experience || "Entry",
+                                topicsToFocus: session.type || "mixed"
+                            },
                             questions: qTexts,
                         }));
                     }
-                } catch {}
+                } catch {
+                    // Non-critical — resources page falls back to other data sources
+                }
             } catch (error) {
                 toast.error("Failed to generate feedback.");
                 navigate(-1);
@@ -315,10 +327,10 @@ const InterviewFeedback = () => {
                     <h3 className="text-sm font-bold text-slate-800">Skill Breakdown</h3>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <ScoreBar label="Technical Knowledge" score={techScore} icon={Brain} color="bg-indigo-500" delay={0.1} />
-                    <ScoreBar label="Communication" score={commScore} icon={MessageSquare} color="bg-sky-500" delay={0.2} />
-                    <ScoreBar label="Problem Solving" score={psScore} icon={Sparkles} color="bg-violet-500" delay={0.3} />
-                    <ScoreBar label="Concept Coverage" score={ccScore} icon={BookOpen} color="bg-amber-500" delay={0.4} />
+                    <ScoreBar label="Technical Knowledge" score={techScore} icon={Brain} color="#6366f1" delay={0.1} />
+                    <ScoreBar label="Communication" score={commScore} icon={MessageSquare} color="#0ea5e9" delay={0.2} />
+                    <ScoreBar label="Problem Solving" score={psScore} icon={Sparkles} color="#8b5cf6" delay={0.3} />
+                    <ScoreBar label="Concept Coverage" score={ccScore} icon={BookOpen} color="#f59e0b" delay={0.4} />
                 </div>
             </div>
 
@@ -435,7 +447,7 @@ const InterviewFeedback = () => {
                     </Button>
                     <Button
                         size="sm"
-                        onClick={() => navigate("/resources")}
+                        onClick={() => navigate(`/resources/${sessionId}`)}
                         className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                         View Resources <ArrowRight className="ml-1 h-3 w-3" />

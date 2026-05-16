@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import axiosInstance from "../../utils/axiosInstance";
 import { Zap } from "lucide-react";
-import { toast } from "../../hooks/use-toast";
+import { toast } from "react-hot-toast";
 import SkeletonCard from "../../components/ui/SkeletonCard";
 import EmptyState from "../../components/ui/EmptyState";
 import BlueprintSummaryCard from "../../components/ui/BlueprintSummaryCard";
@@ -60,25 +60,27 @@ const InterviewBlueprintPage = () => {
   const handleSave = async (data) => {
     setIsSaving(true);
     try {
+      let res;
       if (blueprint) {
-        await axiosInstance.put("/api/blueprint", data);
+        res = await axiosInstance.put("/api/blueprint", data);
       } else {
-        await axiosInstance.post("/api/blueprint", data);
+        try {
+          res = await axiosInstance.post("/api/blueprint", data);
+        } catch (postErr) {
+          // Blueprint already exists — fall back to PUT
+          if (postErr.response?.status === 400) {
+            res = await axiosInstance.put("/api/blueprint", data);
+          } else {
+            throw postErr;
+          }
+        }
       }
-      setBlueprint(data);
-
-      toast({
-        title: "Blueprint saved! 🎯",
-        description: "Your interview profile is ready. Personalized questions await.",
-      });
-
+      // Use server response so _id and timestamps are correct
+      setBlueprint(res.data);
+      toast.success("Blueprint saved! 🎯");
       navigate("/dashboard");
     } catch {
-      toast({
-        title: "Failed to save",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to save. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -92,16 +94,9 @@ const InterviewBlueprintPage = () => {
       await axiosInstance.delete("/api/blueprint");
       setBlueprint(null);
       setMode("empty");
-      toast({
-        title: "Blueprint deleted",
-        description: "Your interview blueprint has been removed.",
-      });
+      toast.success("Blueprint deleted");
     } catch {
-      toast({
-        title: "Failed to delete",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete. Please try again.");
     } finally {
       setIsDeleting(false);
     }

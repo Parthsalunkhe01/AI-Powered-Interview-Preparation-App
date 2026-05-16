@@ -1,4 +1,5 @@
 const Groq = require("groq-sdk");
+const { jsonrepair } = require("jsonrepair");
 const { conceptExplainPrompt, questionAnswerPrompt, resourcePrompt } = require("../utils/prompts");
 
 const groq = new Groq({
@@ -22,7 +23,7 @@ const generateInterviewQuestions = async (req, res) => {
     );
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         {
           role: "system",
@@ -48,11 +49,15 @@ const generateInterviewQuestions = async (req, res) => {
     try {
       data = JSON.parse(cleanedText);
     } catch (err) {
-      console.error("JSON Parse Error:", cleanedText);
-      return res.status(500).json({
-        message: "Invalid JSON returned by AI",
-        raw: cleanedText,
-      });
+      try {
+        data = JSON.parse(jsonrepair(cleanedText));
+      } catch (repairErr) {
+        console.error("JSON Parse/Repair Error:", cleanedText);
+        return res.status(500).json({
+          message: "Invalid JSON returned by AI and repair failed",
+          raw: cleanedText,
+        });
+      }
     }
 
     res.status(200).json(data);
@@ -76,7 +81,7 @@ const generateConceptExplanation = async (req, res) => {
     const prompt = conceptExplainPrompt(question);
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         {
           role: "system",
@@ -102,11 +107,11 @@ const generateConceptExplanation = async (req, res) => {
     try {
       data = JSON.parse(cleanedText);
     } catch (err) {
-      console.error("JSON Parse Error:", cleanedText);
-      return res.status(500).json({
-        message: "Invalid JSON returned by AI",
-        raw: cleanedText,
-      });
+      try {
+        data = JSON.parse(jsonrepair(cleanedText));
+      } catch (repairErr) {
+        return res.status(500).json({ message: "Invalid JSON from AI", raw: cleanedText });
+      }
     }
 
     res.status(200).json(data);
@@ -172,7 +177,7 @@ const callGroqForBatch = async (batch, role, topics, performanceLevel = "average
   console.log(`  [AI_REQ] Outgoing prompt for ${batch.length} questions (User Level: ${performanceLevel})...`);
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile", // Upgraded model for higher limits and better JSON
+    model: "llama-3.1-8b-instant", // Production model — 128k context, handles trimmed prompt
     messages: [
       {
         role: "system",
@@ -183,8 +188,8 @@ const callGroqForBatch = async (batch, role, topics, performanceLevel = "average
         content: prompt,
       },
     ],
-    temperature: 0.1, // Lower temperature for more stable JSON
-    max_tokens: 6000, 
+    temperature: 0.1,
+    max_tokens: 1500, // Prompt ~2k tokens + 1500 output = safely within 8192 context
   });
 
   return completion.choices[0]?.message?.content || null;

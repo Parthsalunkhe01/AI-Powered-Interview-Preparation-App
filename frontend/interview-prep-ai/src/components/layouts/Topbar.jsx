@@ -48,11 +48,22 @@ const Topbar = ({ collapsed, setCollapsed }) => {
                         <span className="font-bold text-slate-800 leading-none">{user?.name || "Guest User"}</span>
                         <span className="text-slate-500 mt-1 font-medium">{user?.email || "No email"}</span>
                     </div>
-                    <button className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center hover:shadow-sm transition-all p-1.5 group">
-                        {user?.profileImageUrl ? (
-                            <img src={user.profileImageUrl} alt="Profile" className="w-full h-full object-cover rounded-lg" />
-                        ) : (
-                            <User className="h-5 w-5 text-slate-400 group-hover:scale-110 group-hover:text-indigo-600 transition-all" />
+                    <button className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center hover:shadow-sm transition-all group relative">
+                        {/* Initials shown instantly as background */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-black rounded-xl">
+                            {user?.name ? user.name.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+                        </div>
+                        {/* Image loads on top — hides initials once ready */}
+                        {user?.profileImageUrl && (
+                            <img
+                                src={user.profileImageUrl}
+                                alt="Profile"
+                                className="absolute inset-0 w-full h-full object-cover rounded-xl z-10"
+                                loading="eager"
+                                fetchPriority="high"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
                         )}
                     </button>
                 </div>

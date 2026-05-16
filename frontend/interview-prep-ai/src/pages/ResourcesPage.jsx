@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { generatePdfHtml } from "../utils/pdfTemplate";
 import SummaryCard from "../components/Cards/SummaryCard";
 import { CARD_BG } from "../utils/data";
@@ -31,12 +31,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Resources() {
   const navigate = useNavigate();
+  const { sessionId } = useParams();
   
   const [resources, setResources] = useState({ sections: [] });
   const [blueprint, setBlueprint] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [aiLoading, setAiLoading] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);  // how many sections resolved
+  const [totalCount, setTotalCount] = useState(0);    // how many sections are fetching
   const [resourceError, setResourceError] = useState(false);
 
   useEffect(() => {
@@ -46,7 +48,24 @@ export default function Resources() {
         const stored = localStorage.getItem("interviewData");
         let data = stored ? JSON.parse(stored) : null;
         
-        if (!data || !data.questions || data.questions.length === 0) {
+        // If sessionId is provided in URL, prioritize that specific session
+        if (sessionId) {
+          const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_ONE(sessionId));
+          const session = res.data.session;
+          if (session) {
+            const bpRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
+            // Safely extract question text — questions may be objects or strings
+            const rawQs = session.question || [];
+            const qTexts = rawQs
+              .map(q => (q && typeof q === 'object' ? q.question : q))
+              .filter(Boolean);
+            data = {
+              blueprint: bpRes.data || { role: session.role, experience: session.experience },
+              questions: qTexts
+            };
+            localStorage.setItem("interviewData", JSON.stringify(data));
+          }
+        } else if (!data || !data.questions || data.questions.length === 0) {
           const blueprintRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
           const bp = blueprintRes.data;
 
@@ -99,40 +118,57 @@ export default function Resources() {
     const qs = (questionList || questions);
     if (!qs || qs.length === 0) return;
 
-    try {
-      setAiLoading(true);
-      setResourceError(false);
+    setResourceError(false);
 
-      // Limit to 6 questions max to keep backend response under 10s
-      const qTexts = qs
-        .map(q => q.question || q)
-        .filter(Boolean)
-        .slice(0, 6);
+    const qTexts = qs
+      .map(q => q.question || q)
+      .filter(Boolean)
+      .slice(0, 5); // cap at 5 topics
 
-      const response = await axiosInstance.post(
-        API_PATHS.AI.GET_RESOURCES,
-        { questions: qTexts, blueprint },
-        { timeout: 25000 } // 25-second hard timeout
-      );
+    setTotalCount(qTexts.length);
+    setLoadedCount(0);
 
-      if (response.data?.data) {
-        setResources({ sections: response.data.data });
-      } else {
-        setResourceError(true);
+    // Seed all sections immediately as skeletons so user sees layout right away
+    setResources({
+      sections: qTexts.map(topic => ({ topic, _loading: true, videos: [], resources: [] }))
+    });
+
+    // Fire one request per topic — update UI as each resolves (progressive rendering)
+    const promises = qTexts.map(async (topic, idx) => {
+      try {
+        const response = await axiosInstance.post(
+          API_PATHS.AI.GET_RESOURCES,
+          { questions: [topic], blueprint },
+          { timeout: 20000 }
+        );
+        const sectionData = response.data?.data?.[0];
+        setResources(prev => {
+          const updated = [...prev.sections];
+          updated[idx] = sectionData
+            ? { ...sectionData, _loading: false }
+            : { topic, _loading: false, videos: [], resources: [] };
+          return { sections: updated };
+        });
+      } catch {
+        setResources(prev => {
+          const updated = [...prev.sections];
+          updated[idx] = { topic, _loading: false, _error: true, videos: [], resources: [] };
+          return { sections: updated };
+        });
+      } finally {
+        setLoadedCount(prev => prev + 1);
       }
-    } catch (err) {
-      console.error("Error fetching AI resources:", err.message);
-      setResourceError(true);
-    } finally {
-      setAiLoading(false);
-    }
+    });
+
+    await Promise.allSettled(promises);
   };
 
+  // Re-run only when questions list changes (blueprint is derived inside the same effect)
   useEffect(() => {
     if (questions.length > 0) {
       getResourcesFromAI(questions);
     }
-  }, [questions, blueprint]);
+  }, [questions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const exportGuide = async () => {
     // Open the window BEFORE any await — must be inside synchronous click handler
@@ -246,11 +282,11 @@ export default function Resources() {
                   variant="outline"
                   size="sm"
                   onClick={exportGuide}
-                  disabled={aiLoading || resourceError || resources.sections.length === 0}
+                  disabled={loadedCount < totalCount || resourceError || resources.sections.length === 0}
                   className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                   <Download className="mr-2 h-4 w-4" />
-                  {aiLoading ? "Loading..." : "Export PDF Guide"}
+                  {loadedCount < totalCount ? `Loading ${loadedCount}/${totalCount}…` : "Export PDF Guide"}
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
                   View Study Plan <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -274,29 +310,24 @@ export default function Resources() {
       </section>
 
       {/* ── Resource Library ── */}
+      {/* Progress indicator — shows while any section is still loading */}
+      {totalCount > 0 && loadedCount < totalCount && (
+        <div className="flex items-center gap-3 px-1">
+          <div className="flex-1 h-1 rounded-full bg-slate-100 overflow-hidden">
+            <motion.div
+              className="h-full bg-indigo-500 rounded-full"
+              animate={{ width: `${(loadedCount / totalCount) * 100}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+          <span className="text-xs font-bold text-slate-400 tabular-nums">
+            {loadedCount}/{totalCount} topics loaded
+          </span>
+        </div>
+      )}
+
       <div className="space-y-24">
-        {aiLoading ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center min-h-[340px] gap-6 text-center"
-          >
-            <div className="relative">
-              <div className="h-16 w-16 rounded-[22px] bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-sm">
-                <RefreshCw className="h-7 w-7 text-indigo-500 animate-spin" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-base font-semibold text-slate-700">Curating your learning resources…</p>
-              <p className="text-sm text-slate-400 max-w-xs">Matching resources to your interview questions. This takes up to 10 seconds.</p>
-            </div>
-            <div className="flex gap-1.5">
-              {[0, 1, 2].map(i => (
-                <span key={i} className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: `${i * 0.18}s` }} />
-              ))}
-            </div>
-          </motion.div>
-        ) : resourceError ? (
+        {resourceError ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -327,9 +358,9 @@ export default function Resources() {
               return (
                 <motion.div 
                     key={idx} 
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: idx * 0.15 }}
+                    transition={{ duration: 0.4, delay: 0 }}  
                     className="space-y-10"
                 >
                   {/* Section Title Group */}
@@ -346,7 +377,19 @@ export default function Resources() {
                       </div>
                   </div>
 
-                  {!hasResources && !hasVideos ? (
+                  {/* Per-section skeleton while this topic is loading */}
+                  {section._loading ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-pulse">
+                      <div className="lg:col-span-7 grid grid-cols-2 gap-6">
+                        <div className="h-48 rounded-[24px] bg-slate-100" />
+                        <div className="h-48 rounded-[24px] bg-slate-100" />
+                      </div>
+                      <div className="lg:col-span-5 space-y-4">
+                        <div className="h-20 rounded-[20px] bg-slate-100" />
+                        <div className="h-20 rounded-[20px] bg-slate-100" />
+                      </div>
+                    </div>
+                  ) : !hasResources && !hasVideos ? (
                     <SaaSCard className="p-8 border-dashed border-slate-200 bg-slate-50/50 text-center space-y-5">
                       <p className="text-slate-500 font-medium text-sm">No cached resources yet for this question. Search directly:</p>
                       <div className="flex flex-wrap justify-center gap-3">

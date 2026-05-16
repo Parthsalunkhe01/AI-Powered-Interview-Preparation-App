@@ -64,10 +64,16 @@ exports.getUserAnalytics = async (req, res) => {
         const domainMap = {};
         const topicMap = {};
         results.forEach(r => {
-            if (r.domainScores) {
-                for (const [d, s] of r.domainScores.entries()) {
+            // Mongoose Maps are serialised as plain objects; iterate via Object.entries
+            const domainScoresObj = r.domainScores
+                ? (r.domainScores instanceof Map
+                    ? Object.fromEntries(r.domainScores)
+                    : r.domainScores.toObject ? r.domainScores.toObject() : r.domainScores)
+                : {};
+            if (Object.keys(domainScoresObj).length > 0) {
+                for (const [d, s] of Object.entries(domainScoresObj)) {
                     if (!domainMap[d]) domainMap[d] = { total: 0, count: 0 };
-                    domainMap[d].total += s;
+                    domainMap[d].total += (typeof s === 'number' ? s : 0);
                     domainMap[d].count += 1;
                 }
             }
@@ -103,7 +109,13 @@ exports.getUserAnalytics = async (req, res) => {
                 ...t,
                 severity: t.avgScore < 35 ? "high" : t.avgScore < 50 ? "medium" : "low"
             }))
-            .sort((a, b) => (a.severity === "high" ? -1 : 1) || a.avgScore - b.avgScore)
+            .sort((a, b) => {
+                // Primary sort: high severity first
+                if (a.severity === "high" && b.severity !== "high") return -1;
+                if (b.severity === "high" && a.severity !== "high") return 1;
+                // Secondary sort: lowest score first
+                return a.avgScore - b.avgScore;
+            })
             .slice(0, 5);
 
         // 4. MAIN FOCUS CARD logic
@@ -124,7 +136,7 @@ exports.getUserAnalytics = async (req, res) => {
         // 5. DAILY ACTION PLAN (Capped at 3)
         // Deduplicate from Main Focus actions if possible
         const actionPlan = flatWeak
-            .filter(w => !mainFocus.actions.some(a => a.includes(w.topic)))
+            .filter(w => !mainFocus?.actions?.some(a => a.includes(w.topic)))
             .slice(0, 3)
             .map(w => ({
                 task: generateSpecificAction(w.topic, w.severity),

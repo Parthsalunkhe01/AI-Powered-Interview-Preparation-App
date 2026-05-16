@@ -150,12 +150,14 @@ exports.submitAnswer = async (req, res) => {
             }; 
         });
 
+        // IMPORTANT: questionMeta[0] = Q2's meta, [1] = Q3's meta, etc.
+        // Q1 (idx=0) was generated before session started — no meta entry.
         const history = session.question.map((q, idx) => ({
             question: q.question,
             answer: answerMap[q._id.toString()]?.text || "",
             code: answerMap[q._id.toString()]?.code || "",
             image: answerMap[q._id.toString()]?.image || "",
-            category: session.questionMeta?.[idx]?.category || "General",
+            category: idx > 0 ? (session.questionMeta?.[idx - 1]?.category || "General") : "General",
         }));
 
         // Check if interview is complete
@@ -262,11 +264,14 @@ exports.generateAISessionFeedback = async (req, res) => {
         const answerMap = {};
         session.answers.forEach(a => { answerMap[a.questionId.toString()] = a.answerText; });
 
+        // IMPORTANT: questionMeta[0] = Q2's meta, [1] = Q3's meta etc.
+        // Q1 (idx=0) was generated BEFORE the session started, it has no meta entry.
+        // So for question at idx, its meta is questionMeta[idx-1] (idx >= 1).
         const history = session.question.map((q, idx) => ({
             question: q.question,
             answer: answerMap[q._id.toString()] || "",
-            category: session.questionMeta?.[idx]?.category || "General",
-            type: session.questionMeta?.[idx]?.type || "conceptual",
+            category: idx > 0 ? (session.questionMeta?.[idx - 1]?.category || "General") : "General",
+            type: idx > 0 ? (session.questionMeta?.[idx - 1]?.type || "conceptual") : "conceptual",
         }));
 
         const feedbackData = await generateStructuredFeedback({
@@ -287,11 +292,12 @@ exports.generateAISessionFeedback = async (req, res) => {
 
         if (!duplicateCheck) {
             // Calculate domain scores for this session
+            // Note: questionMeta[0]=Q2's meta, [1]=Q3's, etc. Use idx-1 to correct.
             const domainTotals = {};
             const domainCounts = {};
             
             feedbackData.questionFeedback?.forEach(qf => {
-                const meta = session.questionMeta?.[qf.index];
+                const meta = qf.index > 0 ? session.questionMeta?.[qf.index - 1] : null;
                 const domain = (meta?.category || "General").toLowerCase();
                 
                 if (!domainTotals[domain]) {
@@ -307,11 +313,15 @@ exports.generateAISessionFeedback = async (req, res) => {
                 domainScores[domain] = Math.round(domainTotals[domain] / domainCounts[domain]);
             }
 
-            const uniqueCategories = [...new Set(session.questionMeta?.map(m => m.category).filter(Boolean))];
+            const uniqueCategories = [...new Set(
+                session.question.map((_, idx) =>
+                    idx > 0 ? session.questionMeta?.[idx - 1]?.category : null
+                ).filter(Boolean)
+            )];
 
             const topicDetails = [];
             feedbackData.questionFeedback?.forEach(qf => {
-                const meta = session.questionMeta?.[qf.index];
+                const meta = qf.index > 0 ? session.questionMeta?.[qf.index - 1] : null;
                 const domain = meta?.category || "General";
                 const score = qf.questionScore || 0;
                 
@@ -390,7 +400,8 @@ exports.exportInterviewGuide = async (req, res) => {
             const qText    = q?.question || (typeof q === "string" ? q : "Technical Question");
             const qId      = q?._id?.toString();
             const answer   = session.answers?.find(a => a.questionId?.toString() === qId);
-            const category = session.questionMeta?.[idx]?.category || "General";
+            // Q1 (idx=0) has no meta entry; meta[0] belongs to Q2 (idx=1), so offset by -1
+            const category = idx > 0 ? (session.questionMeta?.[idx - 1]?.category || "General") : "General";
 
             try {
                 const [coaching, resources] = await Promise.all([

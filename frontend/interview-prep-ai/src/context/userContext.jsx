@@ -41,7 +41,7 @@ const UserProvider = ({ children }) => {
 
     const clearUser = () => {
         setUser(null);
-        localStorage.clear(); // Complete purge of local state
+        localStorage.removeItem("token"); // Only remove auth token, not all storage
     };
 
     return (

@@ -57,7 +57,7 @@ const AnalyticsPage = () => {
         </div>
     );
 
-    if (!data || !data.avgScore) return (
+    if (!data || data.avgScore == null || data.totalInterviews === 0) return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-6">
             <SaaSCard className="max-w-md p-12">
                 <Zap className="h-12 w-12 text-indigo-600 mx-auto mb-6" />

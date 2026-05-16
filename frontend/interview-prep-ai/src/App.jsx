@@ -66,6 +66,7 @@ const App = () => {
         <Route path="/blueprint" element={<ProtectedRoute><InterviewBlueprintPage /></ProtectedRoute>} />
         
         <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+        <Route path="/resources/:sessionId" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
         <Route path="/resources/questions" element={<ProtectedRoute><ResourcesQuestions /></ProtectedRoute>} />
         
         <Route path="/ai-interview/setup" element={<ProtectedRoute><InterviewSetup /></ProtectedRoute>} />

@@ -236,7 +236,7 @@ const Dashboard = () => {
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 underline underline-offset-4 decoration-indigo-200">AI Strategic Insight</h4>
                 </div>
                 <p className="text-base font-bold leading-relaxed text-slate-700 italic">
-                  "{stats?.insight || `Great start, ${blueprint.targetRole || 'Engineer'}! Complete more interviews to get personalized AI insights.`}"
+                  {`"${stats?.insight || `Great start, ${blueprint.targetRole || 'Engineer'}! Complete more interviews to get personalized AI insights.`}"`}
                 </p>
                 <Button variant="ghost" size="sm" className="mt-4 p-0 h-auto text-indigo-600 font-bold hover:bg-transparent hover:text-indigo-800" onClick={() => navigate("/analytics")}>
                    View Detailed Breakdown <ArrowRight className="ml-2 h-3.5 w-3.5" />

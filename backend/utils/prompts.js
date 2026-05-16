@@ -147,67 +147,71 @@ Return ONLY a valid JSON object:
 `;
 
 const detailedAnswerBatchPrompt = (questions, role, topics, performanceLevel = "average") => `
-You are a world-class technical interviewer and mentor from a top product company (e.g., Google, Netflix, Uber).
-Generate a deep, structured, and visual learning resource for each question below.
+You are an expert technical interviewer. Generate a structured answer for each question.
 
-Context:
-- Role: ${role}
-- Focus: ${topics}
-- User's Current Performance Level: ${performanceLevel} (Adjust explanation depth accordingly: if weak, use analogies and step-by-step; if strong, focus on advanced optimizations and tradeoffs).
+Role: ${role} | Topics: ${topics} | Level: ${performanceLevel}
 
-Questions to Answer:
+Questions:
 ${questions.map((q, i) => `${i + 1}. ${typeof q === 'string' ? q : q.question}`).join("\n")}
 
-STRICT JSON FORMAT (Return only a JSON array):
-[
-  {
-    "question": "Exact original question text",
-    "importance": "High/Medium/Low",
-    "duration": "Estimated answer time in mins (e.g., 3-5 mins)",
-    "companyTags": ["Google", "Amazon", "etc"],
-    "idealInterviewAnswer": "A concise, 1-2 sentence 'recruiter-style' summary for quick revision.",
-    "explanation": "Problem definition + Core Idea (structured with simple analogies if performanceLevel is weak).",
-    "architectureDiagram": "A valid Mermaid.js diagram (graph TD, sequenceDiagram, etc.) ONLY if applicable (system design/complex flows). If not applicable, return null.",
-    "howToDrawStepByStep": ["Step 1...", "Step 2..."],
-    "detailedSections": [
-       {"title": "Architecture/Algorithm", "content": "Detailed implementation details"},
-       {"title": "Optimizations", "content": "Scalability and performance improvements"},
-       {"title": "Tradeoffs", "content": "Pros and cons of this approach"}
-    ],
-    "productionConcerns": ["Caching", "Fault Tolerance", "Monitoring", "etc"],
-    "realWorldExample": "How Netflix/Uber/WhatsApp handles this.",
-    "interviewerTip": "What the interviewer specifically looks for.",
-    "commonMistakes": ["Mistake 1", "Mistake 2"],
-    "possibleFollowUps": ["Follow-up 1", "Follow-up 2"],
-    "suggestedTechStack": "Recommended tools (e.g., Frontend: React, Cache: Redis)",
-    "codeExample": "Clean, commented implementation snippet or null",
-    "keyInsights": {
-       "coreConcepts": ["Keyword1", "Keyword2"],
-       "scalabilityConcepts": ["Keyword3", "Keyword4"],
-       "interviewKeywords": ["Keyword5", "Keyword6"]
-    }
+Return a JSON array only, one object per question:
+[{
+  "question": "exact question text",
+  "importance": "High|Medium|Low",
+  "duration": "X-Y mins",
+  "companyTags": ["Company1"],
+  "idealInterviewAnswer": "1-2 sentence recruiter-style summary",
+  "explanation": "core concept + approach${performanceLevel === 'weak' ? ' with analogy' : ' with tradeoffs'}",
+  "architectureDiagram": "mermaid diagram string or null",
+  "howToDrawStepByStep": ["Step 1", "Step 2"],
+  "detailedSections": [
+    {"title": "Algorithm/Architecture", "content": "implementation detail"},
+    {"title": "Optimizations", "content": "performance improvements"},
+    {"title": "Tradeoffs", "content": "pros and cons"}
+  ],
+  "productionConcerns": ["concern1", "concern2"],
+  "realWorldExample": "how a top company handles this",
+  "interviewerTip": "what interviewer looks for",
+  "commonMistakes": ["mistake1", "mistake2"],
+  "possibleFollowUps": ["follow-up1", "follow-up2"],
+  "suggestedTechStack": "recommended tools",
+  "codeExample": "clean commented snippet or null",
+  "keyInsights": {
+    "coreConcepts": ["kw1", "kw2"],
+    "scalabilityConcepts": ["kw3"],
+    "interviewKeywords": ["kw4", "kw5"]
   }
-]
-`;
+}]`;
 
-const resourceSemanticFilterPrompt = (question, candidates) => `
-You are a senior technical interviewer and curriculum designer.
-Your task is to filter a list of search results to find ONLY the ones that are highly relevant to answering or explaining this specific interview question.
+const resourceSemanticFilterPrompt = (question, candidates, role = "Software Engineer") => `
+You are a technical mentor and relevance engine for interview preparation.
 
-Interview Question: "${question}"
+Context:
+- Target Role: ${role}
+- Interview Question: "${question}"
 
-Candidates to Evaluate:
-${candidates.map((c, i) => `[${i}] TITLE: "${c.title}" | DESCRIPTION: "${c.snippet || "N/A"}"`).join("\n")}
+Candidate Resources to Evaluate:
+${candidates.map((c, i) => `[${i}] TYPE: ${c.type} | TITLE: "${c.title}" | URL: "${c.url}" | DESCRIPTION: "${c.snippet || "N/A"}"`).join("\n")}
 
-STRICT RELEVANCE CRITERIA:
-1. YES (relevant): The resource title or description specifically mentions the core technical concept or problem in the question.
-2. NO (irrelevant): The resource is a generic tutorial (e.g., "Learn Java from Scratch" for a "Java memory leaks" question), a full course, or covers a different topic entirely.
-3. NO (vague): The title is too broad and doesn't explicitly link to the unique challenge in the question.
+STRICT RELEVANCE RULES:
+1. CORE TOPIC MATCH: The resource MUST explain the core technical topic in the question (e.g., Palindrome, Activity Lifecycle).
+2. ROLE & FUNDAMENTALS: 
+   - For technical fundamentals (DSA, OOP, System Design, Language features like Java/Kotlin), accept high-quality resources even if they don't explicitly mention the role (${role}).
+   - For role-specific topics (e.g., "Android Fragments"), reject resources from unrelated domains (e.g., "React Components").
+3. QUALITY CONTROL: Favor established technical educators (e.g., Computerphile, GeeksforGeeks, Traversy Media, Programming with Mosh, etc.).
+4. PREFER SPECIFICITY: A video titled "Palindrome in Java" is BETTER for this question than "Java Full Course".
+5. OUTPUT LIMIT: Return max 2 videos and 2 articles. If the pool is weak, pick the best available match rather than returning empty.
+6. FAIL-SAFE: ONLY use provided URLs.
 
-Return ONLY a valid JSON array of indices (strings) for the RELEVANT resources only. 
-Expected Format: ["0", "2", "5"]
-
-No markdown, no explanation.
+Return ONLY a valid JSON object:
+{
+  "videos": [
+    { "title": "...", "url": "...", "tags": ["..."] }
+  ],
+  "articles": [
+    { "title": "...", "url": "...", "tags": ["..."] }
+  ]
+}
 `;
 
 module.exports = {

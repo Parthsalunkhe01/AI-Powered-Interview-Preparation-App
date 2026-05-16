@@ -14,6 +14,7 @@ import TagInput from "../../components/ui/TagInput";
 import { AutocompleteInput } from "../../components/ui/AutocompleteInput";
 import { cn } from "../../lib/utils";
 import axiosInstance from "../../utils/axiosInstance";
+import { toast } from "react-hot-toast";
 
 const EXPERIENCE_OPTIONS = [
   { value: "Entry", label: "Entry Level" },
@@ -105,6 +106,7 @@ const BlueprintForm = ({
         skills,
         companies: targetCompanies,
       });
+      toast.success("Blueprint saved! 🎯");
     } catch (error) {
       if (error.response?.status === 400 && error.response.data.errors) {
         const backendErrors = {};
@@ -113,11 +115,9 @@ const BlueprintForm = ({
         });
         setErrors(backendErrors);
 
-        toast({
-          title: "Validation Error",
-          description: "Please check the highlighted fields.",
-          variant: "destructive",
-        });
+        toast.error("Please check the highlighted fields.");
+      } else {
+        toast.error("Failed to save blueprint. Please try again.");
       }
     }
   };

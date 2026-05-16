@@ -77,7 +77,7 @@ const SummaryCard = ({
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 transition-colors group-hover:border-indigo-200 group-hover:bg-indigo-50">
                             <Target className="h-3 w-3 text-indigo-500" />
-                            {experience} {experience == 1 ? "YR" : "YRS"} EXP
+                            {experience} {typeof experience === 'number' ? (experience === 1 ? "YR" : "YRS") : "Level"}
                         </div>
                         <div className="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 transition-colors group-hover:border-purple-200 group-hover:bg-purple-50">
                             <Clock className="h-3 w-3 text-purple-500" />
