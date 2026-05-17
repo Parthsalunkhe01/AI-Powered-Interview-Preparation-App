@@ -283,11 +283,9 @@ exports.generateAISessionFeedback = async (req, res) => {
             answers: session.answers,
         });
 
-        // Save analytics (de-dupe by 10s window)
-        const tenSecondsAgo = new Date(Date.now() - 10000);
+        // Save analytics (Strict de-dupe by sessionId)
         const duplicateCheck = await InterviewResult.findOne({
-            userId: req.user._id,
-            createdAt: { $gte: tenSecondsAgo },
+            sessionId: session._id
         });
 
         if (!duplicateCheck) {
@@ -330,17 +328,27 @@ exports.generateAISessionFeedback = async (req, res) => {
                 });
             });
 
-            await InterviewResult.create({
-                userId: req.user._id,
-                score: feedbackData.overallScore || 0,
-                totalQuestions: history.length,
-                correctAnswers: feedbackData.correctAnswers || 0,
-                topics: feedbackData.topics || feedbackData.suggestedTopics || [],
-                topicDetails: topicDetails,
-                categories: uniqueCategories,
-                domainScores: domainScores,
-                timeTaken: Math.max(0, Math.floor((new Date() - session.createdAt) / 1000)),
-            });
+            try {
+                await InterviewResult.create({
+                    userId: req.user._id,
+                    score: feedbackData.overallScore || 0,
+                    totalQuestions: history.length,
+                    correctAnswers: feedbackData.correctAnswers || 0,
+                    topics: feedbackData.topics || feedbackData.suggestedTopics || [],
+                    topicDetails: topicDetails,
+                    categories: uniqueCategories,
+                    domainScores: domainScores,
+                    timeTaken: Math.max(0, Math.floor((new Date() - session.createdAt) / 1000)),
+                    sessionId: session._id,
+                });
+            } catch (createErr) {
+                // If it's a duplicate key error, someone else already saved it (race condition)
+                if (createErr.code === 11000) {
+                    console.log(`  [Analytics]: Result for session ${session._id} already exists, skipping create.`);
+                } else {
+                    throw createErr;
+                }
+            }
         }
 
         res.status(200).json({ success: true, feedback: feedbackData });

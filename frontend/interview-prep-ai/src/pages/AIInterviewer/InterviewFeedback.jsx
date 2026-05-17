@@ -163,8 +163,12 @@ const InterviewFeedback = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [feedback, setFeedback] = useState(null);
+    const hasFetched = React.useRef(false);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
         const fetchFeedback = async () => {
             try {
                 const feedbackRes = await axiosInstance.post(

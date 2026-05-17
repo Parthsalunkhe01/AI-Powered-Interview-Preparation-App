@@ -106,7 +106,7 @@ const BlueprintForm = ({
         skills,
         companies: targetCompanies,
       });
-      toast.success("Blueprint saved! 🎯");
+
     } catch (error) {
       if (error.response?.status === 400 && error.response.data.errors) {
         const backendErrors = {};

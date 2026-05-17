@@ -1,7 +1,7 @@
-import { Briefcase, Clock, Building2, Edit2, Trash2 } from "lucide-react";
+import { Briefcase, Clock, Building2, Trash2 } from "lucide-react";
 import { Button } from "./ui/Button";
 
-const CareerTargetBanner = ({ blueprint, onEdit, onDelete, isDeleting }) => {
+const CareerTargetBanner = ({ blueprint, onDelete, isDeleting }) => {
 
   const role = blueprint?.targetRole || "Role";
   const experience = blueprint?.experienceLevel || "Entry";
@@ -50,15 +50,7 @@ const CareerTargetBanner = ({ blueprint, onEdit, onDelete, isDeleting }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="h-9 gap-2 rounded-xl text-xs font-semibold border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 transition-all bg-white"
-            >
-              <Edit2 size={14} />
-              Edit
-            </Button>
+
             <Button
               variant="outline"
               size="sm"

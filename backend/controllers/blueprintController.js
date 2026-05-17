@@ -52,9 +52,45 @@ exports.updateBlueprint = async (req, res) => {
 
 exports.deleteBlueprint = async (req, res) => {
     try {
-        await Blueprint.findOneAndDelete({ user: req.user.id });
-        res.json({ message: "Blueprint deleted" });
+        const userId = req.user.id;
+
+        // 1. Identify all sessions to find associated questions
+        const InterviewSession = require("../models/InterviewSession");
+        const StaticSession = require("../models/Session");
+        const Question = require("../models/Question");
+
+        const [simSessions, staticSessions] = await Promise.all([
+            InterviewSession.find({ user: userId }, "_id"),
+            StaticSession.find({ user: userId }, "_id")
+        ]);
+
+        const sessionIds = [
+            ...simSessions.map(s => s._id),
+            ...staticSessions.map(s => s._id)
+        ];
+
+        // 2. Perform Cascading Deletion
+        const InterviewResult = require("../models/InterviewResult");
+        
+        await Promise.all([
+            // Wipe the Blueprint
+            Blueprint.findOneAndDelete({ user: userId }),
+            // Wipe Questions linked to those sessions
+            Question.deleteMany({ session: { $in: sessionIds } }),
+            // Wipe the Sessions themselves
+            InterviewSession.deleteMany({ user: userId }),
+            StaticSession.deleteMany({ user: userId }),
+            // Wipe Analytics Results (CORRECTED FIELD: userId)
+            InterviewResult.deleteMany({ userId: userId })
+        ]);
+
+        // 3. Clear link from User model
+        const User = require("../models/User");
+        await User.findByIdAndUpdate(userId, { interviewBlueprint: null }).catch(() => {});
+
+        res.json({ message: "Blueprint and all associated data purged successfully" });
     } catch (err) {
+        console.error("[Blueprint] Delete error:", err.message);
         res.status(500).json({ message: "Delete failed" });
     }
 };

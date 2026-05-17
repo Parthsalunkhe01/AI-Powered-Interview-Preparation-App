@@ -44,21 +44,37 @@ function getPrepIntensity(history) {
 const AnalyticsPage = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
+    const [hasBlueprint, setHasBlueprint] = useState(true);
     const { user } = useContext(UserContext);
 
     useEffect(() => {
         if (!user) return;
-        (async () => {
+        const loadAnalytics = async () => {
             try {
                 setLoading(true);
+                
+                // 1. Check Blueprint first
+                const bpRes = await axiosInstance.get(API_PATHS.BLUEPRINT.GET);
+                if (!bpRes.data || !bpRes.data.targetRole) {
+                    setHasBlueprint(false);
+                    setLoading(false);
+                    return;
+                }
+                setHasBlueprint(true);
+
+                // 2. Load Stats
                 const res = await axiosInstance.get(API_PATHS.ANALYTICS.GET_STATS);
                 if (res.data.success) setData(res.data.data);
-            } catch {
-                toast.error("Failed to load analytics.");
+            } catch (err) {
+                console.error("Analytics load error:", err);
+                // If blueprint 404, treat as no blueprint
+                if (err.response?.status === 404) setHasBlueprint(false);
+                else toast.error("Failed to load analytics.");
             } finally {
                 setLoading(false);
             }
-        })();
+        };
+        loadAnalytics();
     }, [user?.id]);
 
     if (loading) return (
@@ -68,15 +84,56 @@ const AnalyticsPage = () => {
         </div>
     );
 
+    if (!hasBlueprint) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-8 max-w-md"
+                >
+                    <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
+                        <Activity className="h-10 w-10 text-indigo-600" />
+                    </div>
+                    <div className="space-y-3">
+                        <h1 className="text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
+                        <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                            Create your Career Blueprint to track your performance and get personalized interview analytics.
+                        </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <Button size="lg" variant="saas" onClick={() => window.location.href = "/blueprint"}>
+                            Create My Blueprint <ArrowUpRight className="ml-2 h-4 w-4" />
+                        </Button>
+                        <Button size="lg" variant="outline" onClick={() => window.location.href = "/dashboard"}>
+                            Go to Dashboard
+                        </Button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
     if (!data || data.avgScore == null || data.totalInterviews === 0) return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-6">
-            <SaaSCard className="max-w-md p-12">
-                <Zap className="h-12 w-12 text-indigo-600 mx-auto mb-6" />
-                <h2 className="text-2xl font-black mb-4">No Sessions Yet</h2>
-                <Button variant="saas" onClick={() => window.location.href = "/dashboard"}>
-                    Start First Interview
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-8 max-w-md"
+            >
+                <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
+                    <Zap className="h-10 w-10 text-indigo-600" />
+                </div>
+                <div className="space-y-3">
+                    <h2 className="text-4xl font-bold tracking-tight">No Sessions Yet</h2>
+                    <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                        Complete your first mock interview to see your performance velocity and AI-driven insights.
+                    </p>
+                </div>
+                <Button size="lg" variant="saas" onClick={() => window.location.href = "/ai-interview/setup"}>
+                    Start First Interview <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>
-            </SaaSCard>
+            </motion.div>
         </div>
     );
 
@@ -198,11 +255,10 @@ const AnalyticsPage = () => {
                             </p>
                             {topSignals.map((s, i) => {
                                 const score    = s.avgScore ?? 0;
-                                const barWidth = Math.max(score, score > 0 ? 8 : 0); // min 8% if score > 0
-                                const label    = score === 0 ? "No data" : `${score}%`;
-                                const labelCls = score === 0
-                                    ? "text-slate-400"
-                                    : score < 30 ? "text-rose-500" : "text-indigo-600";
+                                // Even at 0%, show a tiny sliver (4%) so the bar doesn't look "missing"
+                                const barWidth = Math.max(score, 4); 
+                                const label    = `${score}%`;
+                                const labelCls = score < 35 ? "text-rose-500" : "text-indigo-600";
                                 return (
                                 <div key={i}>
                                     <div className="flex items-center justify-between mb-1">
@@ -215,7 +271,7 @@ const AnalyticsPage = () => {
                                     </div>
                                     <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-700 ${score === 0 ? "bg-slate-300" : score < 30 ? "bg-rose-400" : "bg-indigo-500"}`}
+                                            className={`h-full rounded-full transition-all duration-700 ${score < 35 ? "bg-rose-400" : "bg-indigo-500"}`}
                                             style={{ width: `${barWidth}%` }}
                                         />
                                     </div>

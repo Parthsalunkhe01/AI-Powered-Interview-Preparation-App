@@ -33,7 +33,6 @@ const Dashboard = () => {
   const [blueprint, setBlueprint] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
@@ -97,23 +96,15 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-  const handleUpdate = async (data) => {
-    try {
-      const res = await axiosInstance.put("/api/blueprint", data);
-      setBlueprint(res.data);
-      setIsEditing(false);
-      toast.success("Blueprint updated! ✨");
-    } catch {
-      toast.error("Update failed. Please check your inputs.");
-    }
-  };
+
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
       await axiosInstance.delete("/api/blueprint");
       setBlueprint(null);
-      toast.success("Blueprint deleted.");
+      localStorage.removeItem("interviewData");
+      toast.success("Blueprint and data purged successfully.");
     } catch {
       toast.error("Delete failed.");
     } finally {
@@ -166,28 +157,14 @@ const Dashboard = () => {
       <div className="space-y-10">
       {/* ── Top Hero Section ── */}
       <section className="relative">
-        {isEditing ? (
-          <SaaSCard className="border-indigo-100">
-            <h2 className="text-2xl font-black mb-6 tracking-tight text-slate-900">Modify Your Trajectory</h2>
-            <BlueprintForm
-              initialValues={blueprint}
-              isEditing={true}
-              onSave={handleUpdate}
-              onCancel={() => setIsEditing(false)}
-            />
-          </SaaSCard>
-        ) : (
           <CareerTargetBanner
             blueprint={blueprint}
-            onEdit={() => setIsEditing(true)}
             onDelete={handleDelete}
             isDeleting={isDeleting}
           />
-        )}
       </section>
 
-      {!isEditing && (
-        <>
+      <>
           {/* ── Stats & Activity Row (Responsive Grid) ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <SaaSCard className="p-6" hover={false}>
@@ -236,7 +213,7 @@ const Dashboard = () => {
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 underline underline-offset-4 decoration-indigo-200">AI Strategic Insight</h4>
                 </div>
                 <p className="text-base font-bold leading-relaxed text-slate-700 italic">
-                  {`"${stats?.insight || `Great start, ${blueprint.targetRole || 'Engineer'}! Complete more interviews to get personalized AI insights.`}"`}
+                  {stats?.insight ? `"${stats.insight}"` : `Great start, ${blueprint.targetRole || 'Engineer'}! Complete more interviews to get personalized AI insights.`}
                 </p>
                 <Button variant="ghost" size="sm" className="mt-4 p-0 h-auto text-indigo-600 font-bold hover:bg-transparent hover:text-indigo-800" onClick={() => navigate("/analytics")}>
                    View Detailed Breakdown <ArrowRight className="ml-2 h-3.5 w-3.5" />
@@ -251,10 +228,9 @@ const Dashboard = () => {
             <SkillSignals blueprint={blueprint} />
           </div>
         </>
-      )}
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Dashboard;

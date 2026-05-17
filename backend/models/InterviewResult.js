@@ -46,6 +46,12 @@ const interviewResultSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    sessionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InterviewSession",
+      unique: true,
+      sparse: true, // Allow old results without sessionId
+    }
   },
   { timestamps: true }
 );

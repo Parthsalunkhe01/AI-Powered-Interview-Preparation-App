@@ -1,9 +1,8 @@
-import { Briefcase, Clock, Code2, Building2, Edit2, Trash2 } from "lucide-react";
+import { Briefcase, Clock, Code2, Building2, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 
 const BlueprintSummaryCard = ({
   blueprint,
-  onEdit,
   onDelete,
   isDeleting,
 }) => {
@@ -109,13 +108,7 @@ const BlueprintSummaryCard = ({
               Delete Profile
             </Button>
 
-            <Button
-              onClick={onEdit}
-              className="h-11 px-8 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 text-white font-bold uppercase tracking-tight text-xs shadow-[0_8px_30px_rgba(37,99,235,0.2)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-              Edit Profile
-            </Button>
+
           </div>
         </div>
       </div>

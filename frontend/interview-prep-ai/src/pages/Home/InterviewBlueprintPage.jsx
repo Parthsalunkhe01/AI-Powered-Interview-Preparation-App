@@ -93,8 +93,9 @@ const InterviewBlueprintPage = () => {
     try {
       await axiosInstance.delete("/api/blueprint");
       setBlueprint(null);
+      localStorage.removeItem("interviewData"); // Hard reset
       setMode("empty");
-      toast.success("Blueprint deleted");
+      toast.success("Blueprint and profile data purged successfully.");
     } catch {
       toast.error("Failed to delete. Please try again.");
     } finally {
@@ -112,14 +113,11 @@ const InterviewBlueprintPage = () => {
       return <EmptyState onCreate={() => setMode("create")} />;
     }
 
-    if (mode === "create" || mode === "edit") {
+    if (mode === "create") {
       return (
         <BlueprintForm
-          initialValues={mode === "edit" && blueprint ? blueprint : undefined}
-          isEditing={mode === "edit"}
           isSaving={isSaving}
           onSave={handleSave}
-          onCancel={blueprint ? () => setMode("view") : undefined}
         />
       );
     }
@@ -129,7 +127,6 @@ const InterviewBlueprintPage = () => {
         <>
           <BlueprintSummaryCard
             blueprint={blueprint}
-            onEdit={() => setMode("edit")}
             onDelete={() => setDeleteDialogOpen(true)}
             isDeleting={isDeleting}
           />
