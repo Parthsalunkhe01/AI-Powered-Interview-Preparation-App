@@ -6,7 +6,7 @@ const InterviewResult = require("../models/InterviewResult");
 const { selectNextQuestion, estimateAnswerScore } = require("../services/adaptiveEngine");
 const { generateStructuredFeedback } = require("../services/aiFeedbackEngine");
 const { generateGuideContent } = require("../utils/guideGenerator");
-const { fetchAndVerifyResources } = require("./resourceController");
+const { fetchAndVerifyResources, fetchStaticResourcesOnly } = require("./resourceController");
 const { parallelWithLimit } = require("../utils/cachedAI");
 
 // @desc   Create a new interview session
@@ -365,104 +365,124 @@ exports.generateAISessionFeedback = async (req, res) => {
 // @route  GET /api/interview-sessions/:id/export-guide
 // @access Private
 exports.exportInterviewGuide = async (req, res) => {
+    // Hard server-side timeout — prevents the request from hanging indefinitely
+    const EXPORT_TIMEOUT_MS = 120_000; // 2 minutes
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("EXPORT_TIMEOUT")), EXPORT_TIMEOUT_MS)
+    );
+
     try {
-        const session = await InterviewSession.findOne({
-            _id: req.params.id,
-            user: req.user._id,
-        }).populate("question");
+        const exportWork = async () => {
+            const session = await InterviewSession.findOne({
+                _id: req.params.id,
+                user: req.user._id,
+            }).populate("question");
 
-        if (!session) {
-            return res.status(404).json({ success: false, message: "Session not found." });
-        }
+            if (!session) {
+                return res.status(404).json({ success: false, message: "Session not found." });
+            }
 
-        const result = await InterviewResult.findOne({ userId: req.user._id }).sort({ createdAt: -1 });
-        console.log(`  [PDF_EXPORT]: Found session ${session._id}, result found: ${!!result}`);
+            const result = await InterviewResult.findOne({ userId: req.user._id }).sort({ createdAt: -1 });
+            console.log(`  [PDF_EXPORT]: Session ${session._id}, ${session.question?.length || 0} questions, result: ${!!result}`);
 
-        // 1. Prepare Summary Data
-        let mainFocus = "General";
-        if (result?.topicDetails && Array.isArray(result.topicDetails) && result.topicDetails.length > 0) {
-            const sorted = [...result.topicDetails].sort((a, b) => (a.score || 0) - (b.score || 0));
-            mainFocus = sorted[0]?.domain || sorted[0]?.topic || "General";
-        }
+            // 1. Summary Data
+            let mainFocus = "General";
+            if (result?.topicDetails?.length > 0) {
+                const sorted = [...result.topicDetails].sort((a, b) => (a.score || 0) - (b.score || 0));
+                mainFocus = sorted[0]?.domain || sorted[0]?.topic || "General";
+            }
 
-        const summary = {
-            role: session.role || "Software Engineer",
-            experience: session.experience || "Entry",
-            date: new Date(session.createdAt).toLocaleDateString(),
-            score: result?.score || 0,
-            status: result?.score >= 75 ? "Ready" : result?.score >= 50 ? "Progressing" : "Needs Work",
-            strongAreas: result?.categories?.slice(0, 2) || [],
-            mainFocus,
-            oneLiner: result?.score >= 70 
-                ? "You have a solid technical foundation. Focus on polishing edge cases."
-                : "Focus on closing fundamentals gaps in your weakest domain."
+            const summary = {
+                role:        session.role || "Software Engineer",
+                experience:  session.experience || "Entry",
+                date:        new Date(session.createdAt).toLocaleDateString(),
+                score:       result?.score || 0,
+                status:      result?.score >= 75 ? "Ready" : result?.score >= 50 ? "Progressing" : "Needs Work",
+                strongAreas: result?.categories?.slice(0, 2) || [],
+                mainFocus,
+                oneLiner: result?.score >= 70
+                    ? "You have a solid technical foundation. Focus on polishing edge cases."
+                    : "Focus on closing fundamentals gaps in your weakest domain."
+            };
+
+            // 2. Generate content per question
+            // Resources use the static pool (instant — no extra API calls during export)
+            // so the export stays fast regardless of YouTube/Serper quota status.
+            const seenLinks    = new Set();
+            const seenVideoIds = new Set();
+
+            console.log(`  [PDF_EXPORT]: Generating coaching content (parallel, max 2 concurrent)...`);
+
+            const questionTasks = (session.question || []).map((q, idx) => async () => {
+                const qText    = q?.question || (typeof q === "string" ? q : "Technical Question");
+                const qId      = q?._id?.toString();
+                const answer   = session.answers?.find(a => a.questionId?.toString() === qId);
+                const category = idx > 0 ? (session.questionMeta?.[idx - 1]?.category || "General") : "General";
+
+                try {
+                    // Run guide coaching (Groq) + static resource lookup in parallel
+                    const [coaching, resources] = await Promise.all([
+                        generateGuideContent(qText, answer?.answerText || "", category),
+                        fetchStaticResourcesOnly(qText, seenLinks, seenVideoIds),
+                    ]);
+
+                    console.log(`  [PDF_EXPORT]: ✅ Q${idx + 1} done`);
+                    return {
+                        number:            idx + 1,
+                        question:          qText,
+                        idealAnswer:       coaching.idealAnswer,
+                        coreBreakdown:     coaching.coreBreakdown,
+                        keyInsights:       coaching.keyInsights,
+                        productionInsight: coaching.productionInsight,
+                        mistakes:          coaching.mistakes,
+                        suggestedStack:    coaching.suggestedStack,
+                        followUps:         coaching.followUps,
+                        videos:   (resources.videos   || []).slice(0, 2).map(v => ({ title: v.title, url: v.url || `https://youtube.com/watch?v=${v.videoId}` })),
+                        articles: (resources.articles || []).slice(0, 2).map(a => ({ title: a.title, url: a.url || a.link })),
+                    };
+                } catch (innerErr) {
+                    console.error(`  [PDF_EXPORT]: ⚠️ Q${idx + 1} error:`, innerErr.message);
+                    return {
+                        number: idx + 1, question: qText,
+                        idealAnswer: "Consult industry best practices for this topic.",
+                        coreBreakdown: "", keyInsights: "", productionInsight: "",
+                        mistakes: "", suggestedStack: "", followUps: "",
+                        videos: [], articles: [],
+                    };
+                }
+            });
+
+            // Limit to 2 concurrent (was 3) — reduces Groq rate-limit pressure
+            const questions = await parallelWithLimit(questionTasks, 2);
+
+            const filename = `Interview_Guide_${(session.role || "Dev").replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
+            console.log(`  [PDF_EXPORT]: ✅ Export complete — ${questions.length} questions`);
+
+            return res.status(200).json({
+                success: true,
+                filename,
+                data: {
+                    summary,
+                    questions,
+                    finalAdvice: [
+                        "Speak out loud during coding tasks to show your thought process.",
+                        "Always mention Big O complexity for your solutions.",
+                        "Review trade-offs between different architectural approaches."
+                    ]
+                }
+            });
         };
 
-        // 2. Generate Detailed Content for each question
-        const seenLinks    = new Set();
-        const seenVideoIds = new Set();
-
-        console.log(`  [PDF_EXPORT]: Processing ${session.question?.length || 0} questions (parallel, max 3 concurrent)...`);
-
-        const questionTasks = (session.question || []).map((q, idx) => async () => {
-            const qText    = q?.question || (typeof q === "string" ? q : "Technical Question");
-            const qId      = q?._id?.toString();
-            const answer   = session.answers?.find(a => a.questionId?.toString() === qId);
-            // Q1 (idx=0) has no meta entry; meta[0] belongs to Q2 (idx=1), so offset by -1
-            const category = idx > 0 ? (session.questionMeta?.[idx - 1]?.category || "General") : "General";
-
-            try {
-                const [coaching, resources] = await Promise.all([
-                    generateGuideContent(qText, answer?.answerText || "", category),
-                    fetchAndVerifyResources(qText, seenLinks, seenVideoIds),
-                ]);
-
-                return {
-                    number:           idx + 1,
-                    question:         qText,
-                    idealAnswer:      coaching.idealAnswer,
-                    coreBreakdown:    coaching.coreBreakdown,
-                    keyInsights:      coaching.keyInsights,
-                    productionInsight: coaching.productionInsight,
-                    mistakes:         coaching.mistakes,
-                    suggestedStack:   coaching.suggestedStack,
-                    followUps:        coaching.followUps,
-                    videos:   (resources.videos   || []).slice(0, 2).map(v => ({ title: v.title, url: v.url || `https://youtube.com/watch?v=${v.videoId}` })),
-                    articles: (resources.articles || []).slice(0, 2).map(a => ({ title: a.title, url: a.url || a.link })),
-                };
-            } catch (innerErr) {
-                console.error(`  [PDF_EXPORT]: Error on question ${idx + 1}:`, innerErr.message);
-                return {
-                    number: idx + 1, question: qText,
-                    idealAnswer: "Consult industry best practices for this topic.",
-                    coreBreakdown: "", keyInsights: "", productionInsight: "",
-                    mistakes: "", suggestedStack: "", followUps: "",
-                    videos: [], articles: [],
-                };
-            }
-        });
-
-        const questions = await parallelWithLimit(questionTasks, 3);
-
-        const filename = `Interview_Guide_${(session.role || "Dev").replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
-
-        console.log(`  [PDF_EXPORT]: Export complete for ${session._id}`);
-
-        res.status(200).json({
-            success: true,
-            filename,
-            data: {
-                summary,
-                questions,
-                finalAdvice: [
-                    "Speak out loud during coding tasks to show your thought process.",
-                    "Always mention Big O complexity for your solutions.",
-                    "Review trade-offs between different architectural approaches."
-                ]
-            }
-        });
+        await Promise.race([exportWork(), timeoutPromise]);
 
     } catch (error) {
+        if (error.message === "EXPORT_TIMEOUT") {
+            console.error("[PDF_EXPORT]: ⏱️ Export timed out after 120s");
+            return res.status(504).json({
+                success: false,
+                message: "The guide is taking longer than expected. Please try again in a moment — your session data is safe."
+            });
+        }
         console.error("EXPORT_GUIDE_ERROR:", error.stack || error.message);
         res.status(500).json({ success: false, message: "Failed to export guide.", error: error.message });
     }

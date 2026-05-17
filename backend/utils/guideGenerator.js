@@ -1,6 +1,6 @@
 const Groq = require("groq-sdk");
 const { jsonrepair } = require("jsonrepair");
-const { callAIWithCache, buildCacheKey } = require("./cachedAI");
+const { callAIWithCache, buildCacheKey, callGroqWithRetry } = require("./cachedAI");
 const { getStructuredFallback } = require("./fallbackEngine");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -10,7 +10,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
  *
  * Priority:
  *   1. MongoDB cache (free, instant)
- *   2. Groq AI with 8s timeout + budget guard
+ *   2. Groq AI with 45s timeout + budget guard
  *   3. Domain-specific structured fallback (never empty)
  *
  * @param {string} question     - The interview question text
@@ -39,7 +39,7 @@ CANDIDATE_RESPONSE: ${answer || "Skipped"}
 STRICT REQUIREMENTS (return valid JSON with FLAT STRINGS only — no nested objects/arrays):
 1. "idealAnswer": (4-6 lines) A polished response sounding like an experienced candidate.
 2. "coreBreakdown": Narrative + sections for Project Overview, Challenges, and Impact.
-3. "keyInsights": 2-4 bullet points of key technical concepts (e.g., "• Big O\\n• Memoization").
+3. "keyInsights": 2-4 bullet points of key technical concepts (e.g., "• Big O\n• Memoization").
 4. "productionInsight": How a company like Netflix, Amazon, or Uber handles this in production.
 5. "mistakes": 2-4 specific, contextual mistakes candidates commonly make.
 6. "suggestedStack": Appropriate tech stack (Frontend/Backend/DB format).
@@ -48,15 +48,15 @@ STRICT REQUIREMENTS (return valid JSON with FLAT STRINGS only — no nested obje
 Return ONLY this JSON (no markdown, no extra text):
 {
   "idealAnswer": "...",
-  "coreBreakdown": "Narrative...\\n\\n• Overview: ...\\n• Challenges: ...\\n• Impact: ...",
-  "keyInsights": "• Concept 1\\n• Concept 2",
+  "coreBreakdown": "Narrative...\n\n• Overview: ...\n• Challenges: ...\n• Impact: ...",
+  "keyInsights": "• Concept 1\n• Concept 2",
   "productionInsight": "Real world: ...",
-  "mistakes": "• Mistake 1\\n• Mistake 2",
-  "suggestedStack": "Frontend: ...\\nBackend: ...\\nDB: ...",
-  "followUps": "• Follow up 1\\n• Follow up 2"
+  "mistakes": "• Mistake 1\n• Mistake 2",
+  "suggestedStack": "Frontend: ...\nBackend: ...\nDB: ...",
+  "followUps": "• Follow up 1\n• Follow up 2"
 }`;
 
-            const completion = await groq.chat.completions.create({
+            const completion = await callGroqWithRetry(groq, {
                 model: "llama-3.1-8b-instant",
                 messages: [{ role: "user", content: prompt }],
                 temperature: 0.1,

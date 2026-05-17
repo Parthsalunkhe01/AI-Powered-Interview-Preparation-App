@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const CachedContent = require("../models/CachedContent");
 const { checkBudget, recordUsage } = require("./budgetGuard");
 
-const AI_TIMEOUT_MS = 8000; // 8-second hard limit on all AI calls
+const AI_TIMEOUT_MS = 45000; // 45-second safe timeout for queued AI completions
 
 /**
  * Builds a deterministic, normalized cache key from type + params.

@@ -140,10 +140,11 @@ export default function Resources() {
 
     setResourceError(false);
 
+    // No artificial cap — show resources for ALL questions in the session.
+    // Supports 5 / 8 / 10 / 15 question sets chosen during interview setup.
     const qTexts = qs
       .map(q => q.question || q)
-      .filter(Boolean)
-      .slice(0, 5); // cap at 5 topics
+      .filter(Boolean);
 
     setTotalCount(qTexts.length);
     setLoadedCount(0);
@@ -159,7 +160,7 @@ export default function Resources() {
         const response = await axiosInstance.post(
           API_PATHS.AI.GET_RESOURCES,
           { questions: [topic], blueprint },
-          { timeout: 20000 }
+          { timeout: 30000 } // 30s per topic — enough for live API + Groq filter
         );
         const sectionData = response.data?.data?.[0];
         setResources(prev => {
@@ -199,18 +200,25 @@ export default function Resources() {
       return;
     }
 
+    const loadingToast = toast.loading("Generating your guide… this takes ~30–60 seconds for coaching content.", { duration: 180000 });
+
     try {
       const simulationRes = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.GET_MY);
       const latestSession = simulationRes.data?.[0];
 
       if (!latestSession) {
         printWindow.close();
+        toast.dismiss(loadingToast);
         toast.error("No completed interview session found to export.");
         return;
       }
 
-      toast.loading("Preparing your professional guide...");
-      const res = await axiosInstance.get(API_PATHS.INTERVIEW_SESSION.EXPORT_GUIDE(latestSession._id));
+      const res = await axiosInstance.get(
+        API_PATHS.INTERVIEW_SESSION.EXPORT_GUIDE(latestSession._id),
+        { timeout: 180000 }   // 3-minute override — guide coaching takes time
+      );
+
+      toast.dismiss(loadingToast);
 
       if (res.data?.success && res.data?.data) {
         const htmlContent = generatePdfHtml(res.data.data);
@@ -219,27 +227,28 @@ export default function Resources() {
         printWindow.onload = () => {
           printWindow.focus();
           printWindow.print();
-          toast.dismiss();
-          toast.success("Guide generated! Use 'Save as PDF' in your browser.");
+          toast.success("Guide ready! Use 'Save as PDF' in the print dialog.");
         };
         // Fallback: if onload already fired (cached resources), trigger print directly
         if (printWindow.document.readyState === 'complete') {
           printWindow.focus();
           printWindow.print();
-          toast.dismiss();
-          toast.success("Guide generated! Use 'Save as PDF' in your browser.");
+          toast.success("Guide ready! Use 'Save as PDF' in the print dialog.");
         }
       } else {
         printWindow.close();
-        toast.dismiss();
         toast.error("Guide data not available. Complete an interview session first.");
       }
     } catch (err) {
       console.error("Export Guide Error:", err);
       printWindow.close();
-      toast.dismiss();
-      if (err?.response?.status === 404) {
+      toast.dismiss(loadingToast);
+
+      const status = err?.response?.status;
+      if (status === 404) {
         toast.error("Session not found. Please complete an interview session first.");
+      } else if (status === 504 || err?.code === "ECONNABORTED") {
+        toast.error("Guide generation timed out — your session is saved. Please try again.", { duration: 6000 });
       } else {
         toast.error("Failed to export guide. Please try again.");
       }

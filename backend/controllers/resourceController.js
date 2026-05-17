@@ -386,10 +386,21 @@ const groq = new Groq({
 });
 
 /**
- * Uses AI to strictly filter candidate resources for relevance.
+ * Uses Groq AI to strictly filter candidate resources for relevance.
+ * Respects the daily Groq budget — skips AI call if quota is exhausted.
  */
 async function filterWithAI(question, candidates) {
     if (!candidates.length) return { videos: [], articles: [] };
+
+    // Check Groq budget before making the call
+    const { allowed, reason } = await checkBudget("groq");
+    if (!allowed) {
+        console.warn(`[Resources] ⚠️ Groq budget exhausted (${reason}) — skipping AI filter, using top raw results.`);
+        return {
+            videos:   candidates.filter(c => c.type === "video").slice(0, 2),
+            articles: candidates.filter(c => c.type === "article").slice(0, 2),
+        };
+    }
 
     try {
         const prompt = resourceSemanticFilterPrompt(question, candidates);
@@ -408,27 +419,74 @@ async function filterWithAI(question, candidates) {
             temperature: 0.1, // High precision
         });
 
+        recordUsage("groq");
         const rawText = completion.choices[0]?.message?.content;
         if (!rawText) return { videos: [], articles: [] };
 
         const cleanedText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
         const filtered = JSON.parse(cleanedText);
 
+        console.log(`[Resources] ✅ Groq AI filter selected ${(filtered.videos||[]).length} videos, ${(filtered.articles||[]).length} articles.`);
         return {
-            videos: filtered.videos || [],
-            articles: filtered.articles || []
+            videos:   filtered.videos   || [],
+            articles: filtered.articles || [],
         };
     } catch (error) {
-        console.error("AI Filtering Error:", error.message);
-        // Fallback to top 2 if AI fails
+        console.error("[Resources] ❌ Groq AI Filtering Error:", error.message);
+        // Fallback: return top raw results without AI filtering
         return {
-            videos: candidates.filter(c => c.type === "video").slice(0, 2),
-            articles: candidates.filter(c => c.type === "article").slice(0, 2)
+            videos:   candidates.filter(c => c.type === "video").slice(0, 2),
+            articles: candidates.filter(c => c.type === "article").slice(0, 2),
         };
     }
 }
 
-const RESOURCE_CACHE_VERSION = "v7"; // Bumped: score denominator capped at 5, DSA coding terms, fixed STAR video
+const RESOURCE_CACHE_VERSION = "v8"; // Bumped: invalidate all stale static-pool cache entries; force live API re-fetch
+
+// ── Startup API Key Diagnostics ───────────────────────────────────────────────
+// Log missing keys immediately on boot so misconfiguration is obvious in logs.
+(function warnMissingKeys() {
+    if (!process.env.YOUTUBE_API_KEY) console.error("[ResourceController] ❌ YOUTUBE_API_KEY is NOT set — YouTube search will always return [].");
+    else console.log("[ResourceController] ✅ YOUTUBE_API_KEY present.");
+
+    if (!process.env.SERPER_API_KEY) console.error("[ResourceController] ❌ SERPER_API_KEY is NOT set — Serper search will always return [].");
+    else console.log("[ResourceController] ✅ SERPER_API_KEY present.");
+
+    if (!process.env.GROQ_API_KEY) console.error("[ResourceController] ❌ GROQ_API_KEY is NOT set — AI filtering will be skipped.");
+    else console.log("[ResourceController] ✅ GROQ_API_KEY present.");
+})();
+
+// ── Safe DB / Budget Helpers ──────────────────────────────────────────────────
+/**
+ * Executes a DB fn with a 4s timeout. Returns defaultValue if it throws or times out.
+ * This ensures a flaky MongoDB Atlas connection never blocks live API calls.
+ */
+async function safeDB(fn, defaultValue) {
+    try {
+        return await Promise.race([
+            fn(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("DB_TIMEOUT")), 4000))
+        ]);
+    } catch (e) {
+        console.warn("[ResourceController] DB op skipped:", e.message);
+        return defaultValue;
+    }
+}
+
+/**
+ * Checks API budget with a 3s timeout. Defaults to allowed=true if DB is unreachable.
+ * This ensures YouTube/Serper are always attempted when API keys are present.
+ */
+async function safeBudget(apiType) {
+    try {
+        return await Promise.race([
+            checkBudget(apiType),
+            new Promise(resolve => setTimeout(() => resolve({ allowed: true, tier: "FULL" }), 3000))
+        ]);
+    } catch {
+        return { allowed: true, tier: "FULL" };
+    }
+}
 
 // ── Core Resource Fetcher ─────────────────────────────────────────────────────
 /**
@@ -438,6 +496,9 @@ const RESOURCE_CACHE_VERSION = "v7"; // Bumped: score denominator capped at 5, D
  *   1. MongoDB TTL cache  → source: "cache"   (instant, zero API cost)
  *   2. YouTube + Serper live search + AI filter → source: "api"   (most relevant)
  *   3. Static pool keyword match → source: "static"  (last resort, APIs returned 0)
+ *
+ * Every DB operation uses safeDB() — if MongoDB drops the connection,
+ * the function skips cache and goes straight to live API search.
  */
 const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoIds = new Set(), role = "Software Engineer") => {
     const questionKeywords = extractKeywords(topic);
@@ -450,47 +511,50 @@ const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoId
         t:  topic.substring(0, 60),
     });
 
-    // ── Layer 1: DB Cache ──────────────────────────────────────────────
-    try {
-        const cached = await CachedContent.findOne({ cacheKey });
-        if (cached) {
-            console.log("CACHE HIT:", cacheKey);
-            await CachedContent.updateOne({ _id: cached._id }, { $inc: { hitCount: 1 } });
-            return {
-                source:   "cache",
-                videos:   cached.content.videos   || [],
-                articles: cached.content.articles || [],
-                keywords: questionKeywords,
-            };
-        }
-    } catch (e) {
-        console.warn("[ResourceController] Cache read error:", e.message);
+    // ── Layer 1: DB Cache (non-blocking) ──────────────────────────────
+    const cached = await safeDB(() => CachedContent.findOne({ cacheKey }), null);
+    if (cached) {
+        console.log("[Resources] ✅ CACHE HIT:", cacheKey);
+        safeDB(() => CachedContent.updateOne({ _id: cached._id }, { $inc: { hitCount: 1 } }), null);
+        return {
+            source:   "cache",
+            videos:   cached.content.videos   || [],
+            articles: cached.content.articles || [],
+            keywords: questionKeywords,
+        };
     }
 
     // ── Layer 2: YouTube + Serper Live Search + AI Filtering ─────────────────
-    // PRIMARY source: real-time API search gives question-specific relevant results.
-    // Uses buildSearchQuery() to strip introductory context (e.g., "Considering your
-    // interest in AI/ML...") so the search targets the actual technical topic.
+    // Budget checks are non-blocking — if DB is down, default to allowed=true
+    // so live API calls are ALWAYS attempted when keys are present.
     const semanticQuery = buildSearchQuery(topic, role);
-
-    console.log(`[Resources] Layer 2 — API search for: "${semanticQuery}"`);
+    console.log(`[Resources] Layer 2 — live API search for: "${semanticQuery}"`);
 
     const [ytBudget, serperBudget] = await Promise.all([
-        checkBudget("youtube"),
-        checkBudget("serper"),
+        safeBudget("youtube"),
+        safeBudget("serper"),
     ]);
+    console.log(`[Resources] Budget — YouTube: ${ytBudget.allowed ? "✅ ALLOWED" : `❌ BLOCKED (${ytBudget.reason})`}, Serper: ${serperBudget.allowed ? "✅ ALLOWED" : `❌ BLOCKED (${serperBudget.reason})`}`);
 
     const [rawVideos, rawArticles] = await Promise.all([
         ytBudget.allowed
             ? searchWithYouTube(semanticQuery, 12)
-                .then(r => { recordUsage("youtube"); return r; })
-                .catch(e => { console.warn("[Resources] YouTube search error:", e.message); return []; })
-            : (console.warn("[Resources] YouTube budget exceeded"), Promise.resolve([])),
+                .then(r => {
+                    console.log(`[Resources] YouTube returned ${r.length} results for "${semanticQuery}"`);
+                    if (r.length > 0) recordUsage("youtube");
+                    return r;
+                })
+                .catch(e => { console.error("[Resources] ❌ YouTube search FAILED:", e.message); return []; })
+            : (console.warn("[Resources] ⚠️ YouTube budget exhausted — skipping live search"), Promise.resolve([])),
         serperBudget.allowed
             ? searchWithSerper(semanticQuery, 12)
-                .then(r => { recordUsage("serper"); return r; })
-                .catch(e => { console.warn("[Resources] Serper search error:", e.message); return []; })
-            : (console.warn("[Resources] Serper budget exceeded"), Promise.resolve([])),
+                .then(r => {
+                    console.log(`[Resources] Serper returned ${r.length} results for "${semanticQuery}"`);
+                    if (r.length > 0) recordUsage("serper");
+                    return r;
+                })
+                .catch(e => { console.error("[Resources] ❌ Serper search FAILED:", e.message); return []; })
+            : (console.warn("[Resources] ⚠️ Serper budget exhausted — skipping live search"), Promise.resolve([])),
     ]);
 
     console.log(`[Resources] Raw results — YouTube: ${rawVideos.length}, Serper: ${rawArticles.length}`);
@@ -517,7 +581,7 @@ const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoId
     // Only used when BOTH YouTube and Serper return 0 results (e.g. quota exceeded
     // or network error). Keyword matching against curated pool as a last resort.
     if (apiCandidates.length === 0) {
-        console.log("[Resources] Layer 3 — APIs empty, trying static pool fallback.");
+        console.warn("[Resources] ⚠️ Layer 3 — Both APIs returned 0 results. Using static pool fallback.");
         const staticMatch = matchStaticPool(questionKeywords);
         if (staticMatch) {
             const staticVideos = staticMatch.videos
@@ -538,11 +602,11 @@ const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoId
                 staticVideos.forEach(v => seenVideoIds.add(v.videoId));
                 staticArticles.forEach(a => seenLinks.add(a.url));
                 const staticResult = { videos: staticVideos, articles: staticArticles };
-                CachedContent.create({
+                safeDB(() => CachedContent.create({
                     cacheKey, type: "resource", content: staticResult,
                     source: "static",
                     expiresAt: new Date(Date.now() + 7 * 86_400_000),
-                }).catch(() => {});
+                }), null);
                 return { source: "static", ...staticResult, keywords: questionKeywords };
             }
         }
@@ -586,14 +650,16 @@ const fetchAndVerifyResources = async (topic, seenLinks = new Set(), seenVideoId
     const result = { videos, articles };
 
     if (videos.length > 0 || articles.length > 0) {
-        CachedContent.create({
+        safeDB(() => CachedContent.create({
             cacheKey,
             type:      "resource",
             content:   result,
             source:    "ai",
             expiresAt: new Date(Date.now() + 14 * 86_400_000),
-        }).catch(e => console.warn("[ResourceController] Cache write error (api):", e.message));
+        }), null);
     }
+
+    console.log(`[Resources] ✅ Done — ${videos.length} videos, ${articles.length} articles (source: api)`);
 
     return {
         source:   videos.length > 0 || articles.length > 0 ? "api" : "empty",
@@ -654,3 +720,53 @@ exports.generateResources = async (req, res) => {
 };
 
 exports.fetchAndVerifyResources = fetchAndVerifyResources;
+
+/**
+ * fetchStaticResourcesOnly — Zero-latency resource lookup for PDF export.
+ *
+ * Skips ALL external API calls (YouTube, Serper, Groq filter, MongoDB).
+ * Returns results directly from the curated STATIC_RESOURCE_POOL via keyword matching.
+ * Perfect for PDF export where speed matters more than live search freshness.
+ *
+ * @param {string}  topic        - Question text
+ * @param {Set}     seenLinks    - URLs already used (dedup across questions)
+ * @param {Set}     seenVideoIds - Video IDs already used (dedup across questions)
+ * @returns {{ source: "static"|"empty", videos: [], articles: [] }}
+ */
+function fetchStaticResourcesOnly(topic, seenLinks = new Set(), seenVideoIds = new Set()) {
+    const keywords = extractKeywords(topic);
+    const match    = matchStaticPool(keywords);
+
+    if (!match) {
+        return { source: "empty", videos: [], articles: [], keywords };
+    }
+
+    const videos = match.videos
+        .filter(v => v.url && extractVideoId(v.url) && !seenVideoIds.has(extractVideoId(v.url)))
+        .slice(0, 2)
+        .map(v => {
+            const videoId = v.videoId || extractVideoId(v.url);
+            seenVideoIds.add(videoId);
+            return {
+                title:     v.title,
+                url:       v.url,
+                videoId,
+                thumbnail: resolveThumbnail(videoId, v.thumbnail),
+            };
+        });
+
+    const articles = match.articles
+        .filter(a => a.url && isValidUrl(a.url) && !seenLinks.has(a.url))
+        .slice(0, 2)
+        .map(a => { seenLinks.add(a.url); return a; });
+
+    return {
+        source:   videos.length > 0 || articles.length > 0 ? "static" : "empty",
+        videos,
+        articles,
+        keywords,
+    };
+}
+
+exports.fetchStaticResourcesOnly = fetchStaticResourcesOnly;
+
