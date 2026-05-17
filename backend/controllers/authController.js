@@ -69,7 +69,9 @@ const registerUser = async (req, res) => {
             await sendOTPEmail(user.email, otp, user.name);
         } catch (emailError) {
             console.error("Failed to send OTP email:", emailError.message);
-            // We don't fail registration, but the user will need to resend OTP
+            // Rollback: delete the user if the email fails to send
+            await User.findByIdAndDelete(user._id);
+            return res.status(500).json({ message: "Failed to send verification email. Please ensure the email is valid or try again later." });
         }
 
         // We do NOT return a token yet. The user must verify first.
