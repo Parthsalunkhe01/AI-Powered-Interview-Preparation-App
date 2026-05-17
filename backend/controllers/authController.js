@@ -395,4 +395,30 @@ const resetPassword = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, resendOTP, loginUser, googleAuth, getUserProfile, forgotPassword, resetPassword };
+/**
+ * Update user's profile image
+ * @route PUT /api/auth/profile/image
+ * @access Private
+ */
+const updateProfileImage = async (req, res) => {
+    try {
+        const { profileImageUrl } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.profileImageUrl = profileImageUrl || null;
+        await user.save();
+
+        return res.status(200).json({
+            message: "Profile image updated successfully.",
+            profileImageUrl: user.profileImageUrl,
+        });
+    } catch (error) {
+        console.error("Update profile image error:", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { registerUser, verifyEmail, resendOTP, loginUser, googleAuth, getUserProfile, forgotPassword, resetPassword, updateProfileImage };

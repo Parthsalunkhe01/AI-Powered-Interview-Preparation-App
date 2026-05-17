@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Menu, X, ArrowRight } from "lucide-react";
+import logo from "../../assets/logo.png";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 const LandingNavbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -14,11 +15,6 @@ const LandingNavbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Features", href: "#features" },
-    { name: "How it Works", href: "#how-it-works" },
-    { name: "Pricing", href: "#pricing" },
-  ];
 
   return (
     <nav 
@@ -31,26 +27,14 @@ const LandingNavbar = () => {
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group transition-transform hover:scale-105 no-underline">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-lg shadow-primary/20">
-            <Zap className="h-5 w-5 text-white fill-white" />
+          <div className="h-9 w-9 rounded-xl flex items-center justify-center">
+            <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-xl" />
           </div>
           <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
             InterviewAI
           </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a 
-              key={link.name} 
-              href={link.href} 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors no-underline"
-            >
-              {link.name}
-            </a>
-          ))}
-        </div>
 
         {/* Auth Actions */}
         <div className="hidden md:flex items-center gap-4">
@@ -87,17 +71,7 @@ const LandingNavbar = () => {
             className="md:hidden bg-white border-b border-slate-200/60 shadow-lg overflow-hidden"
           >
             <div className="px-6 py-8 flex flex-col gap-6">
-              {navLinks.map((link) => (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  className="text-lg font-bold text-muted-foreground no-underline"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
-              ))}
-              <div className="h-px bg-slate-100" />
+
               <button 
                 onClick={() => navigate("/login")}
                 className="text-left font-bold text-lg text-muted-foreground"

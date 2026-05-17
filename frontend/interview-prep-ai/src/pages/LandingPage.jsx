@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   Zap, 
-  Target, 
+  FileDown, 
   Brain, 
   Sparkles, 
   Code, 
@@ -18,6 +18,7 @@ import {
 import { UserContext } from "../context/userContext";
 import LandingNavbar from "../components/layouts/LandingNavbar";
 import HERO_IMG from "../assets/hero-img.png";
+import logo from "../assets/logo.png";
 
 const LandingPage = () => {
   const { user } = useContext(UserContext);
@@ -47,37 +48,37 @@ const LandingPage = () => {
       title: "AI Mock Interviews",
       description: "Realistic, role-based interview practice that adapts to your skill level.",
       icon: Brain,
-      color: "bg-blue-500/10 text-blue-400"
+      color: "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-blue-500/25"
     },
     {
       title: "Performance Reports",
       description: "Detailed feedback on your technical skills, communication, and confidence.",
       icon: TrendingUp,
-      color: "bg-emerald-500/10 text-emerald-400"
+      color: "bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-emerald-500/25"
     },
     {
-      title: "Career Roadmaps",
-      description: "Custom-tailored study plans designed for your dream job roles.",
-      icon: Target,
-      color: "bg-purple-500/10 text-purple-400"
+      title: "PDF Download",
+      description: "Export full study guides, interview reports, and mock questions directly to PDFs.",
+      icon: FileDown,
+      color: "bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-violet-500/25"
     },
     {
       title: "Skill Guides",
       description: "Learn more with AI-curated resources on specific technical topics.",
       icon: Cpu,
-      color: "bg-rose-500/10 text-rose-400"
+      color: "bg-gradient-to-br from-rose-400 to-pink-600 text-white shadow-rose-500/25"
     },
     {
       title: "Instant Feedback",
       description: "Get immediate tips and better ways to explain complex technical answers.",
       icon: Sparkles,
-      color: "bg-amber-500/10 text-amber-400"
+      color: "bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-orange-500/25"
     },
     {
       title: "Score Comparison",
       description: "See how you perform compared to industry standards and other students.",
       icon: Globe,
-      color: "bg-cyan-500/10 text-cyan-400"
+      color: "bg-gradient-to-br from-cyan-400 to-sky-600 text-white shadow-cyan-500/25"
     }
   ];
 
@@ -173,8 +174,8 @@ const LandingPage = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="p-8 rounded-[32px] border border-slate-200/60 bg-white shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-slate-200/50 hover:border-primary/20 transition-all group"
               >
-                <div className={`h-14 w-14 rounded-2xl ${feature.color} flex items-center justify-center mb-6 badge-glow group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="h-7 w-7" />
+                <div className={`h-16 w-16 rounded-2xl ${feature.color} flex items-center justify-center mb-6 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-6`}>
+                  <feature.icon className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-bold tracking-tight text-slate-900 mb-4">{feature.title}</h3>
                 <p className="text-slate-600 leading-relaxed font-medium">{feature.description}</p>
@@ -209,20 +210,14 @@ const LandingPage = () => {
       <footer className="py-12 border-t border-slate-200/60 bg-white/50 backdrop-blur-md">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
-               <Zap className="h-4 w-4 text-primary fill-primary" />
+             <div className="h-8 w-8 rounded-lg flex items-center justify-center">
+               <img src={logo} alt="InterviewAI Logo" className="h-full w-full object-contain rounded-lg" />
              </div>
              <span className="font-bold tracking-tighter text-lg">AI-powered Interview Prep</span>
           </div>
           
-          <div className="flex items-center gap-8 text-sm font-bold text-muted-foreground">
-             <a href="#" className="hover:text-primary transition-colors">Twitter</a>
-             <a href="#" className="hover:text-primary transition-colors">GitHub</a>
-             <a href="#" className="hover:text-primary transition-colors">Discord</a>
-          </div>
-          
           <p className="text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">
-            © 2026 DCODEX Labs — All Rights Reserved.
+            © 2026 AiEvaluators Labs — All Rights Reserved.
           </p>
         </div>
       </footer>

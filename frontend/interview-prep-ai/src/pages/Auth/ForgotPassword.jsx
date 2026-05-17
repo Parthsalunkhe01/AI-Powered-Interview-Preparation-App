@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
+import logo from "../../assets/logo.png";
+import { Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { validateEmail } from "../../utils/Helper";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
@@ -54,8 +55,8 @@ const ForgotPassword = () => {
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
           <Link to="/" className="flex items-center gap-3 no-underline group mb-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-2xl shadow-primary/20 group-hover:scale-110 transition-transform">
-              <Zap className="h-7 w-7 text-white fill-white" />
+            <div className="h-12 w-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-2xl" />
             </div>
             <span className="font-black text-3xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>

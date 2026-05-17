@@ -10,6 +10,7 @@ export const API_PATHS = {
     GET_PROFILE: "/api/auth/profile",     // Get logged-in user details
     FORGOT_PASSWORD: "/api/auth/forgot-password", // Send password reset email
     RESET_PASSWORD: "/api/auth/reset-password",   // Reset password using token
+    UPDATE_PROFILE_IMAGE: "/api/auth/profile/image", // Update profile picture url in database
   },
 
   IMAGE: {

@@ -8,9 +8,9 @@ import {
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  Zap,
   Briefcase
 } from "lucide-react";
+import logo from "../../assets/logo.png";
 import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
 
@@ -61,8 +61,8 @@ const Sidebar = ({ collapsed, setCollapsed, isMobile }) => {
     >
       {/* ── Logo ── */}
       <div className={`px-6 mb-10 flex items-center gap-3 ${collapsed && !isMobile ? 'justify-center' : ''}`}>
-        <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shrink-0 shadow-sm">
-          <Zap className="h-5 w-5 text-white fill-white" />
+        <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0">
+          <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-xl" />
         </div>
         {(!collapsed || isMobile) && (
           <motion.div 

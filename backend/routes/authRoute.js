@@ -8,6 +8,7 @@ const {
     getUserProfile,
     forgotPassword,
     resetPassword,
+    updateProfileImage,
 } = require("../controllers/authController");
 const { protect } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
@@ -40,5 +41,8 @@ router.post("/upload-image", upload.single("image"), (req, res) => {
     const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     res.status(200).json({ imageUrl });
 });
+
+// ── Profile Image Update ───────────────────────────────────────────────────
+router.put("/profile/image", protect, updateProfileImage);
 
 module.exports = router;

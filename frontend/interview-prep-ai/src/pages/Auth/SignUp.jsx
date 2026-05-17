@@ -1,7 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Mail, Lock, User, ArrowRight, Loader2, AlertCircle, Camera } from "lucide-react";
+import logo from "../../assets/logo.png";
+import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, Camera, Eye, EyeOff } from "lucide-react";
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector";
 import { validateEmail } from "../../utils/Helper";
 import { UserContext } from "../../context/userContext";
@@ -18,6 +19,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { user, updateUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -89,8 +91,8 @@ const SignUp = () => {
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
           <Link to="/" className="flex items-center gap-3 no-underline group mb-4">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center shadow-2xl shadow-primary/20 group-hover:scale-110 transition-transform">
-              <Zap className="h-6 w-6 text-white fill-white" />
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-xl" />
             </div>
             <span className="font-bold text-2xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>
@@ -140,12 +142,23 @@ const SignUp = () => {
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium text-slate-900 placeholder:text-slate-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none p-1 rounded-lg"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 

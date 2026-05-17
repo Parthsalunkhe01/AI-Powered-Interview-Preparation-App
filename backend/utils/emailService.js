@@ -8,7 +8,7 @@ const createTransporter = () => {
     return nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.EMAIL_USER,
+            user: process.env.EMAIL_USER || process.env.EMAIL_ID,
             pass: process.env.EMAIL_PASS, // Use Gmail App Password, NOT your regular password
         },
     });
@@ -24,7 +24,7 @@ const sendPasswordResetEmail = async (toEmail, resetLink, userName) => {
     const transporter = createTransporter();
 
     const mailOptions = {
-        from: `"AI Interview Prep" <${process.env.EMAIL_USER}>`,
+        from: `"AI Interview Prep" <${process.env.EMAIL_USER || process.env.EMAIL_ID}>`,
         to: toEmail,
         subject: "Reset Your Password — AI Interview Prep",
         html: `
@@ -119,7 +119,7 @@ const sendOTPEmail = async (toEmail, otp, userName) => {
     const transporter = createTransporter();
 
     const mailOptions = {
-        from: `"AI Interview Prep" <${process.env.EMAIL_USER}>`,
+        from: `"AI Interview Prep" <${process.env.EMAIL_USER || process.env.EMAIL_ID}>`,
         to: toEmail,
         subject: `${otp} is your verification code`,
         html: `
