@@ -268,31 +268,31 @@ const InterviewSession = () => {
             ) : (
                 <>
                     {/* ── Compact Header ── */}
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex items-center gap-2.5 min-w-0">
                             <div className={`h-8 w-8 rounded-xl ${modeCfg.bg} ${modeCfg.border} border flex items-center justify-center shrink-0`}>
                                 <ModeIcon className={`h-4 w-4 ${modeCfg.color}`} />
                             </div>
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-black text-slate-800 truncate">{sessionInfo.company}</span>
+                                    <span className="text-sm font-black text-slate-800 truncate">{sessionInfo.company || "Mock Interview"}</span>
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide hidden sm:block">{sessionInfo.type}</span>
                                 </div>
                                 <span className={`text-[10px] font-bold ${modeCfg.color}`}>{modeLabel} Mode</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                             {/* History toggle */}
                             <button
                                 onClick={() => setShowHistory(s => !s)}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold transition-colors"
                             >
                                 <MessageSquare className="h-3 w-3" />
-                                History ({conversationHistory.length})
+                                <span className="hidden sm:inline">History</span> ({conversationHistory.length})
                             </button>
                             {/* Timer + progress */}
-                            <div className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm px-3 py-1.5 rounded-xl">
+                            <div className="flex items-center gap-1.5 sm:gap-2 bg-white border border-slate-200 shadow-sm px-2.5 py-1.5 rounded-xl">
                                 <Activity className="h-3 w-3 text-indigo-500" />
                                 <InterviewTimer />
                                 <div className="w-px h-4 bg-slate-200" />

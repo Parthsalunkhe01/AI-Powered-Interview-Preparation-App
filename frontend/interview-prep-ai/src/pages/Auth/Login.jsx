@@ -86,15 +86,15 @@ const Login = () => {
         className="w-full max-w-md relative z-10"
       >
         {/* Logo */}
-        <div className="flex flex-col items-center mb-10">
-          <Link to="/" className="flex items-center gap-3 no-underline group mb-4">
-            <div className="h-12 w-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <div className="flex flex-col items-center mb-8 sm:mb-10 text-center">
+          <Link to="/" className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 no-underline group mb-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
               <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-2xl" />
             </div>
-            <span className="font-black text-3xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
+            <span className="font-black text-xl sm:text-3xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Login</h1>
-          <p className="text-muted-foreground font-medium mt-2">Enter your details to access your account.</p>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">Login</h1>
+          <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1.5 sm:mt-2">Enter your details to access your account.</p>
         </div>
 
         {/* Card */}

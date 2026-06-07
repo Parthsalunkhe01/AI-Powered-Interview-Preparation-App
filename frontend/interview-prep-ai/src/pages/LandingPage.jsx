@@ -103,7 +103,7 @@ const LandingPage = () => {
               Empowering Future Engineers
             </div>
             
-            <h1 className="text-5xl lg:text-8xl font-black tracking-tighter mb-8 leading-[0.95] bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500">
+            <h1 className="text-4xl sm:text-5xl lg:text-8xl font-black tracking-tighter mb-6 sm:mb-8 leading-[1.1] sm:leading-[0.95] bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500">
               Ace Your Next <br />
               <span className="text-primary italic">Technical</span> Interview.
             </h1>
@@ -131,31 +131,13 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── Dashboard Preview ── */}
-      <section className="pb-32 relative">
-        <div className="container mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 100 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="relative rounded-[40px] border border-slate-200/60 p-2 bg-white/50 backdrop-blur-sm shadow-2xl shadow-indigo-500/10 overflow-hidden group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-            <img 
-              src={HERO_IMG} 
-              alt="Platform Interface" 
-              className="w-full rounded-[30px] border border-slate-100 shadow-sm"
-            />
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* ── Features Grid ── */}
       <section id="features" className="py-24 relative border-t border-slate-200/60 bg-white/30 backdrop-blur-3xl">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter mb-4 sm:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
               Personalized Interview Prep.
             </h2>
             <p className="text-lg text-slate-600 font-medium">
@@ -186,18 +168,18 @@ const LandingPage = () => {
       </section>
 
       {/* ── CTA Section ── */}
-      <section className="py-32">
-        <div className="container mx-auto px-6">
-          <div className="p-12 lg:p-24 rounded-[60px] bg-gradient-to-br from-indigo-500 to-cyan-500 relative overflow-hidden shadow-2xl shadow-indigo-500/30 text-center border border-indigo-400/30">
+      <section className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="p-8 sm:p-12 lg:p-24 rounded-[40px] sm:rounded-[60px] bg-gradient-to-br from-indigo-500 to-cyan-500 relative overflow-hidden shadow-2xl shadow-indigo-500/30 text-center border border-indigo-400/30">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none" />
             <div className="relative z-10">
-              <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter mb-8 leading-tight">
-                Ready to Boost Your <br />
+              <h2 className="text-3xl sm:text-4xl lg:text-7xl font-black text-white tracking-tighter mb-6 sm:mb-8 leading-tight">
+                Ready to Boost Your <br className="hidden sm:block" />
                 Interview Skills?
               </h2>
               <button 
                 onClick={() => navigate("/signup")}
-                className="h-16 px-12 bg-white text-indigo-600 rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl"
+                className="w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-12 bg-white text-indigo-600 rounded-xl sm:rounded-2xl font-bold text-lg sm:text-xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl flex items-center justify-center mx-auto"
               >
                 Start Practicing Now
               </button>
@@ -216,7 +198,7 @@ const LandingPage = () => {
              <span className="font-bold tracking-tighter text-lg">AI-powered Interview Prep</span>
           </div>
           
-          <p className="text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">
+          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.15em] sm:tracking-[0.2em] text-center md:text-left">
             © 2026 AiEvaluators Labs — All Rights Reserved.
           </p>
         </div>

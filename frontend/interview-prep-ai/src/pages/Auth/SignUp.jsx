@@ -88,16 +88,18 @@ const SignUp = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md relative z-10 py-12"
       >
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-10">
-          <Link to="/" className="flex items-center gap-3 no-underline group mb-4">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-xl" />
+        {/* Header / Logo */}
+        <div className="flex flex-col items-center mb-8 sm:mb-10 text-center">
+          <Link to="/" className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 no-underline group mb-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <img src={logo} alt="InterviewAI" className="h-full w-full object-contain rounded-2xl" />
             </div>
-            <span className="font-bold text-2xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
+            <span className="font-bold text-xl sm:text-2xl tracking-tighter text-foreground">AI-powered Interview Prep</span>
           </Link>
-          <h1 className="text-2xl font-black tracking-tight text-foreground text-center">Create Your Account</h1>
-          <p className="text-muted-foreground font-medium mt-2">Join thousands of students preparing for success.</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">Create Your Account</h1>
+          <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1.5 sm:mt-2 max-w-sm text-center">
+            Join thousands of students preparing for success.
+          </p>
         </div>
 
         {/* Card */}
