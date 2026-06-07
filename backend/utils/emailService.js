@@ -6,11 +6,17 @@ const nodemailer = require("nodemailer");
  */
 const createTransporter = () => {
     return nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.EMAIL_USER || process.env.EMAIL_ID,
             pass: process.env.EMAIL_PASS, // Use Gmail App Password, NOT your regular password
         },
+        tls: {
+            rejectUnauthorized: false
+        },
+        family: 4 // Force IPv4 routing to bypass Render's IPv6 issue
     });
 };
 
