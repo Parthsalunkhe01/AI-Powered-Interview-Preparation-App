@@ -166,16 +166,16 @@ const InterviewBlueprintPage = () => {
       {/* Page content */}
       <main className="mx-auto max-w-3xl px-4 pt-8 pb-20">
         {/* Page header */}
-        <div className="mb-8 text-center space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-indigo-600 mb-2">
-            <Zap className="h-3.5 w-3.5 text-indigo-600" />
+        <div className="mb-6 sm:mb-8 text-center space-y-1.5 sm:space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 sm:px-4 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-indigo-600 mb-2">
+            <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-600" />
             Interview Profile
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Personalized Interview Plan
           </h1>
 
-          <p className="text-md text-slate-500 max-w-sm mx-auto leading-relaxed font-medium italic">
+          <p className="text-sm text-slate-500 max-w-xs sm:max-w-sm mx-auto leading-relaxed font-medium italic">
             "Your journey to success starts with a clear plan."
           </p>
         </div>

@@ -272,27 +272,27 @@ export default function Resources() {
   if (!questions || questions.length === 0) {
     const hasBlueprint = !!blueprint;
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4 sm:p-6">
           <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-8 max-w-md"
+              className="space-y-5 sm:space-y-8 max-w-md"
           >
-              <div className="h-20 w-20 rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
-                  <Library className="h-10 w-10 text-indigo-600" />
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[22px] sm:rounded-[28px] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm">
+                  <Library className="h-8 w-8 sm:h-10 sm:w-10 text-indigo-600" />
               </div>
               <div className="space-y-3">
                   {hasBlueprint ? (
                     <>
-                      <h1 className="text-4xl font-bold tracking-tight">No Sessions Yet</h1>
-                      <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">No Sessions Yet</h1>
+                      <p className="text-muted-foreground text-sm sm:text-lg max-w-sm mx-auto leading-relaxed">
                         Complete your first mock interview and your personalized study materials will appear here automatically.
                       </p>
                     </>
                   ) : (
                     <>
-                      <h1 className="text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
-                      <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
+                      <p className="text-muted-foreground text-sm sm:text-lg max-w-sm mx-auto leading-relaxed">
                         Create your Career Blueprint to get interview questions and resources tailored to your target role and skills.
                       </p>
                     </>
@@ -320,32 +320,32 @@ export default function Resources() {
 
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-6 sm:space-y-12 pb-12 sm:pb-20">
       {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
-          <div className="space-y-2">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 px-1">
+          <div className="space-y-1.5 sm:space-y-2">
               <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
-                      <Sparkles className="h-4 w-4" />
+                  <div className="p-1.5 sm:p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </div>
                   <Badge variant="purple">Personalized</Badge>
               </div>
-              <h1 className="text-4xl font-bold tracking-tight">Learning Center</h1>
-              <p className="text-muted-foreground font-medium text-lg italic">Resources selected based on your recent interview performance.</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Learning Center</h1>
+              <p className="text-muted-foreground font-medium text-sm sm:text-base italic">Resources selected based on your recent interview performance.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
               <Button
                   variant="outline"
                   size="sm"
                   onClick={exportGuide}
                   disabled={loadedCount < totalCount || resourceError || resources.sections.length === 0}
-                  className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed text-xs"
               >
-                  <Download className="mr-2 h-4 w-4" />
-                  {loadedCount < totalCount ? `Loading ${loadedCount}/${totalCount}…` : "Export PDF Guide"}
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  {loadedCount < totalCount ? `Loading ${loadedCount}/${totalCount}…` : "Export Guide"}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
-                  View Study Plan <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/resources/questions", { state: { blueprint, questions } })}>
+                  Study Plan <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
           </div>
       </div>
@@ -382,15 +382,15 @@ export default function Resources() {
         </div>
       )}
 
-      <div className="space-y-24">
+      <div className="space-y-10 sm:space-y-24">
         {resourceError ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center min-h-[340px] gap-6 text-center"
           >
-            <div className="h-16 w-16 rounded-[22px] bg-red-50 border border-red-100 flex items-center justify-center shadow-sm">
-              <RefreshCw className="h-7 w-7 text-red-400" />
+            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-[20px] sm:rounded-[22px] bg-red-50 border border-red-100 flex items-center justify-center shadow-sm">
+              <RefreshCw className="h-6 w-6 sm:h-7 sm:w-7 text-red-400" />
             </div>
             <div className="space-y-2">
               <p className="text-base font-semibold text-slate-700">Resource fetch timed out</p>
@@ -417,19 +417,19 @@ export default function Resources() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0 }}  
-                    className="space-y-10"
+                    className="space-y-5 sm:space-y-10"
                 >
                   {/* Section Title Group */}
-                  <div className="flex items-center gap-6 px-1">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-[22px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xl shadow-sm">
+                  <div className="flex items-center gap-3 sm:gap-6 px-1">
+                      <div className="flex items-center justify-center h-10 w-10 sm:h-14 sm:w-14 rounded-[16px] sm:rounded-[22px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-base sm:text-xl shadow-sm shrink-0">
                         {idx + 1}
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                          <div className="flex items-center gap-2">
                              <Badge variant="info">Topic Insight</Badge>
-                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">• Recommended</span>
+                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest hidden sm:inline">• Recommended</span>
                          </div>
-                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight">{section.topic}</h2>
+                         <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tracking-tight leading-tight">{section.topic}</h2>
                       </div>
                   </div>
 
@@ -450,7 +450,12 @@ export default function Resources() {
                       <p className="text-slate-500 font-medium text-sm">No cached resources yet for this question. Search directly:</p>
                       <div className="flex flex-wrap justify-center gap-3">
                         <a
-                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent((section.keywords || []).join(" ") + " interview explanation")}`}
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(
+                            ((section.keywords && section.keywords.length > 0)
+                              ? section.keywords.join(" ")
+                              : (section.topic || "").split(" ").slice(0, 8).join(" ")
+                            ) + " tutorial explained"
+                          )}`}
                           target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
                         >

@@ -8,7 +8,7 @@ const SaaSCard = ({ children, className = "", hover = true, delay = 0 }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
         whileHover={hover ? { y: -4, transition: { duration: 0.3 } } : {}}
-        className={`rounded-[32px] p-8 relative transition-all duration-500 border border-slate-200 bg-white group ${className}`}
+        className={`rounded-2xl sm:rounded-[28px] p-4 sm:p-6 relative transition-all duration-500 border border-slate-200 bg-white group ${className}`}
         data-saas-card-v2="true"
         style={{
           boxShadow: "0 20px 40px -12px rgba(0, 0, 0, 0.05)",

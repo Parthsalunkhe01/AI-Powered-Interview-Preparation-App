@@ -127,10 +127,10 @@ const BlueprintForm = ({
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-3xl mx-auto drop-shadow-xl shadow-slate-200/50">
       <form
         onSubmit={handleSubmit}
-        className="rounded-[32px] border border-slate-200 bg-white shadow-xl overflow-visible backdrop-blur-3xl"
+        className="rounded-2xl sm:rounded-[28px] border border-slate-200 bg-white shadow-xl overflow-visible backdrop-blur-3xl"
       >
-        <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 rounded-t-[32px]" />
-        <div className="p-8 space-y-7 pb-10">
+        <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 rounded-t-2xl sm:rounded-t-[28px]" />
+        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-7 pb-6 sm:pb-10">
           {/* Target Role with Autocomplete */}
           <div className="space-y-2">
             <Label className="text-sm font-bold text-slate-700 tracking-tight">
@@ -270,7 +270,7 @@ const BlueprintForm = ({
         </div>
 
         {/* Footer (Dark Accent) */}
-        <div className="border-t border-slate-200/60 bg-slate-50 px-8 py-7 flex items-center justify-between flex-wrap gap-4 rounded-b-[32px]">
+        <div className="border-t border-slate-200/60 bg-slate-50 px-4 sm:px-8 py-4 sm:py-7 flex items-center justify-between flex-wrap gap-3 sm:gap-4 rounded-b-2xl sm:rounded-b-[28px]">
           <p className="text-xs font-medium text-slate-500 italic tracking-wide">
             {isEditing ? "Updating your profile..." : "Creating your interview profile"}
           </p>

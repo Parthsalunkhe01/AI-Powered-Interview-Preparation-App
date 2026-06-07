@@ -8,14 +8,14 @@ const TodaysMissionCard = ({ sessionLabel = "Session 1" }) => {
   return (
     <SaaSCard className="h-full flex flex-col">
       {/* Unified Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100">
-            <Calendar size={20} />
+      <div className="flex items-center justify-between mb-4 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100">
+            <Calendar size={17} />
           </div>
-          <h3 className="text-xl font-bold tracking-tight text-slate-900">Daily Goal</h3>
+          <h3 className="text-base sm:text-xl font-bold tracking-tight text-slate-900">Daily Goal</h3>
         </div>
-        <Badge variant="outline" className="border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest px-3 py-1">
+        <Badge variant="outline" className="border-slate-200 text-slate-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2 sm:px-3 py-1">
           {sessionLabel}
         </Badge>
       </div>

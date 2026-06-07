@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../../context/userContext";
 import ProfileInfoCard from "../Cards/ProfileInfoCard";
+import { Menu, X } from "lucide-react";
 
 // Blue-indigo accent palette
 const BLUE = "#4A7CF7";
@@ -23,12 +24,18 @@ const Navbar = ({ onLoginClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -64,12 +71,12 @@ const Navbar = ({ onLoginClick }) => {
           style={{
             maxWidth: "1300px",
             margin: "0 auto",
-            padding: "0 24px",
+            padding: "0 16px",
             height: "100%",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "16px",
+            gap: "12px",
           }}
         >
           {/* ── Logo ── */}
@@ -77,9 +84,9 @@ const Navbar = ({ onLoginClick }) => {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div
                 style={{
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "8px",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "7px",
                   background: `linear-gradient(135deg, ${BLUE} 0%, ${BLUE_LIGHT} 100%)`,
                   display: "flex",
                   alignItems: "center",
@@ -88,23 +95,23 @@ const Navbar = ({ onLoginClick }) => {
                   flexShrink: 0,
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
                     fill="white"
                   />
                 </svg>
               </div>
-              <span style={{ fontSize: "18px", fontWeight: "800", color: BLUE, letterSpacing: "-0.5px" }}>
+              <span style={{ fontSize: "15px", fontWeight: "800", color: BLUE, letterSpacing: "-0.5px" }}>
                 Interview
               </span>
-              <span style={{ fontSize: "18px", fontWeight: "700", color: "#f1f5f9", letterSpacing: "-0.5px" }}>
+              <span style={{ fontSize: "15px", fontWeight: "700", color: "#f1f5f9", letterSpacing: "-0.5px" }}>
                 Prep AI
               </span>
             </div>
           </Link>
 
-          {/* ── Nav Links ── */}
+          {/* ── Nav Links (hidden on mobile) ── */}
           <nav
             style={{
               display: "flex",
@@ -113,6 +120,7 @@ const Navbar = ({ onLoginClick }) => {
               flex: 1,
               justifyContent: "center",
             }}
+            className="hidden md:flex"
           >
             {navLinks.map((link) => {
               const active = isActive(link.path);
@@ -121,9 +129,9 @@ const Navbar = ({ onLoginClick }) => {
                   <div
                     style={{
                       position: "relative",
-                      padding: "7px 18px",
+                      padding: "6px 14px",
                       borderRadius: "8px",
-                      fontSize: "13.5px",
+                      fontSize: "13px",
                       fontWeight: active ? "700" : "500",
                       color: active ? BLUE : "#94a3b8",
                       background: active ? BLUE_MUTED : "transparent",
@@ -169,8 +177,9 @@ const Navbar = ({ onLoginClick }) => {
             })}
           </nav>
 
-          {/* ── Right: Profile or Login ── */}
-          <div style={{ flexShrink: 0 }}>
+          {/* ── Right: Profile/Login + Mobile Hamburger ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            {/* Profile or Login (always visible) */}
             {user ? (
               <ProfileInfoCard />
             ) : (
@@ -181,8 +190,8 @@ const Navbar = ({ onLoginClick }) => {
                   color: "#fff",
                   border: "none",
                   borderRadius: "8px",
-                  padding: "8px 22px",
-                  fontSize: "13px",
+                  padding: "7px 16px",
+                  fontSize: "12px",
                   fontWeight: "700",
                   cursor: "pointer",
                   fontFamily: "'Inter', sans-serif",
@@ -202,8 +211,67 @@ const Navbar = ({ onLoginClick }) => {
                 Login / Sign Up
               </button>
             )}
+
+            {/* Hamburger (visible only on mobile) */}
+            <button
+              className="md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "8px",
+                padding: "6px",
+                color: "#94a3b8",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
+
+        {/* ── Mobile Dropdown Nav ── */}
+        {mobileOpen && (
+          <div
+            className="md:hidden"
+            style={{
+              background: "rgba(15, 20, 30, 0.98)",
+              backdropFilter: "blur(16px)",
+              borderTop: "1px solid rgba(74,124,247,0.12)",
+              padding: "12px 16px 16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+            }}
+          >
+            {navLinks.map((link) => {
+              const active = isActive(link.path);
+              return (
+                <Link key={link.path} to={link.path} style={{ textDecoration: "none" }}>
+                  <div
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      fontSize: "14px",
+                      fontWeight: active ? "700" : "500",
+                      color: active ? BLUE : "#94a3b8",
+                      background: active ? BLUE_MUTED : "transparent",
+                      border: active ? `1px solid ${BLUE_BORDER}` : "1px solid transparent",
+                      transition: "all 0.2s ease",
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {link.label}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </header>
     </>
   );

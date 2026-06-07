@@ -96,8 +96,8 @@ const AnalyticsPage = () => {
                         <Activity className="h-10 w-10 text-indigo-600" />
                     </div>
                     <div className="space-y-3">
-                        <h1 className="text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
-                        <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Set Up Your Profile First</h1>
+                        <p className="text-muted-foreground text-sm sm:text-lg max-w-sm mx-auto leading-relaxed">
                             Create your Career Blueprint to track your performance and get personalized interview analytics.
                         </p>
                     </div>
@@ -125,8 +125,8 @@ const AnalyticsPage = () => {
                     <Zap className="h-10 w-10 text-indigo-600" />
                 </div>
                 <div className="space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight">No Sessions Yet</h2>
-                    <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">No Sessions Yet</h2>
+                    <p className="text-muted-foreground text-sm sm:text-lg max-w-sm mx-auto leading-relaxed">
                         Complete your first mock interview to see your performance velocity and AI-driven insights.
                     </p>
                 </div>
@@ -151,44 +151,44 @@ const AnalyticsPage = () => {
     const topSignals = (data.weaknesses || []).slice(0, 3);
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto space-y-8 pb-20">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-12 sm:pb-20">
 
             {/* ── 1. Top Stats Row ─────────────────────────────────────── */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 {/* Total Sessions */}
-                <SaaSCard className="p-8 relative">
-                    <button className="absolute top-5 right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
+                <SaaSCard className="p-3 sm:p-5 lg:p-8 relative">
+                    <button className="absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
                     </button>
-                    <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-5">
-                        <Zap className="h-4 w-4 text-indigo-500" />
+                    <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-2 sm:mb-5">
+                        <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500" />
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Sessions</p>
-                    <h2 className="text-5xl font-black text-slate-900">{totalSessions}</h2>
+                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Total Sessions</p>
+                    <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-slate-900 leading-none">{totalSessions}</h2>
                 </SaaSCard>
 
                 {/* Mastery Level */}
-                <SaaSCard className="p-8 relative">
-                    <button className="absolute top-5 right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
+                <SaaSCard className="p-3 sm:p-5 lg:p-8 relative">
+                    <button className="absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
                     </button>
-                    <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-5">
-                        <Award className="h-4 w-4 text-emerald-500" />
+                    <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-2 sm:mb-5">
+                        <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mastery Level</p>
-                    <h2 className="text-5xl font-black text-slate-900">{masteryLevel}</h2>
+                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Mastery Level</p>
+                    <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-slate-900 leading-none">{masteryLevel}</h2>
                 </SaaSCard>
 
                 {/* Prep Intensity */}
-                <SaaSCard className="p-8 relative">
-                    <button className="absolute top-5 right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
+                <SaaSCard className="col-span-2 md:col-span-1 p-3 sm:p-5 lg:p-8 relative">
+                    <button className="absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                        <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
                     </button>
-                    <div className="h-9 w-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-5">
-                        <Clock className="h-4 w-4 text-slate-500" />
+                    <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-2 sm:mb-5">
+                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-500" />
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Prep Intensity</p>
-                    <h2 className="text-5xl font-black text-slate-900">{prepIntensity}</h2>
+                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 sm:mb-1">Prep Intensity</p>
+                    <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-slate-900 leading-none">{prepIntensity}</h2>
                 </SaaSCard>
             </div>
 
@@ -196,15 +196,15 @@ const AnalyticsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {/* Performance Velocity Chart */}
-                <SaaSCard className="lg:col-span-8 p-8">
-                    <div className="flex items-center justify-between mb-1">
+                <SaaSCard className="lg:col-span-8 p-4 sm:p-6 lg:p-8">
+                    <div className="flex items-start sm:items-center justify-between mb-1 gap-2">
                         <div>
-                            <h3 className="text-xl font-black text-slate-900">Performance Velocity</h3>
-                            <p className="text-sm text-slate-400 font-medium mt-0.5">Trajectory across your session history</p>
+                            <h3 className="text-base sm:text-xl font-black text-slate-900">Performance Velocity</h3>
+                            <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">Trajectory across your session history</p>
                         </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Score Focus</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Score Focus</span>
                     </div>
-                    <div className="mt-6 h-[220px]">
+                    <div className="mt-4 sm:mt-6 h-[160px] sm:h-[200px] lg:h-[220px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data.history} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -239,7 +239,7 @@ const AnalyticsPage = () => {
                 </SaaSCard>
 
                 {/* AI Contextual Insight */}
-                <SaaSCard className="lg:col-span-4 p-7 bg-indigo-50/60 border-indigo-100 flex flex-col gap-6">
+                <SaaSCard className="lg:col-span-4 p-4 sm:p-6 lg:p-7 bg-indigo-50/60 border-indigo-100 flex flex-col gap-4 sm:gap-6">
                     <h4 className="text-sm font-black text-indigo-700 text-center uppercase tracking-widest">
                         AI Contextual Insight
                     </h4>
@@ -287,15 +287,15 @@ const AnalyticsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Practice Prioritization */}
-                <SaaSCard className="p-8">
+                <SaaSCard className="p-4 sm:p-6 lg:p-8">
                     <div className="flex items-center gap-3 mb-2">
                         <AlertCircle className="h-5 w-5 text-rose-500" />
                         <div>
-                            <h4 className="text-base font-black text-slate-900">Important Concepts</h4>
+                            <h4 className="text-sm sm:text-base font-black text-slate-900">Important Concepts</h4>
                             <p className="text-xs text-slate-400 font-medium">High-impact growth areas</p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-5">
+                    <div className="flex flex-wrap gap-2 mt-4 sm:mt-5">
                         {(data.weaknesses || []).length > 0 ? (
                             (data.weaknesses || []).map((w, i) => (
                                 <span
@@ -312,7 +312,7 @@ const AnalyticsPage = () => {
                 </SaaSCard>
 
                 {/* Core Dominance */}
-                <SaaSCard className="p-8">
+                <SaaSCard className="p-4 sm:p-6 lg:p-8">
                     <div className="flex items-center gap-3 mb-2">
                         <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                         <div>

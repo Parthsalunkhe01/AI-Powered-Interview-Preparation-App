@@ -248,29 +248,29 @@ const InterviewFeedback = () => {
     const perfColors = { Garbage:"bg-red-100 text-red-700", Weak:"bg-orange-100 text-orange-700", Average:"bg-amber-100 text-amber-700", Good:"bg-emerald-100 text-emerald-700", Excellent:"bg-violet-100 text-violet-700" };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-5 pb-12 animate-in fade-in duration-500">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5 pb-8 sm:pb-12 animate-in fade-in duration-500">
 
             {/* ── Page Title ── */}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                        <ClipboardCheck className="h-4 w-4 text-indigo-500" />
+                        <ClipboardCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500" />
                         <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Performance Report</span>
                     </div>
-                    <h1 className="text-xl font-black tracking-tight text-slate-900">Interview Feedback</h1>
+                    <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">Interview Feedback</h1>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")} className="h-8 text-xs">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Dashboard
+                        <ArrowLeft className="mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" /> Dashboard
                     </Button>
                     <Button variant="saas" size="sm" onClick={() => navigate("/resources")} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
-                        Improve <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                        Improve <ChevronRight className="ml-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </Button>
                 </div>
             </div>
 
             {/* ── Hero: Score + Readiness ── */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 {/* Overall Score */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col items-center justify-center gap-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Overall Score</p>

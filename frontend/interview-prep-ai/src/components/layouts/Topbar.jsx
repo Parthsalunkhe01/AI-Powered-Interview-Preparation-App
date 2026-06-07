@@ -102,14 +102,21 @@ const Topbar = ({ collapsed, setCollapsed }) => {
                 <span className="hidden sm:inline-block text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] px-2 py-1">
                     InterviewAI
                 </span>
-                {pathSegments.length > 0 && pathSegments.map((segment, index) => (
-                    <React.Fragment key={index}>
-                        <ChevronRight className="hidden sm:block h-4 w-4 text-slate-300" />
-                        <span className="text-slate-700 font-semibold capitalize px-2 sm:px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm">
-                            {segment.replace(/-/g, ' ')}
-                        </span>
-                    </React.Fragment>
-                ))}
+                {pathSegments.length > 0 && pathSegments.map((segment, index) => {
+                    // Truncate MongoDB-style hex IDs (24 hex chars)
+                    const isHexId = /^[a-f0-9]{24}$/i.test(segment);
+                    const displayText = isHexId
+                        ? segment.slice(0, 8) + "…"
+                        : segment.replace(/-/g, ' ');
+                    return (
+                        <React.Fragment key={index}>
+                            <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-slate-300" />
+                            <span className={`text-slate-700 font-semibold capitalize px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-[11px] sm:text-xs max-w-[100px] sm:max-w-[180px] truncate ${isHexId ? 'font-mono text-slate-400' : ''}`}>
+                                {displayText}
+                            </span>
+                        </React.Fragment>
+                    );
+                })}
             </div>
 
             <div className="flex-1" />

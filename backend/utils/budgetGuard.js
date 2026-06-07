@@ -9,8 +9,8 @@ const ApiUsage = require("../models/ApiUsage");
 const DAILY_LIMITS = {
     groqCalls:    180,   // Hard stop at 180 (leaves buffer below Groq limits)
     groqTokens:   90000, // Token ceiling per day
-    youtubeCalls: 80,    // YouTube: 10,000 units/day; each search = ~100 units
-    serperCalls:  80,
+    youtubeCalls: 90,    // YouTube: 10,000 units/day; each search = ~100 units → 90 safe calls
+    serperCalls:  900,   // Serper free tier: 2500 credits/month → generous daily ceiling
 };
 
 /**

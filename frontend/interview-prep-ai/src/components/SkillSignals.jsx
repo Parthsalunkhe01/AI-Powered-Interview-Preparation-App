@@ -9,14 +9,14 @@ const SkillSignals = ({ blueprint }) => {
   return (
     <SaaSCard className="h-full flex flex-col">
       {/* Unified Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
-            <Brain size={20} />
+      <div className="flex items-center justify-between mb-4 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
+            <Brain size={17} />
           </div>
-          <h3 className="text-xl font-black tracking-tight text-slate-900">Skill Signals</h3>
+          <h3 className="text-base sm:text-xl font-black tracking-tight text-slate-900">Skill Signals</h3>
         </div>
-        <Badge variant="outline" className="border-indigo-200 text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-indigo-50 text-indigo-700">
+        <Badge variant="outline" className="border-indigo-200 text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 bg-indigo-50 text-indigo-700">
           Strategic
         </Badge>
       </div>

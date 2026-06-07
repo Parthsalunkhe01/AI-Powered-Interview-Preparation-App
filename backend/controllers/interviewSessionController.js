@@ -18,6 +18,20 @@ exports.createInterviewSession = async (req, res) => {
 
         const blueprint = await Blueprint.findOne({ user: req.user._id });
 
+        // Gather question IDs from recent sessions to prevent cross-session repetition
+        const recentSessions = await InterviewSession.find({
+            user: req.user._id,
+        }).sort({ createdAt: -1 }).limit(5).select("usedLocalIds").lean();
+
+        const previouslyUsedIds = [];
+        for (const s of recentSessions) {
+            if (Array.isArray(s.usedLocalIds)) {
+                previouslyUsedIds.push(...s.usedLocalIds);
+            }
+        }
+        // Deduplicate
+        const seedUsedIds = [...new Set(previouslyUsedIds)];
+
         const session = await InterviewSession.create({
             user: req.user._id,
             company: blueprint?.targetCompanies?.[0] || blueprint?.companies?.[0] || "General",
@@ -29,7 +43,7 @@ exports.createInterviewSession = async (req, res) => {
             difficulty: "adaptive",
             questionLimit: questionLimit || 5,
             blueprint: blueprint?._id,
-            usedLocalIds: [],
+            usedLocalIds: seedUsedIds,
             questionMeta: [],
         });
 
